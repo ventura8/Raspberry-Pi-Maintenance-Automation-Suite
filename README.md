@@ -17,7 +17,7 @@ Automates the standard Raspberry Pi OS maintenance workflow. It refreshes the pa
 
 Ensures your Python environment stays current. This script first upgrades the pip3 package manager itself and then identifies and upgrades all globally installed Python packages that have newer versions available.
 
-* **Commands:** `pip3 install --upgrade pip`, `pip3 list --outdated`.
+* **Commands:** `pip3 list --outdated`, `pip3 install --upgrade --break-system-packages`.
 
 ### **3\. Pi-Apps Manager Update (`update_pi_apps.sh`)**
 
