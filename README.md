@@ -126,26 +126,30 @@ chmod +x *.sh
 
 ## **📅 Automation (Cron Jobs)**
 
-To automate these scripts, add them to your root crontab:
+Automation is split between the **Root** user (for system tasks) and your **Local** user (for app-specific tasks).
 
-```bash
-sudo crontab -e
-```
+### **1\. Root Crontab (`sudo crontab -e`)**
 
-Add the following lines to run maintenance every Sunday:
+These scripts require full system privileges to manage OS packages and Docker containers.  
 
 ```bash
 # 3:00 AM - System OS Update  
 0 3 * * 0 /home/pi/update_pi_os.sh
 
-# 4:00 AM - Python App Update  
-0 4 * * 0 /home/pi/update_pi_apps.sh
+# 4:00 AM - Python Pip Update (Global)
+0 4 * * 0 /home/pi/update_pip.sh
 
 # 4:20 AM - Docker Cleanup  
 20 4 * * 0 /home/pi/docker_cleanup.sh
+```
 
+### **2\. User Crontab (`crontab -e`)**
+
+This script must run as your normal user because Pi-Apps resides in your home directory. Running this as root could lead to permission conflicts.
+
+```bash
 # 5:00 AM - Pi-Apps Manager Update  
-0 5 * * 0 /home/pi/update_piapps_manager.sh
+0 5 * * 0 /home/pi/update_pi_apps.sh
 ```
 
 > [!NOTE]  
