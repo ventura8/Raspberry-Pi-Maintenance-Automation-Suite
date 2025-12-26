@@ -1,6 +1,6 @@
 # **Raspberry Pi Maintenance & Automation Suite**
 
-A collection of Bash scripts for Raspberry Pi OS to automate system updates, application management, and Docker maintenance with automated email reporting via Gmail.  
+A collection of Bash scripts for Raspberry Pi OS to automate system updates, application management, firmware maintenance, and Docker maintenance with automated email reporting via Gmail.  
 
 > [!IMPORTANT]  
 > This project requires `ssmtp` to be installed and configured with a Google App Password to send email reports. Standard Gmail passwords will not work due to Google's security policies.
@@ -13,19 +13,25 @@ Automates the standard Raspberry Pi OS maintenance workflow. It refreshes the pa
 
 * **Commands:** `apt-get update`, `apt-get upgrade`, `apt-get autoremove`.
 
-### **2\. Python Pip Update (`update_pip.sh`)**
+### **2\. Pi Firmware Update (`update_pi_firmware.sh`)**
+
+Checks for and applies updates to the Raspberry Pi bootloader (EEPROM) for Pi 4 and Pi 5 models. If an update is applied successfully, the script identifies the change and schedules a reboot.
+
+* **Commands:** `rpi-eeprom-update -a`.
+
+### **3\. Python Pip Update (`update_pip.sh`)**
 
 Ensures your Python environment stays current by upgrading globally installed packages. It bypasses the "externally-managed-environment" restriction safely and suppresses non-critical deprecation warnings to keep logs clean.
 
 * **Commands:** `pip3 list --outdated`, `pip3 install --upgrade --break-system-packages`.
 
-### **3\. Pi-Apps Manager Update (`update_pi_apps.sh`)**
+### **4\. Pi-Apps Manager Update (`update_pi_apps.sh`)**
 
 Specifically designed for users of the Pi-Apps community app store. It updates the Pi-Apps core files first and then triggers a silent, non-interactive update for every application you have installed through the Pi-Apps interface using the `cli-yes` flag.
 
 * **Commands:** `updater cli-yes --update-self`, `updater cli-yes --update-all`.
 
-### **4\. Docker System Cleanup (`docker_cleanup.sh`)**
+### **5\. Docker System Cleanup (`docker_cleanup.sh`)**
 
 A powerful cleanup utility for Docker users. It reclaims significant disk space by removing stopped containers, unused networks, "dangling" and unused images, and all build caches.
 
@@ -62,6 +68,14 @@ To allow your Raspberry Pi to send emails, you must configure the `ssmtp.conf` f
 4. Search for or click on **App Passwords**.  
 5. Select **Mail** for the app and **Other (Custom name)** for the device (e.g., "Raspberry Pi").  
 6. Copy the generated **16-character code**.
+7. Set permissions: `sudo chmod 640 /etc/ssmtp/ssmtp.conf`.
+
+> [!TIP]
+> Refer to `ssmtp.conf.example` for the template
+
+> [!IMPORTANT]
+> Ensure `AuthPass` is your 16-character code.
+
 
 #### **B. Edit the Configuration File**
 
@@ -130,9 +144,12 @@ Automation is split between the **Root** user (for system tasks) and your **Loca
 
 ### **1\. Root Crontab (`sudo crontab -e`)**
 
-These scripts require full system privileges to manage OS packages and Docker containers.  
+These scripts manage system-wide software, firmware, and global Python libraries.
 
 ```bash
+# 2:00 AM - Pi Firmware Update (Monthly)
+0 2 1 * * /home/pi/update_pi_firmware.sh
+
 # 3:00 AM - System OS Update  
 0 3 * * 0 /home/pi/update_pi_os.sh
 
