@@ -1,0 +1,30 @@
+# **Ignore the actual configuration file containing passwords**
+
+ssmtp.conf
+
+# **Ignore local log files**
+
+.log  
+tmp.
+
+# **Ignore system files**
+
+.DS\_Store  
+Thumbs.db
+
+# **Python bytecode**
+
+pycache/  
+\*.py\[cod\]  
+\*$py.class
+
+# **Coverage reports**
+
+coverage/
+coverage_*/
+kcov-merged/
+mocks/
+scripts_test/
+pi-scripts/
+*.txt
+code-coverage-results.md

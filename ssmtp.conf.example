@@ -1,0 +1,59 @@
+This is an example configuration file for ssmtp.
+
+1. Edit the values below.
+
+2. Save this file as /etc/ssmtp/ssmtp.conf
+
+3. Set permissions: sudo chmod 640 /etc/ssmtp/ssmtp.conf
+
+4. Add your user to the 'mail' group: sudo usermod -a -G mail $(whoami)
+
+The user that gets all mail for user IDs < 1000
+
+root=your_email@gmail.com
+
+The mail server (mailhub) for Gmail
+
+Points directly to the SMTP server (removed the google search redirect)
+
+mailhub=smtp.gmail.com:587
+
+Your Gmail address
+
+AuthUser=your_email@gmail.com
+
+!!! IMPORTANT !!!
+
+This is NOT your regular Gmail password.
+
+You must generate an "App Password" from your Google Account settings.
+
+1. Go to myaccount.google.com
+
+2. Go to Security -> 2-Step Verification
+
+3. At the bottom, click "App Passwords"
+
+4. Select "Mail" for the app and "Other (Custom name)" for the device.
+
+5. Name it "RaspberryPi" or similar.
+
+6. Google will give you a 16-character password. Use that password here.
+
+AuthPass=YOUR_16_CHARACTER_APP_PASSWORD
+
+Use STARTTLS
+
+UseSTARTTLS=YES
+
+Use TLS
+
+UseTLS=YES
+
+This rewrites the "From:" line of the email to match AuthUser
+
+FromLineOverride=YES
+
+Hostname of your Pi
+
+hostname=raspberrypi
