@@ -5,6 +5,15 @@ A collection of Bash scripts for Raspberry Pi OS to automate system updates, app
 > [!IMPORTANT]  
 > This project requires `ssmtp` to be installed and configured with a Google App Password to send email reports. Standard Gmail passwords will not work due to Google's security policies.
 
+## **✨ Features**
+
+* **Automated Email Reporting**: Receive detailed logs of every maintenance task directly in your inbox via SSMTP.  
+* **Intelligent Reboot Detection**: Automatically detects when OS or Firmware updates require a system restart and schedules it safely.  
+* **Modern Python Support**: Bypasses PEP 668 "Externally Managed Environment" restrictions safely for global package updates.  
+* **Docker Resource Optimization**: Regularly prunes unused containers, dangling images, and build caches to reclaim disk space.  
+* **Security-Conscious Automation**: Intelligent crontab management that separates system-level root tasks from home-directory user tasks.  
+* **Zero-Touch Maintenance**: Uses non-interactive flags across all scripts to ensure updates never hang waiting for user input.
+
 ## **📄 Script Descriptions**
 
 ### **1\. System OS Update (`update_pi_os.sh`)**
@@ -21,7 +30,7 @@ Checks for and applies updates to the Raspberry Pi bootloader (EEPROM) for Pi 4 
 
 ### **3\. Python Pip Update (`update_pip.sh`)**
 
-Ensures your Python environment stays current by upgrading globally installed packages. It bypasses the "externally-managed-environment" restriction safely and suppresses non-critical deprecation warnings to keep logs clean.
+Ensures your global Python environment stays current. It upgrades globally installed packages using the `--break-system-packages` flag and suppresses non-critical deprecation warnings. It intelligently skips the base `pip` upgrade to avoid conflicts with the Debian package manager.
 
 * **Commands:** `pip3 list --outdated`, `pip3 install --upgrade --break-system-packages`.
 
@@ -37,26 +46,42 @@ A powerful cleanup utility for Docker users. It reclaims significant disk space 
 
 * **Commands:** `docker system prune -a -f --volumes, docker builder prune -a -f`.
 
-## **🚀 Features**
+## **📅 Automation Schedule (Crontabs)**
 
-* **OS Updates:** Automates `apt update`, `upgrade`, and `autoremove`.  
-* **App Updates:** Updates Python packages via `pip3`.  
-* **Pi-Apps Integration:** Updates the Pi-Apps manager and all installed apps silently.  
-* **Docker Maintenance:** Prunes unused images, containers, volumes, and build cache.  
-* **Email Reports:** Sends a detailed log of every operation to your Gmail.
+The installer configures two separate crontabs to ensure proper permissions:
 
-## **🛠️ Installation**
+### **Root Crontab (`sudo crontab -e`)**
 
-### **1\. Install Mail Utilities**
+* **Firmware Update**: 2:00 AM on the 1st of every month.  
+* **System OS Update**: 3:00 AM every Sunday.  
+* **Python Pip Update**: 4:00 AM every Sunday.  
+* **Docker Cleanup**: 4:20 AM every Sunday.
 
-Run the following commands to install the necessary packages:  
+### **User Crontab (`crontab -e`)**
+
+* **Pi-Apps Update**: 5:00 AM every Sunday (Runs as local user to maintain file ownership).
+
+## **🛠️ Installation & Removal**
+
+### **Installer**
+
+The installer copies all scripts from your local `scripts/` folder to `~/pi-scripts`, injects your email address, sets executable permissions, and configures the crontabs for you.  
 
 ```bash
-sudo apt-get update  
-sudo apt-get install ssmtp mailutils
+chmod +x install.sh  
+./install.sh
 ```
 
-### **2\. Configure SSMTP & Gmail**
+### **Uninstaller**
+
+Removes all scheduled cron jobs and deletes the installation directory.
+
+```bash
+chmod +x uninstall.sh  
+./uninstall.sh
+```
+
+### **🔑 Configuration Requirement: Configure SSMTP & Gmail**
 
 To allow your Raspberry Pi to send emails, you must configure the `ssmtp.conf` file and set up a Google App Password.
 
@@ -68,7 +93,6 @@ To allow your Raspberry Pi to send emails, you must configure the `ssmtp.conf` f
 4. Search for or click on **App Passwords**.  
 5. Select **Mail** for the app and **Other (Custom name)** for the device (e.g., "Raspberry Pi").  
 6. Copy the generated **16-character code**.
-7. Set permissions: `sudo chmod 640 /etc/ssmtp/ssmtp.conf`.
 
 > [!TIP]
 > Refer to `ssmtp.conf.example` for the template
@@ -130,6 +154,17 @@ Verify that the email system is working by sending a test message:
 echo "Test text from Raspberry Pi" | mail -s "Test Subject" your_email@gmail.com
 ```
 
+## **🛠️ Manual Installation**
+
+### **1\. Install Mail Utilities**
+
+Run the following commands to install the necessary packages:  
+
+```bash
+sudo apt-get update  
+sudo apt-get install ssmtp mailutils
+```
+
 ### **3\. Setup Scripts**
 
 Clone this repo and make the scripts executable:  
@@ -138,7 +173,7 @@ Clone this repo and make the scripts executable:
 chmod +x *.sh
 ```
 
-## **📅 Automation (Cron Jobs)**
+## **📅 Manual Automation (Cron Jobs)**
 
 Automation is split between the **Root** user (for system tasks) and your **Local** user (for app-specific tasks).
 
