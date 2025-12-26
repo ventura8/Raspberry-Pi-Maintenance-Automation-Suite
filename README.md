@@ -5,6 +5,32 @@ A collection of Bash scripts for Raspberry Pi OS to automate system updates, app
 > [!IMPORTANT]  
 > This project requires `ssmtp` to be installed and configured with a Google App Password to send email reports. Standard Gmail passwords will not work due to Google's security policies.
 
+## **📄 Script Descriptions**
+
+### **1\. System OS Update (`update_pi_os.sh`)**
+
+Automates the standard Raspberry Pi OS maintenance workflow. It refreshes the package list, upgrades all installed software to the latest versions, and removes obsolete dependencies to keep the system lean and secure.
+
+* **Commands:** `apt-get update`, `apt-get upgrade`, `apt-get autoremove`.
+
+### **2\. Python Pip Update (`update_pi_apps.sh`)**
+
+Ensures your Python environment stays current. This script first upgrades the pip3 package manager itself and then identifies and upgrades all globally installed Python packages that have newer versions available.
+
+* **Commands:** `pip3 install --upgrade pip`, `pip3 list --outdated`.
+
+### **3\. Pi-Apps Manager Update (`update_piapps_manager.sh`)**
+
+Specifically designed for users of the **Pi-Apps** community app store. It updates the Pi-Apps core files first and then triggers a silent, non-interactive update for every application you have installed through the Pi-Apps interface.
+
+* **Commands:** `updater cli-yes --update-self`, `updater cli-yes --update-all`.
+
+### **4\. Docker System Cleanup (`docker_cleanup.sh`)**
+
+A powerful cleanup utility for Docker users. It reclaims significant disk space by removing stopped containers, unused networks, "dangling" and unused images, and all build caches.
+
+* **Commands:** `docker system prune -a -f --volumes, docker builder prune -a -f`.
+
 ## **🚀 Features**
 
 * **OS Updates:** Automates `apt update`, `upgrade`, and `autoremove`.  
@@ -110,7 +136,7 @@ Add the following lines to run maintenance every Sunday:
 
 ```bash
 # 3:00 AM - System OS Update  
-0 3 * * 0 /home/pi/update_report.sh
+0 3 * * 0 /home/pi/update_pi_os.sh
 
 # 4:00 AM - Python App Update  
 0 4 * * 0 /home/pi/update_pi_apps.sh
