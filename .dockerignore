@@ -1,0 +1,7 @@
+coverage/
+coverage*/
+.git/
+.github/
+.idea/
+.vscode/
+build/
