@@ -157,6 +157,6 @@ This script must run as your normal user because Pi-Apps resides in your home di
 
 ## **⚠️ Troubleshooting**
 
-* **Permission Denied:** Ensure you are running system update scripts as root (via cron or sudo). Note that `update_piapps_manager.sh` should **not** run as root.  
+* **Permission Denied:** Ensure you are running system update scripts as root (via cron or sudo). Note that `update_pi_apps.sh` should **not** run as root.  
 * **Authorization Failed:** If you receive a "535 5.7.8" error, double-check your App Password and ensure 2-Step Verification is active on your Google account.  
 * **Log Check:** Check `/var/log/syslog` for detailed SSMTP error messages.
