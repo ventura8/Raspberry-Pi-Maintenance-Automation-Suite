@@ -9,16 +9,16 @@ A collection of Bash scripts for Raspberry Pi OS to automate system updates, app
 
 * **Automated Email Reporting**: Receive detailed logs of every maintenance task directly in your inbox via SSMTP.  
 * **Intelligent Reboot Detection**: Automatically detects when OS or Firmware updates require a system restart and schedules it safely.  
+* **Full Distribution Updates**: Uses full-upgrade to intelligently handle kernel and firmware dependency changes for maximum stability.  
 * **Modern Python Support**: Bypasses PEP 668 "Externally Managed Environment" restrictions safely for global package updates.  
-* **Docker Resource Optimization**: Regularly prunes unused containers, dangling images, and build caches to reclaim disk space.  
-* **Security-Conscious Automation**: Intelligent crontab management that separates system-level root tasks from home-directory user tasks.  
+* **Docker Resource Optimization**: Automatically detects and uses buildx if available for modern cache pruning; otherwise falls back to legacy builder cleanup.  
 * **Zero-Touch Maintenance**: Uses non-interactive flags across all scripts to ensure updates never hang waiting for user input.
 
 ## **📄 Script Descriptions**
 
 ### **1\. System OS Update (`update_pi_os.sh`)**
 
-Automates the standard Raspberry Pi OS maintenance workflow. It refreshes the package list, upgrades all installed software to the latest versions, and removes obsolete dependencies to keep the system lean and secure.
+Automates the standard Raspberry Pi OS maintenance workflow. It refreshes the package list and performs a full-upgrade, which is preferred over a standard upgrade as it handles complex dependency changes and kernel management. It also cleans up obsolete packages and detects if a reboot is required.
 
 * **Commands:** `apt-get update`, `apt-get upgrade`, `apt-get autoremove`.
 
@@ -42,7 +42,7 @@ Specifically designed for users of the Pi-Apps community app store. It updates t
 
 ### **5\. Docker System Cleanup (`docker_cleanup.sh`)**
 
-A powerful cleanup utility for Docker users. It reclaims significant disk space by removing stopped containers, unused networks, "dangling" and unused images, and all build caches.
+A cleanup utility for Docker users. It reclaims disk space by removing stopped containers, unused networks, and dangling images. It includes logic to prune the build cache using the modern buildx plugin if installed.
 
 * **Commands:** `docker system prune -a -f --volumes, docker builder prune -a -f`.
 
