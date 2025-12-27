@@ -1,28 +1,44 @@
 #!/bin/bash
 # Description: Reclaims disk space by pruning unused Docker containers, images, 
-# volumes, and build cache. It forces the cleanup without user interaction 
-# and emails the results to Gmail.
+# and volumes. Automatically detects if the buildx plugin is installed to 
+# use modern pruning, otherwise falls back to the legacy builder.
 
 # --- Configuration ---
 RECIPIENT_EMAIL="your_email@gmail.com"
 # ---------------------
+
+# Prevent ANSI color codes from being generated
+export TERM=dumb
+export NO_COLOR=1
 
 LOG_FILE=$(mktemp)
 PI_HOSTNAME=$(hostname)
 SUBJECT_LINE="Raspberry Pi Docker Cleanup Report for $PI_HOSTNAME - $(date)"
 
 {
+    # Hardcoded separators matching text length
     echo "========================================================="
     echo "   DOCKER CLEANUP LOG - $(date)"
     echo "========================================================="
     echo ""
 
     echo "--- Step 1: System Prune ---"
-    sudo docker system prune -a -f --volumes 2>&1
+    # system prune handles stopped containers, unused networks, and dangling images.
+    # The -a flag is omitted here to ensure compatibility with your Docker version.
+    sudo docker system prune -f --volumes 2>&1
     echo ""
 
     echo "--- Step 2: Builder Prune ---"
-    sudo docker builder prune -a -f 2>&1
+    # Check if buildx is available as a docker plugin
+    if sudo docker buildx version &> /dev/null; then
+        echo "Modern Buildx detected. Pruning build cache..."
+        # Using --force to handle confirmation natively.
+        sudo docker buildx prune --force 2>&1
+    else
+        echo "Buildx not detected. Falling back to legacy builder..."
+        # Filters out the legacy builder deprecation noise and installation suggestions.
+        sudo docker builder prune -f 2>&1 | grep -vE "DEPRECATED|Install the buildx|docs.docker.com"
+    fi
     echo ""
 
     echo "========================================================="
@@ -30,10 +46,7 @@ SUBJECT_LINE="Raspberry Pi Docker Cleanup Report for $PI_HOSTNAME - $(date)"
     echo "========================================================="
 } > "$LOG_FILE"
 
-# Convert line endings for email compatibility
-CLEAN_LOG=$(mktemp)
-sed 's/$/\r/' "$LOG_FILE" > "$CLEAN_LOG"
-
+# --- Send the report ---
 /usr/sbin/ssmtp "$RECIPIENT_EMAIL" <<EOF
 To: $RECIPIENT_EMAIL
 Subject: $SUBJECT_LINE
@@ -42,8 +55,8 @@ MIME-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 8bit
 
-$(cat "$CLEAN_LOG")
+$(cat "$LOG_FILE")
 EOF
 
+# --- Cleanup ---
 rm "$LOG_FILE"
-rm "$CLEAN_LOG"
