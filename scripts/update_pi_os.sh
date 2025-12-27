@@ -1,11 +1,11 @@
 #!/bin/bash
 # Description: Performs a system-wide update of Raspberry Pi OS using apt-get.
-# It updates the package cache, upgrades installed software, and removes 
-# unnecessary dependencies. If the update requires a restart, it logs the 
-# requirement and reboots the system after sending the email report.
+# Uses full-upgrade to handle dependency changes, which is recommended for 
+# Raspberry Pi kernel and firmware stability. It detects if a reboot is 
+# required and schedules it after sending the report.
 
 # --- Configuration ---
-RECIPIENT_EMAIL="your_email@gmail.com"
+RECIPIENT_EMAIL="alexandrescu.sergiu@gmail.com"
 # ---------------------
 
 # Prevent ANSI color codes from being generated
@@ -27,8 +27,10 @@ SUBJECT_LINE="Raspberry Pi OS Update Report for $PI_HOSTNAME - $(date)"
     sudo apt-get update 2>&1
     echo ""
 
-    echo "--- Running 'sudo apt-get upgrade -y' ---"
-    sudo apt-get upgrade -y 2>&1
+    echo "--- Running 'sudo apt-get full-upgrade -y' ---"
+    # full-upgrade is preferred over upgrade as it handles dependency changes
+    # and ensures kernel/firmware packages are correctly managed.
+    sudo apt-get full-upgrade -y 2>&1
     echo ""
 
     echo "--- Running 'sudo apt-get autoremove -y' ---"
