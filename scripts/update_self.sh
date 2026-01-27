@@ -114,9 +114,10 @@ main() {
 
         log "Running installer to update scripts..."
         
-        # Execute installer non-interactively
-        # We assume install.sh is robust. If it fails, we might not know unless we capture output.
-        if ! (echo "4"; sleep 5; echo "0") | bash "$INSTALL_SCRIPT"; then
+        # Execute installer non-interactively.
+        # We pass --update to bypass the interactive menu if supported by install.sh.
+        # If not, the improved run_interactive logic in install.sh handles the pipe.
+        if ! (echo "4"; sleep 2; echo "0") | bash "$INSTALL_SCRIPT" --update; then
              exit_with_failure "Installer execution failed."
         fi
         

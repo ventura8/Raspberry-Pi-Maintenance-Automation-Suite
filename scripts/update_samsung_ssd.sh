@@ -12,6 +12,7 @@ SAMSUNG_FIRMWARE_PAGE="https://semiconductor.samsung.com/consumer-storage/suppor
 # Prevent ANSI color codes
 export TERM=dumb
 export NO_COLOR=1
+export PATH=$PATH:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
 
 # Check Architecture
 CURRENT_ARCH=$(uname -m)

@@ -26,6 +26,7 @@ RUN apt-get update && apt-get install -y \
     binutils-dev \
     libiberty-dev \
     zlib1g-dev \
+    bc \
     && rm -rf /var/lib/apt/lists/*
 
 # 1.a Pre-configure SSMTP for testing (so 'pi' user can write to it)

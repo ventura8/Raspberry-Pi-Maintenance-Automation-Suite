@@ -57,6 +57,38 @@ DEFAULTS[7]="0 1 * * 0" # Weekly
 
 # --- Helper Functions ---
 
+read_input() {
+    local prompt="$1"
+    local var_name="$2"
+    local is_secret="$3"
+    
+    local read_opts=("-r")
+    [[ "$is_secret" == "true" ]] && read_opts+=("-s")
+    
+    local user_val=""
+    local status=0
+    # If piped (curl | bash) AND not in test mode, use /dev/tty for prompt AND input
+    if [ ! -t 0 ] && [ -c /dev/tty ] && [ "${TEST_MODE}" != "true" ]; then
+        printf "%s" "$prompt" > /dev/tty
+        # shellcheck disable=SC2229,SC2162
+        read "${read_opts[@]}" user_val < /dev/tty
+        status=$?
+        if [[ "$is_secret" == "true" ]]; then echo "" > /dev/tty; fi
+    else
+        # Standard interactive or automated/test mode
+        printf "%s" "$prompt" >&2
+        # shellcheck disable=SC2229,SC2162
+        read "${read_opts[@]}" user_val
+        status=$?
+        if [[ "$is_secret" == "true" ]]; then echo "" >&2; fi
+    fi
+    
+    # Clean up the input: strip carriage returns and leading/trailing whitespace
+    user_val=$(echo "$user_val" | tr -d '\r' | xargs)
+    printf -v "$var_name" "%s" "$user_val"
+    return $status
+}
+
 print_header() {
     clear
     echo "==========================================================="
@@ -136,21 +168,27 @@ configure_email_interactive() {
     if [ -f "$SSMTP_CONF" ]; then
         current_user=$(sudo grep "^AuthUser=" "$SSMTP_CONF" | cut -d= -f2)
         echo "Current Configured Email: $current_user"
-        read -r -p "Do you want to reconfigure email? [y/N]: " confirm
-        [[ ! "$confirm" =~ ^[Yy]$ ]] && return
+        read_input "Do you want to reconfigure email? [y/N]: " confirm
+        confirm=$(echo "$confirm" | tr '[:upper:]' '[:lower:]')
+        [[ ! "$confirm" == "y" ]] && return
     fi
 
     echo ""
-    read -r -p "Enter Gmail address: " user_email
+    local user_email=""
+    read_input "Enter Gmail address: " user_email
     if [[ ! "$user_email" =~ ^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$ ]]; then
         echo "Invalid email. returning to menu."
-        read -r -p "Press Enter..."
+        read_input "Press Enter..." _
         return
     fi
 
     echo "Enter App Password (16-char, input hidden):"
-    read -r -s app_pass
-    
+    local app_pass=""
+    read_input "" app_pass "true"
+    # Remove all spaces (Google displays them as 'aaaa bbbb cccc dddd')
+    app_pass=$(echo "$app_pass" | tr -d ' ')
+    echo "" # Newline after secret input
+   
     if [ -z "$app_pass" ]; then
         echo "Password empty. Returning."
         return
@@ -201,7 +239,7 @@ show_email_config() {
         echo "No SSMTP configuration found."
     fi
     echo ""
-    read -r -p "Press Enter to return..."
+    read_input "Press Enter to return..." _
 }
 
 download_scripts() {
@@ -294,16 +332,17 @@ toggle_task() {
     echo ""
 
     if [ "$state" == "ENABLED" ]; then
-        read -r -p "Do you want to DISABLE this task? [y/N] (Enter 'e' to edit time): " choice
-        if [[ "$choice" =~ ^[Yy]$ ]]; then
+        read_input "Do you want to DISABLE this task? [y/N] (Enter 'e' to edit time): " choice
+        choice=$(echo "$choice" | tr '[:upper:]' '[:lower:]')
+        if [[ "$choice" == "y" ]]; then
             if [ "$is_root" == "true" ]; then
                 sudo crontab -l 2>/dev/null | grep -v "$script_name" | sudo crontab -
             else
                 crontab -l 2>/dev/null | grep -v "$script_name" | crontab -
             fi
             echo "Task disabled."
-        elif [[ "$choice" =~ ^[Ee]$ ]]; then
-             read -r -p "Enter new cron schedule (Default: $default_sched): " new_time
+        elif [[ "$choice" == "e" ]]; then
+             read_input "Enter new cron schedule (Default: $default_sched): " new_time
              new_time=${new_time:-$default_sched}
              # Remove old, add new
              if [ "$is_root" == "true" ]; then
@@ -314,9 +353,10 @@ toggle_task() {
              echo "Schedule updated."
         fi
     else
-        read -r -p "Do you want to ENABLE this task? [y/N]: " choice
-        if [[ "$choice" =~ ^[Yy]$ ]]; then
-            read -r -p "Enter cron schedule (Default: $default_sched): " new_time
+        read_input "Do you want to ENABLE this task? [y/N]: " choice
+        choice=$(echo "$choice" | tr '[:upper:]' '[:lower:]')
+        if [[ "$choice" == "y" ]]; then
+            read_input "Enter cron schedule (Default: $default_sched): " new_time
             new_time=${new_time:-$default_sched}
             
             if [ "$is_root" == "true" ]; then
@@ -363,7 +403,11 @@ manage_tasks_ui() {
         done
         echo ""
         echo "   Enter ID to toggle/edit, or '0' to return to Main Menu."
-        read -r -p "   Selection: " sel
+        local sel=""
+        if ! read_input "   Selection: " sel; then
+            echo "EOF detected"
+            return
+        fi
 
         if [[ "$sel" == "0" ]]; then return; fi
         if [[ "$sel" =~ ^[1-7]$ ]]; then
@@ -393,6 +437,7 @@ run_fresh_install() {
         # Skip Pi specific scripts on non-Pi hardware
         if [ "$IS_PI" == "false" ]; then
             if [[ "$script" == "update_pi_firmware.sh" || "$script" == "update_pip.sh" ]]; then
+                echo "Skipping $name (Raspberry Pi hardware not detected)"
                 continue
             fi
         fi
@@ -400,10 +445,11 @@ run_fresh_install() {
         local sched="${DEFAULTS[$i]}"
         local human; human=$(cron_to_human "$sched")
         
-        read -r -p "$i. Enable $name ($human)? [Y/n]: " choice
-        choice=${choice:-Y}
-        
-        if [[ "$choice" =~ ^[Yy]$ ]]; then
+        read_input "$i. Enable $name ($human)? [Y/n]: " choice
+        choice=$(echo "$choice" | tr '[:upper:]' '[:lower:]')
+        choice=${choice:-y}
+       
+        if [[ "$choice" == "y" ]]; then
             # Determine root/user
             if [ "$script" == "update_pi_apps.sh" ]; then
                  (crontab -l 2>/dev/null | grep -v "$script"; echo "$sched $INSTALL_DIR/$script") | crontab -
@@ -414,11 +460,12 @@ run_fresh_install() {
         else
             echo "Skipped $name"
         fi
+        echo "" # Newline separator after status
     done
-    
+   
     echo ""
     echo "Installation Complete!"
-    read -r -p "Press Enter to open the Manager Menu..."
+    read_input "Press Enter to open the Manager Menu..." _
     main_menu
 }
 
@@ -434,9 +481,9 @@ main_menu() {
         echo ""
         
         # Prevent infinite loops during automated testing if input stream runs dry
-        if ! read -r -p "   Choose an option: " opt; then
-            echo ""
-            echo "EOF detected. Exiting."
+        local opt=""
+        if ! read_input "   Choose an option: " opt; then
+            echo "EOF detected"
             exit 0
         fi
 
@@ -446,8 +493,11 @@ main_menu() {
             3) manage_tasks_ui ;;
             4) download_scripts ;;
             5) 
-                read -r -p "Are you sure you want to uninstall? [y/N]: " un
-                if [[ "$un" =~ ^[Yy]$ ]]; then
+                read_input "Are you sure you want to uninstall? [y/N]: " un
+                un=$(echo "$un" | tr '[:upper:]' '[:lower:]')
+                if [[ "$un" == "y" ]]; then
+                    echo "Starting uninstallation process..."
+                    sleep 1
                     if [ -f "./uninstall.sh" ]; then
                         bash ./uninstall.sh
                     else
@@ -457,17 +507,24 @@ main_menu() {
                 fi
                 ;;
             0) exit 0 ;;
-            *) echo "Invalid option." ;;
+            *) 
+                echo "Invalid option: '$opt'"
+                sleep 2
+                ;;
         esac
     done
 }
 
 # --- Entry Point ---
-# --- Entry Point ---
 # Check if we are running as a script (not sourced)
-# If BASH_SOURCE is empty (piped) or matches $0, we assume it's the main script.
 if [[ -z "${BASH_SOURCE[0]}" ]] || [[ "${BASH_SOURCE[0]}" == "${0}" ]]; then
-    # Helper to run interactive function with tty
+    # Handle non-interactive update flag
+    if [[ "$1" == "--update" ]]; then
+        check_dependencies
+        download_scripts
+        exit 0
+    fi
+
     run_interactive() {
         # Allow bypassing TTY check for testing/automation
         if [ "${TEST_MODE}" == "true" ]; then
@@ -476,14 +533,14 @@ if [[ -z "${BASH_SOURCE[0]}" ]] || [[ "${BASH_SOURCE[0]}" == "${0}" ]]; then
         fi
 
         if [ -t 0 ]; then
+            # Standard terminal execution
             "$@"
-        elif [ -e /dev/tty ]; then
-            # If stdin is not a terminal (e.g. piped from curl), try to use /dev/tty
+        elif [[ "${TEST_MODE}" != "true" ]] && [ -c /dev/tty ]; then
+            # Piped execution (curl | bash). Input is now explicitly from terminal.
             "$@" < /dev/tty
         else
-            # Allow piped input without a TTY (for automation/cron)
-            # This enables: echo "..." | bash install.sh
-             "$@"
+            # No TTY, non-interactive mode
+            "$@"
         fi
     }
 

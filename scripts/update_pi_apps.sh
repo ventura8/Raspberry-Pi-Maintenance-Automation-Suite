@@ -6,6 +6,7 @@
 # --- Configuration ---
 RECIPIENT_EMAIL="your_email@gmail.com"
 # ---------------------
+export PATH=$PATH:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
 
 main() {
     LOG_FILE=$(mktemp)
@@ -45,7 +46,8 @@ main() {
     } > "$LOG_FILE"
 
     # --- Send the report ---
-    ssmtp "$RECIPIENT_EMAIL" <<EOF
+    if command -v ssmtp >/dev/null 2>&1; then
+        ssmtp "$RECIPIENT_EMAIL" <<EOF
 To: $RECIPIENT_EMAIL
 Subject: $SUBJECT_LINE
 From: "Raspberry Pi Maintenance" <$RECIPIENT_EMAIL>
@@ -55,6 +57,9 @@ Content-Transfer-Encoding: 8bit
 
 $(cat "$LOG_FILE")
 EOF
+    else
+        echo "ssmtp not found, skipping email notification."
+    fi
 
     # --- Cleanup ---
     rm "$LOG_FILE"

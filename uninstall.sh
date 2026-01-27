@@ -19,9 +19,14 @@ main() {
             | grep -v "update_pi_firmware.sh" \
             | grep -v "docker_cleanup.sh" \
             | grep -v "update_samsung_ssd.sh" \
+            | grep -v "update_self.sh" \
             > /tmp/root_cron.new
-        # shellcheck disable=SC2002
-        cat /tmp/root_cron.new | sudo crontab -
+        
+        # Check if the new crontab is different from the old one
+        if ! diff -q /tmp/root_cron.bak /tmp/root_cron.new >/dev/null; then
+            sudo crontab /tmp/root_cron.new
+            echo "Root crontab updated."
+        fi
         rm -f /tmp/root_cron.bak /tmp/root_cron.new
     fi
 
@@ -29,12 +34,27 @@ main() {
     crontab -l 2>/dev/null | tr -d '\r' > /tmp/user_cron.bak || true
     if [ -s /tmp/user_cron.bak ]; then
         grep -v 'update_pi_apps.sh' < /tmp/user_cron.bak > /tmp/user_cron.new
-        # shellcheck disable=SC2002
-        cat /tmp/user_cron.new | crontab -
+        crontab /tmp/user_cron.new
         rm -f /tmp/user_cron.bak /tmp/user_cron.new
     fi
 
     # 2. Remove Files
+    # Try to detect INSTALL_DIR from crontab if it doesn't exist
+    # Try to detect INSTALL_DIR from crontab if it doesn't exist or is the default
+    if [ ! -d "$INSTALL_DIR" ] || [ "$INSTALL_DIR" == "$HOME/pi-scripts" ]; then
+        # Check root crontab
+        local detected; detected=$(sudo crontab -l 2>/dev/null | grep "update_pi_os.sh" | awk '{print $NF}' | sed 's/\/update_pi_os.sh//')
+        # If not in root, check user crontab
+        if [ -z "$detected" ]; then
+            detected=$(crontab -l 2>/dev/null | grep "update_pi_apps.sh" | awk '{print $NF}' | sed 's/\/update_pi_apps.sh//')
+        fi
+        
+        if [ -n "$detected" ] && [ -d "$detected" ]; then
+            INSTALL_DIR="$detected"
+            echo "Detected installation directory: $INSTALL_DIR"
+        fi
+    fi
+
     if [ -d "$INSTALL_DIR" ]; then
         echo "Removing scripts from $INSTALL_DIR..."
         rm -rf "$INSTALL_DIR"
@@ -62,16 +82,12 @@ if [[ -z "${BASH_SOURCE[0]}" ]] || [[ "${BASH_SOURCE[0]}" == "${0}" ]]; then
 
         if [ -t 0 ]; then
             "$@"
-        else
-            # LCOV_EXCL_START
+        elif [ -c /dev/tty ]; then
             # If stdin is not a terminal (e.g. piped from curl), try to use /dev/tty
-            if [ -e /dev/tty ]; then
-                "$@" < /dev/tty
-            else
-                echo "Error: Interactive mode requires a TTY. Please run directly or ensure /dev/tty is available."
-                exit 1
-            fi
-            # LCOV_EXCL_STOP
+            "$@" < /dev/tty
+        else
+            # Allow non-interactive mode (e.g. automation)
+            "$@"
         fi
     }
 

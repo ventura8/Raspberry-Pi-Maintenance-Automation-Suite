@@ -71,7 +71,8 @@ cat << 'EOF' > "$MOCK_DIR/crontab"
 if [ "$IS_MOCKED_SUDO" == "true" ]; then CRON_FILE="/tmp/mocks/root_cron"; else CRON_FILE="/tmp/mocks/user_cron"; fi
 touch "$CRON_FILE"
 if [[ "$1" == "-l" ]]; then cat "$CRON_FILE"; exit 0; fi
-if [[ "$1" == "-" ]]; then cat > "${CRON_FILE}.tmp"; mv "${CRON_FILE}.tmp" "$CRON_FILE"; fi
+if [[ "$1" == "-" ]]; then cat > "${CRON_FILE}.tmp"; mv "${CRON_FILE}.tmp" "$CRON_FILE"; exit 0; fi
+if [[ -f "$1" ]]; then cp "$1" "$CRON_FILE"; exit 0; fi
 EOF
 
 # 7. Mock Curl (with local file support and Samsung page simulation)
@@ -105,9 +106,12 @@ for cmd in chmod chown usermod; do
     echo "exit 0" >> "$MOCK_DIR/$cmd"
 done
 
-# 9. Mock hostname
+# 9. Mock hostname, clear, tput
 echo '#!/bin/bash' > "$MOCK_DIR/hostname"
 echo 'echo "test-pi"' >> "$MOCK_DIR/hostname"
+echo '#!/bin/bash' > "$MOCK_DIR/clear"
+echo '#!/bin/bash' > "$MOCK_DIR/tput"
+chmod +x "$MOCK_DIR/clear" "$MOCK_DIR/tput"
 
 # 10. Mock ssmtp
 echo '#!/bin/bash' > "$MOCK_DIR/ssmtp"

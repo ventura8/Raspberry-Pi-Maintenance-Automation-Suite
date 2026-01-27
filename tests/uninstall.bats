@@ -68,7 +68,11 @@ else
     else
         echo "--- USER CRON WRITE ---" >> "/tmp/mocks/crontab_written"
     fi
-    cat >> "/tmp/mocks/crontab_written"
+    if [[ -f "$1" ]]; then
+        cat "$1" >> "/tmp/mocks/crontab_written"
+    else
+        cat >> "/tmp/mocks/crontab_written"
+    fi
 fi
 EOF
     chmod +x "$MOCK_DIR/crontab"
@@ -100,4 +104,32 @@ EOF
     
     run bash ./uninstall.sh
     [[ "$output" =~ "RPi Maintenance Suite Uninstaller" ]]
+}
+@test "Uninstall: Detects INSTALL_DIR from Crontab" {
+    # Move scripts to a custom location
+    CUSTOM_DIR="/tmp/custom_pi_scripts"
+    mkdir -p "$CUSTOM_DIR"
+    touch "$CUSTOM_DIR/update_pi_os.sh"
+    
+    # Set default INSTALL_DIR to something non-existent
+    export INSTALL_DIR="/tmp/non_existent_default"
+    
+    # Mock root crontab to have the custom path
+    # We must mock sudo crontab -l since the script uses it
+    cat << EOF > "$MOCK_DIR/crontab"
+#!/bin/bash
+if [[ "\$*" == *"-l"* ]]; then
+    echo "0 0 * * * $CUSTOM_DIR/update_pi_os.sh"
+fi
+EOF
+    chmod +x "$MOCK_DIR/crontab"
+    
+    run bash ./uninstall.sh
+    
+    [[ "$output" =~ "Detected installation directory: $CUSTOM_DIR" ]]
+    [[ "$output" =~ "Removing scripts from $CUSTOM_DIR" ]]
+    [ ! -d "$CUSTOM_DIR" ]
+    
+    # Cleanup
+    rm -rf "$CUSTOM_DIR"
 }

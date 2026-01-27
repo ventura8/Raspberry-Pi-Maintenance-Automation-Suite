@@ -15,11 +15,7 @@ setup() {
     ./tests/setup_mocks.sh > /dev/null
     export PATH="$MOCK_DIR:$PATH"
     
-    # Mock clear and tput for display functions
-    echo "#!/bin/bash" > "$MOCK_DIR/clear"
-    chmod +x "$MOCK_DIR/clear"
-    echo "#!/bin/bash" > "$MOCK_DIR/tput"
-    chmod +x "$MOCK_DIR/tput"
+    # Reset Config Files
 
     # Reset Config Files
     > "$SSMTP_CONF"
@@ -292,4 +288,29 @@ EOF
     [[ "$output" =~ "Welcome to the One-Line Installer" ]]
     [[ "$output" =~ "Installation Complete" ]]
 }
-
+@test "Install: Configure Email - Strips Spaces and Carriage Returns" {
+    # Define an email and password with spaces and CRs
+    # In bash $'...' strings, \r correctly inserts a carriage return
+    # We want to verify that " test@test.com  " and " pass word " become "test@test.com" and "password"
+    run bash -c "export PATH=$MOCK_DIR:$PATH; source ./install.sh; configure_email_interactive <<< $'Y\n test@test.com \r\n pass word \r'"
+    
+    # Verify via show_email_config or checking the file directly
+    [[ "$output" =~ "Email configured successfully" ]]
+    
+    # Check the actual config file
+    run grep "^AuthUser=" "$SSMTP_CONF"
+    [[ "$output" == "AuthUser=test@test.com" ]]
+    
+    run grep "^AuthPass=" "$SSMTP_CONF"
+    [[ "$output" == "AuthPass=password" ]]
+}
+@test "Install: Configure Email - Strips Internal Spaces from App Password" {
+    # Test internal spaces removal (Google format: 'aaaa bbbb cccc dddd')
+    run bash -c "export PATH=$MOCK_DIR:$PATH; source ./install.sh; configure_email_interactive <<< $'Y\ntest@test.com\naaaa bbbb cccc dddd'"
+    
+    [[ "$output" =~ "Email configured successfully" ]]
+    
+    # Check that AuthPass has no spaces
+    run grep "^AuthPass=" "$SSMTP_CONF"
+    [[ "$output" == "AuthPass=aaaabbbbccccdddd" ]]
+}
