@@ -103,3 +103,41 @@ EOF
     
     rm -f /tmp/install_temp_fresh.sh
 }
+@test "Install: Download Scripts - API Failure" {
+    # Mock Curl to FAIL on API call
+    cat << 'EOF' > "$MOCK_DIR/curl"
+#!/bin/bash
+if [[ "$*" =~ "releases/latest" ]]; then
+    exit 1
+fi
+EOF
+    chmod +x "$MOCK_DIR/curl"
+    
+    mkdir -p "$INSTALL_DIR"
+    run bash -c "export PATH=$MOCK_DIR:$PATH; export INSTALL_DIR=$INSTALL_DIR; source ./install.sh; download_scripts"
+    [[ "$output" =~ "Scripts updated" ]]
+    # Should NOT have created .version if API failed (or at least handle it gracefully)
+}
+
+@test "Install: Entry Point - Non-Interactive Update" {
+    # Test the --update flag
+    mkdir -p "$INSTALL_DIR"
+    
+    # Use a temporary copy to avoid modifying the original and needing git checkout
+    cp ./install.sh ./install_tmp.sh
+    # Mock download_scripts to avoid real network
+    sed -i 's/download_scripts/echo "MOCKED_DOWNLOAD"/' ./install_tmp.sh
+    
+    run bash ./install_tmp.sh --update
+    
+    # Clean up
+    rm -f ./install_tmp.sh
+    
+    [[ "$output" =~ "MOCKED_DOWNLOAD" ]]
+}
+
+@test "Install: run_interactive coverage" {
+    # Exercise the non-test-mode branches of run_interactive
+    run bash -c "export TEST_MODE=false; source ./install.sh; run_interactive echo 'test_interactive'"
+    [[ "$output" =~ "test_interactive" ]]
+}

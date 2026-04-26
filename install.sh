@@ -222,6 +222,10 @@ EOF
         done
     fi
 
+    # Configure cron MAILTO so that cron failures are sent to this email
+    (echo "MAILTO=\"$user_email\""; sudo crontab -l 2>/dev/null | grep -v "^MAILTO=") | sudo crontab -
+    (echo "MAILTO=\"$user_email\""; crontab -l 2>/dev/null | grep -v "^MAILTO=") | crontab -
+
     echo "Email configured successfully."
     sleep 1
 }
@@ -274,14 +278,14 @@ download_scripts() {
     done
     echo "Scripts updated."
 
-    # Update Version File
+    # Update Version File — store the latest RELEASE TAG (same format update_self.sh reads)
     echo "Updating version tracking..."
-    COMMIT_API_URL="https://api.github.com/repos/$GITHUB_USER/$REPO_NAME/commits/$BRANCH"
-    if REMOTE_JSON=$(curl -s -L --max-time 10 "$COMMIT_API_URL"); then
-        REMOTE_SHA=$(echo "$REMOTE_JSON" | grep -o '"sha": *"[^"]*"' | head -n 1 | cut -d'"' -f4)
-        if [ -n "$REMOTE_SHA" ]; then
-             echo "$REMOTE_SHA" > "$INSTALL_DIR/.version"
-             echo "Version set to: $REMOTE_SHA"
+    RELEASE_API_URL="https://api.github.com/repos/$GITHUB_USER/$REPO_NAME/releases/latest"
+    if REMOTE_JSON=$(curl -s -L --max-time 10 "$RELEASE_API_URL"); then
+        REMOTE_TAG=$(echo "$REMOTE_JSON" | grep -o '"tag_name": *"[^"]*"' | head -n 1 | cut -d'"' -f4)
+        if [ -n "$REMOTE_TAG" ]; then
+             echo "$REMOTE_TAG" > "$INSTALL_DIR/.version"
+             echo "Version set to: $REMOTE_TAG"
         fi
     fi
 
@@ -346,9 +350,9 @@ toggle_task() {
              new_time=${new_time:-$default_sched}
              # Remove old, add new
              if [ "$is_root" == "true" ]; then
-                (sudo crontab -l 2>/dev/null | grep -v "$script_name"; echo "$new_time $INSTALL_DIR/$script_name") | sudo crontab -
+                (sudo crontab -l 2>/dev/null | grep -v "$script_name"; echo "$new_time $INSTALL_DIR/$script_name >/dev/null") | sudo crontab -
              else
-                (crontab -l 2>/dev/null | grep -v "$script_name"; echo "$new_time $INSTALL_DIR/$script_name") | crontab -
+                (crontab -l 2>/dev/null | grep -v "$script_name"; echo "$new_time $INSTALL_DIR/$script_name >/dev/null") | crontab -
              fi
              echo "Schedule updated."
         fi
@@ -360,9 +364,9 @@ toggle_task() {
             new_time=${new_time:-$default_sched}
             
             if [ "$is_root" == "true" ]; then
-                (sudo crontab -l 2>/dev/null | grep -v "$script_name"; echo "$new_time $INSTALL_DIR/$script_name") | sudo crontab -
+                (sudo crontab -l 2>/dev/null | grep -v "$script_name"; echo "$new_time $INSTALL_DIR/$script_name >/dev/null") | sudo crontab -
             else
-                (crontab -l 2>/dev/null | grep -v "$script_name"; echo "$new_time $INSTALL_DIR/$script_name") | crontab -
+                (crontab -l 2>/dev/null | grep -v "$script_name"; echo "$new_time $INSTALL_DIR/$script_name >/dev/null") | crontab -
             fi
             echo "Task enabled."
         fi
@@ -452,9 +456,9 @@ run_fresh_install() {
         if [[ "$choice" == "y" ]]; then
             # Determine root/user
             if [ "$script" == "update_pi_apps.sh" ]; then
-                 (crontab -l 2>/dev/null | grep -v "$script"; echo "$sched $INSTALL_DIR/$script") | crontab -
+                 (crontab -l 2>/dev/null | grep -v "$script"; echo "$sched $INSTALL_DIR/$script >/dev/null") | crontab -
             else
-                 (sudo crontab -l 2>/dev/null | grep -v "$script"; echo "$sched $INSTALL_DIR/$script") | sudo crontab -
+                 (sudo crontab -l 2>/dev/null | grep -v "$script"; echo "$sched $INSTALL_DIR/$script >/dev/null") | sudo crontab -
             fi
             echo "Enabled $name"
         else
@@ -515,6 +519,25 @@ main_menu() {
     done
 }
 
+run_interactive() {
+    # Allow bypassing TTY check for testing/automation
+    if [ "${TEST_MODE}" == "true" ]; then
+        "$@"
+        return
+    fi
+
+    if [ -t 0 ]; then
+        # Standard terminal execution
+        "$@"
+    elif [[ "${TEST_MODE}" != "true" ]] && [ -c /dev/tty ] && { true < /dev/tty; } 2>/dev/null; then
+        # Piped execution (curl | bash). Input is now explicitly from terminal.
+        "$@" < /dev/tty
+    else
+        # No TTY, non-interactive mode
+        "$@"
+    fi
+}
+
 # --- Entry Point ---
 # Check if we are running as a script (not sourced)
 if [[ -z "${BASH_SOURCE[0]}" ]] || [[ "${BASH_SOURCE[0]}" == "${0}" ]]; then
@@ -524,25 +547,6 @@ if [[ -z "${BASH_SOURCE[0]}" ]] || [[ "${BASH_SOURCE[0]}" == "${0}" ]]; then
         download_scripts
         exit 0
     fi
-
-    run_interactive() {
-        # Allow bypassing TTY check for testing/automation
-        if [ "${TEST_MODE}" == "true" ]; then
-            "$@"
-            return
-        fi
-
-        if [ -t 0 ]; then
-            # Standard terminal execution
-            "$@"
-        elif [[ "${TEST_MODE}" != "true" ]] && [ -c /dev/tty ]; then
-            # Piped execution (curl | bash). Input is now explicitly from terminal.
-            "$@" < /dev/tty
-        else
-            # No TTY, non-interactive mode
-            "$@"
-        fi
-    }
 
     # Check if already installed
     # Check if already installed

@@ -41,7 +41,7 @@ wget -qO- https://raw.githubusercontent.com/ventura8/Raspberry-Pi-Maintenance-Au
 * **Cross-Platform Support**: Automatically adapts to Raspberry Pi OS or generic Debian/Ubuntu systems, supporting firmware updates via `fwupd` on standard Linux hardware.
 * **Samsung SSD Firmware Updates**: Automatically detects Samsung NVMe SSDs and updates firmware using LVFS or Samsung's official firmware images.
 * **Automatic Dependency Installation**: Critical update scripts automatically check for and install missing system dependencies (like `rpi-eeprom-update`, `fwupd`, `nvme-cli`, and `ssmtp`) to ensure zero-touch maintenance across different environments.
-* **Self-Healing Updates**: The suite tracks its own version (via GitHub commit hash) and automatically updates all local scripts when a new version is released on the `main` branch.
+* **Self-Healing Updates**: The suite tracks its own version (via GitHub release tag) and automatically updates all local scripts when a new release is published.
 * **Automated Configuration**: The installer handles dependency installation, SSMTP configuration, and user aliasing (revaliases) automatically.
 
 ## **📄 Script Descriptions**
@@ -93,9 +93,9 @@ A cleanup utility for Docker users. It reclaims disk space by removing stopped c
 
 ### **7\. Self-Update Service (`update_self.sh`)**
  
- Checks the GitHub repository for updates to the automation suite itself. If a new commit is found on the `main` branch, it automatically downloads the latest versions of all scripts and updates the local installation.
+ Checks the GitHub repository for a new release. If the latest release tag differs from the locally stored version, it downloads the matching `install.sh` and runs it non-interactively via `--update` to refresh all scripts. Sends a success or failure email on completion.
  
- * **Commands:** `curl` (GitHub API), `install.sh`.
+ * **Commands:** `curl` (GitHub Releases API), `install.sh --update`.
 
 ## **📅 Automation Schedule (Crontabs)**
 
@@ -295,17 +295,19 @@ Automation is split between the **Root** user (for system tasks) and your **Loca
 These scripts manage system-wide software, firmware, and global Python libraries.
 
 ```bash
+MAILTO="your_email@gmail.com"
+
 # 2:00 AM - Pi Firmware Update (Monthly)
-0 2 1 * * /home/pi/update_pi_firmware.sh
+0 2 1 * * /home/pi/update_pi_firmware.sh >/dev/null
 
 # 3:00 AM - System OS Update  
-0 3 * * 0 /home/pi/update_pi_os.sh
+0 3 * * 0 /home/pi/update_pi_os.sh >/dev/null
 
 # 4:00 AM - Python Pip Update (Global)
-0 4 * * 0 /home/pi/update_pip.sh
+0 4 * * 0 /home/pi/update_pip.sh >/dev/null
 
 # 4:20 AM - Docker Cleanup  
-20 4 * * 0 /home/pi/docker_cleanup.sh
+20 4 * * 0 /home/pi/docker_cleanup.sh >/dev/null
 ```
 
 ### **2\. User Crontab (`crontab -e`)**
@@ -313,8 +315,10 @@ These scripts manage system-wide software, firmware, and global Python libraries
 This script must run as your normal user because Pi-Apps resides in your home directory. Running this as root could lead to permission conflicts.
 
 ```bash
+MAILTO="your_email@gmail.com"
+
 # 5:00 AM - Pi-Apps Manager Update  
-0 5 * * 0 /home/pi/update_pi_apps.sh
+0 5 * * 0 /home/pi/update_pi_apps.sh >/dev/null
 ```
 
 > [!NOTE]  

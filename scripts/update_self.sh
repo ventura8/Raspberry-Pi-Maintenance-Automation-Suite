@@ -114,10 +114,12 @@ main() {
 
         log "Running installer to update scripts..."
         
-        # Execute installer non-interactively.
-        # We pass --update to bypass the interactive menu if supported by install.sh.
-        # If not, the improved run_interactive logic in install.sh handles the pipe.
-        if ! (echo "4"; sleep 2; echo "0") | bash "$INSTALL_SCRIPT" --update; then
+        # Execute installer non-interactively via the --update flag.
+        # --update causes install.sh to run check_dependencies + download_scripts and exit,
+        # with no interactive prompts. Do NOT pipe fake input here: piping makes bash
+        # treat stdin as non-terminal, which causes install.sh to attempt a /dev/tty
+        # redirect that does not exist in a cron environment.
+        if ! bash "$INSTALL_SCRIPT" --update; then
              exit_with_failure "Installer execution failed."
         fi
         

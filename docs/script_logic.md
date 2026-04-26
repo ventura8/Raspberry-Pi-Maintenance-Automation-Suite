@@ -30,3 +30,15 @@ Each script: executes commands → captures logs → sends email → handles reb
 ### `docker_cleanup.sh`
 - `docker system prune -f --volumes`
 - Auto-detects `buildx` vs legacy `builder prune`
+
+### `update_samsung_ssd.sh`
+- Primary path: `fwupdmgr` via LVFS (stable channel only)
+- Fallback: scrapes Samsung's official firmware page, downloads ISO, extracts and runs `fumagician`
+- Uses `nvme-cli` to identify connected NVMe SSDs
+
+### `update_self.sh`
+- Compares local `.version` file (stores **release tag**, e.g. `v1.0.1`) against latest GitHub release tag via the Releases API
+- On update available: downloads `install.sh` tagged at the remote version, runs `bash install.sh --update` (non-interactive; safe in cron — no `/dev/tty` access)
+- On success: writes the new release tag to `.version`; sends success email
+- On any failure: sends failure email via `ssmtp`
+- **Cron safety**: installer is invoked directly with no stdin pipe — piping caused `No such device or address` on `/dev/tty` in cron environments
