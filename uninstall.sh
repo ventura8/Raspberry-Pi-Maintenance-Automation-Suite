@@ -20,6 +20,7 @@ main() {
             | grep -v "docker_cleanup.sh" \
             | grep -v "update_samsung_ssd.sh" \
             | grep -v "update_self.sh" \
+            | grep -v "^MAILTO=" \
             > /tmp/root_cron.new
         
         # Check if the new crontab is different from the old one
@@ -33,7 +34,7 @@ main() {
     # Remove from User Crontab
     crontab -l 2>/dev/null | tr -d '\r' > /tmp/user_cron.bak || true
     if [ -s /tmp/user_cron.bak ]; then
-        grep -v 'update_pi_apps.sh' < /tmp/user_cron.bak > /tmp/user_cron.new
+        grep -v 'update_pi_apps.sh' < /tmp/user_cron.bak | grep -v "^MAILTO=" > /tmp/user_cron.new
         crontab /tmp/user_cron.new
         rm -f /tmp/user_cron.bak /tmp/user_cron.new
     fi
@@ -69,27 +70,27 @@ main() {
     echo "============================================"
 }
 
+run_interactive() {
+    if [ "${TEST_MODE:-false}" = "true" ]; then
+         "$@"
+         return
+    fi
+
+    if [ -t 0 ]; then
+        "$@"
+    elif [[ "${TEST_MODE:-false}" != "true" ]] && [ -c /dev/tty ] && { true < /dev/tty; } 2>/dev/null; then
+        # If stdin is not a terminal (e.g. piped from curl), try to use /dev/tty
+        "$@" < /dev/tty
+    else
+        # Allow non-interactive mode (e.g. automation)
+        "$@"
+    fi
+}
+
 # --- Entry Point ---
 # Check if we are running as a script (not sourced)
 # If BASH_SOURCE is empty (piped) or matches $0, we assume it's the main script.
 if [[ -z "${BASH_SOURCE[0]}" ]] || [[ "${BASH_SOURCE[0]}" == "${0}" ]]; then
-    # Helper to run interactive function with tty
-    run_interactive() {
-        if [ "${TEST_MODE:-false}" = "true" ]; then
-             "$@"
-             return
-        fi
-
-        if [ -t 0 ]; then
-            "$@"
-        elif [ -c /dev/tty ]; then
-            # If stdin is not a terminal (e.g. piped from curl), try to use /dev/tty
-            "$@" < /dev/tty
-        else
-            # Allow non-interactive mode (e.g. automation)
-            "$@"
-        fi
-    }
 
     run_interactive main "$@"
 fi

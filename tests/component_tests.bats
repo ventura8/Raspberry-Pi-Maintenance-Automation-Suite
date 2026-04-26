@@ -79,7 +79,7 @@ EOF
     cat << 'EOF' > "$MOCK_DIR/crontab"
 #!/bin/bash
 if [[ "$*" == *"-l"* ]]; then
-    echo "0 0 * * * $INSTALL_DIR/test_script.sh"
+    echo "0 0 * * * $INSTALL_DIR/test_script.sh >/dev/null"
 else
     # Install
     cat
@@ -384,8 +384,8 @@ EOF
     # Mock Curl for both script download AND API call
     cat << 'EOF' > "$MOCK_DIR/curl"
 #!/bin/bash
-if [[ "$*" =~ "api.github.com" ]]; then
-    echo "{\"sha\": \"test_sha_123\"}"
+if [[ "$*" =~ "releases/latest" ]]; then
+    echo "{\"tag_name\": \"v1.0.2\"}"
 elif [[ "$*" =~ "scripts/test_script.sh" ]]; then
     touch "$INSTALL_DIR/test_script.sh"
 fi
@@ -402,6 +402,6 @@ EOF
     
     # Verify .version file created
     [[ -f "$INSTALL_DIR/.version" ]]
-    [[ "$(cat "$INSTALL_DIR/.version")" == "test_sha_123" ]]
-    [[ "$output" =~ "Version set to: test_sha_123" ]]
+    [[ "$(cat "$INSTALL_DIR/.version")" == "v1.0.2" ]]
+    [[ "$output" =~ "Version set to: v1.0.2" ]]
 }

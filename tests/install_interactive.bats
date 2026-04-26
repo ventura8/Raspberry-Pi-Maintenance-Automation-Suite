@@ -35,6 +35,10 @@ setup() {
 @test "Install: Configure Email - Valid Config (New)" {
     run bash -c "export PATH=$MOCK_DIR:$PATH; source ./install.sh; configure_email_interactive <<< $'Y\ntest@test.com\npassword'"
     [[ "$output" =~ "Email configured successfully" ]]
+    
+    # Verify MAILTO was written to mock crontab
+    run cat "$MOCK_DIR/root_cron"
+    [[ "$output" =~ 'MAILTO="test@test.com"' ]]
 }
 
 @test "Install: Configure Email - Existing Config (No Update)" {
@@ -53,13 +57,13 @@ setup() {
 
 @test "Install: Toggle Task - Disable Enabled Task" {
     # Add task 1 to mock root cron
-    echo "0 0 * * * $INSTALL_DIR/update_pi_os.sh" > "$MOCK_DIR/root_cron"
+    echo "0 0 * * * $INSTALL_DIR/update_pi_os.sh >/dev/null" > "$MOCK_DIR/root_cron"
     run bash -c "export PATH=$MOCK_DIR:$PATH; source ./install.sh; toggle_task 1 <<< $'y'"
     [[ "$output" =~ "Task disabled" ]]
 }
 
 @test "Install: Toggle Task - Edit Enabled Task" {
-    echo "0 0 * * * $INSTALL_DIR/update_pi_os.sh" > "$MOCK_DIR/root_cron"
+    echo "0 0 * * * $INSTALL_DIR/update_pi_os.sh >/dev/null" > "$MOCK_DIR/root_cron"
     run bash -c "export PATH=$MOCK_DIR:$PATH; source ./install.sh; toggle_task 1 <<< $'e\n1 1 * * *'"
     [[ "$output" =~ "Schedule updated" ]]
 }
@@ -204,7 +208,7 @@ EOF
 
 @test "Install: Pi-Apps (User Crontab) Management" {
     # Add Pi-Apps to user crontab (ID 5)
-    echo "0 5 * * 0 $INSTALL_DIR/update_pi_apps.sh" > "$MOCK_DIR/user_cron"
+    echo "0 5 * * 0 $INSTALL_DIR/update_pi_apps.sh >/dev/null" > "$MOCK_DIR/user_cron"
     
     # Mock crontab to read/write user file
     cat << 'EOF' > "$MOCK_DIR/crontab"
@@ -233,10 +237,10 @@ EOF
     # 3. Weekly (Mon)
     # 4. Custom
     cat << EOF > "$MOCK_DIR/root_cron"
-0 0 * * * $INSTALL_DIR/update_pi_os.sh
-0 0 1 * * $INSTALL_DIR/update_pi_firmware.sh
-0 0 * * 1 $INSTALL_DIR/update_pip.sh
-1 2 3 4 5 $INSTALL_DIR/docker_cleanup.sh
+0 0 * * * $INSTALL_DIR/update_pi_os.sh >/dev/null
+0 0 1 * * $INSTALL_DIR/update_pi_firmware.sh >/dev/null
+0 0 * * 1 $INSTALL_DIR/update_pip.sh >/dev/null
+1 2 3 4 5 $INSTALL_DIR/docker_cleanup.sh >/dev/null
 EOF
 
     # Just viewing the menu exercises cron_to_human via manage_tasks_ui

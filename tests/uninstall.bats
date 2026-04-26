@@ -53,11 +53,13 @@ setup() {
 if [[ "$*" == *"-l"* ]]; then
     if [ "$IS_MOCKED_SUDO" == "true" ]; then
         # Root Crontab Entries
+        echo 'MAILTO="test@test.com"'
         echo "0 0 * * * /tmp/scripts/update_pi_os.sh"
         echo "0 1 * * * /tmp/scripts/update_pi_firmware.sh"
         echo "0 2 * * * /usr/bin/root_job"
     else
         # User Crontab Entries
+        echo 'MAILTO="test@test.com"'
         echo "0 5 * * * /tmp/scripts/update_pi_apps.sh"
         echo "0 6 * * * /usr/bin/user_job"
     fi
@@ -90,10 +92,12 @@ EOF
         # Verify Root Section
         [[ "$output" =~ "root_job" ]]
         [[ "$output" != *"update_pi_os.sh"* ]]
+        [[ "$output" != *"MAILTO="* ]]
         
         # Verify User Section
         [[ "$output" =~ "user_job" ]]
         [[ "$output" != *"update_pi_apps.sh"* ]]
+        [[ "$output" != *"MAILTO="* ]]
     fi
 }
 
@@ -132,4 +136,53 @@ EOF
     
     # Cleanup
     rm -rf "$CUSTOM_DIR"
+}
+@test "Uninstall: Detects INSTALL_DIR from User Crontab" {
+    # Move scripts to a custom location
+    CUSTOM_DIR="/tmp/custom_pi_scripts_user"
+    mkdir -p "$CUSTOM_DIR"
+    touch "$CUSTOM_DIR/update_pi_apps.sh"
+    
+    # Set default INSTALL_DIR to something non-existent
+    export INSTALL_DIR="/tmp/non_existent_default"
+    
+    # Mock user crontab (no sudo)
+    cat << EOF > "$MOCK_DIR/crontab"
+#!/bin/bash
+if [[ "\$*" == *"-l"* ]] && [[ "\$IS_MOCKED_SUDO" != "true" ]]; then
+    echo "0 0 * * * $CUSTOM_DIR/update_pi_apps.sh"
+fi
+EOF
+    chmod +x "$MOCK_DIR/crontab"
+    
+    run bash ./uninstall.sh
+    
+    [[ "$output" =~ "Detected installation directory: $CUSTOM_DIR" ]]
+    [ ! -d "$CUSTOM_DIR" ]
+    
+    # Cleanup
+    rm -rf "$CUSTOM_DIR"
+}
+
+@test "Uninstall: No crontab changes needed" {
+    # Mock crontab with unrelated entries
+    cat << EOF > "$MOCK_DIR/crontab"
+#!/bin/bash
+if [[ "\$*" == *"-l"* ]]; then
+    echo "0 0 * * * /usr/bin/unrelated_job"
+fi
+EOF
+    chmod +x "$MOCK_DIR/crontab"
+    
+    run bash ./uninstall.sh
+    
+    # Should NOT say "Root crontab updated"
+    [[ ! "$output" =~ "Root crontab updated" ]]
+    [[ "$output" =~ "Cleaning up crontabs" ]]
+}
+
+@test "Uninstall: run_interactive coverage" {
+    # Exercise the non-test-mode branches of run_interactive
+    run bash -c "export TEST_MODE=false; source ./uninstall.sh; run_interactive echo 'test_interactive'"
+    [[ "$output" =~ "test_interactive" ]]
 }

@@ -58,6 +58,7 @@ if ($coverageEnabled) {
         -e COVERAGE=1 `
         -e COVERAGE_OUTPUT=/home/pi/coverage_output `
         -v $volumeMount `
+        -v "${PWD}/assets:/home/pi/assets" `
         rpi-maintenance-test
 }
 else {

@@ -12,7 +12,7 @@ jobs:
     name: Lint Checks
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
       - name: Install ShellCheck
         run: sudo apt-get install -y shellcheck
       - name: Run ShellCheck
@@ -30,11 +30,11 @@ jobs:
     permissions:
       contents: read
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v6
       - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v3
+        uses: docker/setup-buildx-action@v4
       - name: Build Test Image
-        uses: docker/build-push-action@v6
+        uses: docker/build-push-action@v7
         with:
           context: .
           file: Dockerfile.test
@@ -56,7 +56,7 @@ jobs:
             rpi-maintenance-test ./tests/run_suite.sh --installer-only
 
       - name: Upload Raw Coverage
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: coverage-installer
           path: coverage/
@@ -69,11 +69,11 @@ jobs:
     permissions:
       contents: read
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
       - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v3
+        uses: docker/setup-buildx-action@v4
       - name: Build Test Image
-        uses: docker/build-push-action@v6
+        uses: docker/build-push-action@v7
         with:
           context: .
           file: Dockerfile.test
@@ -95,7 +95,7 @@ jobs:
             rpi-maintenance-test ./tests/run_suite.sh --maintenance-only
 
       - name: Upload Raw Coverage
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: coverage-component
           path: coverage/
@@ -106,11 +106,11 @@ jobs:
     runs-on: ubuntu-latest
     needs: lint
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
       - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v3
+        uses: docker/setup-buildx-action@v4
       - name: Build Test Image
-        uses: docker/build-push-action@v6
+        uses: docker/build-push-action@v7
         with:
           context: .
           file: Dockerfile.test
@@ -139,13 +139,13 @@ jobs:
       pull-requests: write
       checks: write
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
       
       # We need the Docker image to run kcov --merge
       - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v3
+        uses: docker/setup-buildx-action@v4
       - name: Build Test Image
-        uses: docker/build-push-action@v6
+        uses: docker/build-push-action@v7
         with:
           context: .
           file: Dockerfile.test
@@ -155,13 +155,13 @@ jobs:
           cache-to: type=gha,mode=max
 
       - name: Download Installer Coverage
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v7
         with:
           name: coverage-installer
           path: coverage_inputs/installer
 
       - name: Download Component Coverage
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v7
         with:
           name: coverage-component
           path: coverage_inputs/component
@@ -232,35 +232,36 @@ jobs:
           if [ -f "coverage/cobertura.xml" ]; then
              echo "✅ Final merged report generated."
              echo "valid=true" >> $GITHUB_OUTPUT
+             # Enforce 90% coverage requirement
+             python3 tests/transform_coverage.py coverage/cobertura.xml --fail-under 90
           else
              echo "❌ Failed to generate merged coverage."
              echo "valid=false" >> $GITHUB_OUTPUT
+             exit 1
           fi
 
       - name: Upload HTML Report
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: full-html-coverage-report
           path: coverage/html_report/
 
       - name: Display Coverage in PR
-        uses: 5monkeys/cobertura-action@master
-        if: steps.validate_coverage.outputs.valid == 'true'
-        continue-on-error: true
+        uses: MishaKav/pytest-coverage-comment@v1
+        if: always() && steps.validate_coverage.outputs.valid == 'true'
         with:
-          path: coverage/cobertura.xml
-          minimum_coverage: 90
-          show_missing: true
-          show_line: true
-          show_branch: true
-          report_name: Full Suite Coverage
+          pytest-xml-coverage-path: coverage/cobertura.xml
+          title: "Code Coverage Report"
+          badge-title: Coverage
+          hide-comment: false
+          create-new-comment: false
 
       # NOTE: Badge generation removed from CI.
       # Badges are updated LOCALLY using: COVERAGE=1 ./tests/run_suite.sh
       # Then commit: git add assets/coverage.svg
 
       - name: Add Coverage PR Comment
-        uses: marocchino/sticky-pull-request-comment@v2
+        uses: marocchino/sticky-pull-request-comment@v3
         if: github.event_name == 'pull_request' && always() && steps.validate_coverage.outputs.valid == 'true'
         with:
           recreate: true

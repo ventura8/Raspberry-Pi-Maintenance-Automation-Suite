@@ -1,6 +1,7 @@
 import xml.etree.ElementTree as ET
 import sys
 import os
+import argparse
 
 def generate_badge(line_rate, output_path="assets/coverage.svg"):
     try:
@@ -24,7 +25,6 @@ def generate_badge(line_rate, output_path="assets/coverage.svg"):
     value_text = coverage_str
 
     # Estimate widths
-    # 6px approx per char + padding
     label_width = 61 
     value_width = int(len(value_text) * 8.5) + 10 
 
@@ -56,15 +56,13 @@ def generate_badge(line_rate, output_path="assets/coverage.svg"):
     </g>
 </svg>"""
 
-
-    # Ensure assets directory exists
     os.makedirs(os.path.dirname(output_path), exist_ok=True)
     
     with open(output_path, "w") as f:
         f.write(svg)
     print(f"Generated badge: {output_path} ({coverage_str})")
 
-def transform_coverage(xml_file):
+def transform_coverage(xml_file, fail_under=None):
     if not os.path.exists(xml_file):
         print(f"Error: {xml_file} not found")
         sys.exit(1)
@@ -73,7 +71,6 @@ def transform_coverage(xml_file):
         tree = ET.parse(xml_file)
         root = tree.getroot()
         
-        # Generate badge from root line-rate
         root_line_rate = root.get("line-rate", "0")
         generate_badge(root_line_rate)
 
@@ -83,48 +80,49 @@ def transform_coverage(xml_file):
 
     packages_el = root.find('packages')
     if packages_el is None:
-        # If no packages, possibly create one or just exit (original behavior was exit if None)
-        # But maybe we should continue to at least have the badge?
-        # The remote script creates it if None. sticking to local logic for now which was printing error
-        # but since I added badge generation before this check, badge is safe.
         print("No <packages> element found")
         sys.exit(1)
 
-    # Collect all classes from all existing packages
     all_classes = []
     for pkg in packages_el.findall('package'):
         classes_el = pkg.find('classes')
         if classes_el is not None:
             all_classes.extend(classes_el.findall('class'))
 
-    # Clear existing packages
     packages_el.clear()
 
-    # Create new package per class
     for cls in all_classes:
         filename = cls.get('filename')
-        # Use basename or relative path as package name
         pkg_name = filename 
         
         new_pkg = ET.SubElement(packages_el, 'package')
         new_pkg.set('name', pkg_name)
         
-        # Copy rate attributes from class to package
         for attr in ['line-rate', 'branch-rate', 'complexity']:
             if val := cls.get(attr):
                 new_pkg.set(attr, val)
             else:
                 new_pkg.set(attr, '0.0')
 
-        # Create classes container
         new_classes = ET.SubElement(new_pkg, 'classes')
         new_classes.append(cls)
 
     tree.write(xml_file, encoding='UTF-8', xml_declaration=True)
     print(f"Successfully transformed {xml_file}: Split {len(all_classes)} classes into separate packages.")
     
-    # Generate Markdown Summary
     generate_markdown_summary(all_classes, root_line_rate)
+
+    if fail_under is not None:
+        try:
+            current_pct = float(root_line_rate) * 100
+            if current_pct < fail_under:
+                print(f"❌ Coverage is {current_pct:.2f}%, which is below the minimum required {fail_under}%")
+                sys.exit(1)
+            else:
+                print(f"✅ Coverage is {current_pct:.2f}%, meeting the minimum {fail_under}% requirement.")
+        except ValueError:
+            print("Error calculating coverage percentage for threshold check.")
+            sys.exit(1)
 
 def generate_markdown_summary(classes, overall_rate, output_path="code-coverage-results.md"):
     try:
@@ -137,8 +135,8 @@ def generate_markdown_summary(classes, overall_rate, output_path="code-coverage-
     md_lines.append(f"")
     md_lines.append(f"**Overall Coverage:** {overall_pct:.2f}%")
     md_lines.append(f"")
-    md_lines.append(f"| File | Coverage | Lines |")
-    md_lines.append(f"| :--- | :---: | :---: |")
+    md_lines.append(f"| File | Coverage | Missing Lines |")
+    md_lines.append(f"| :--- | :---: | :--- |")
 
     for cls in classes:
         filename = cls.get('filename')
@@ -148,16 +146,20 @@ def generate_markdown_summary(classes, overall_rate, output_path="code-coverage-
         except ValueError:
             pct = 0.0
             
-        # Optional: Get lines valid vs covered if available? 
-        # kcov XML usually has line-rate. 
-        # Note: kcov XML 'lines' element inside class has total lines.
-        # But we are iterating 'class' elements which have children 'lines' -> 'line'.
-        # We can count them or rely on attributes? 
-        # Attributes often have complexity but maybe not raw counts unless we calculate.
-        # Let's simple use percentage.
+        # Extract missing lines
+        missing_lines = []
+        lines_el = cls.find('lines')
+        if lines_el is not None:
+            for line in lines_el.findall('line'):
+                if line.get('hits') == '0':
+                    missing_lines.append(line.get('number'))
         
+        missing_str = ", ".join(missing_lines) if missing_lines else "None"
+        if len(missing_str) > 50:
+            missing_str = missing_str[:47] + "..."
+            
         status_icon = "🟢" if pct >= 90 else "🔴"
-        md_lines.append(f"| `{filename}` | {pct:.2f}% {status_icon} | - |")
+        md_lines.append(f"| `{filename}` | {pct:.2f}% {status_icon} | {missing_str} |")
 
     md_lines.append(f"")
     md_lines.append(f"> Generated by CI Pipeline")
@@ -167,8 +169,10 @@ def generate_markdown_summary(classes, overall_rate, output_path="code-coverage-
     print(f"Generated markdown summary: {output_path}")
 
 if __name__ == "__main__":
-    if len(sys.argv) < 2:
-        print("Usage: python transform_coverage.py <cobertura.xml>")
-        sys.exit(1)
+    parser = argparse.ArgumentParser(description="Transform Cobertura XML and check coverage.")
+    parser.add_argument("xml_file", help="Path to Cobertura XML file")
+    parser.add_argument("--fail-under", type=float, help="Minimum coverage percentage to pass")
     
-    transform_coverage(sys.argv[1])
+    args = parser.parse_args()
+    
+    transform_coverage(args.xml_file, args.fail_under)

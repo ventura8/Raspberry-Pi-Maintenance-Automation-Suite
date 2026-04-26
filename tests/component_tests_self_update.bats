@@ -83,7 +83,7 @@ EOF
     echo "v1.0.0" > "$INSTALL_DIR/.version"
     export TEST_REMOTE_TAG="v1.2.0"
     unset TEST_MODE
-    
+
     # Mock Curl
     cat << 'EOF' > "$MOCK_DIR/curl"
 #!/bin/bash
@@ -97,26 +97,76 @@ exit 1
 EOF
     chmod +x "$MOCK_DIR/curl"
 
-    # Mock install.sh to consume input and verify
+    # Mock install.sh: called directly (no pipe), so it just needs to succeed.
+    # The --update flag is passed; the mock echoes a marker and exits cleanly.
     cat << 'EOF' > "$INSTALL_DIR/../install.sh"
 #!/bin/bash
 echo "MOCK_INSTALLER_STARTED"
-read -t 1 line
-echo "INSTALLER_EXECUTED_CORRECTLY"
+# Verify we received the --update flag (non-interactive path)
+if [[ "$1" == "--update" ]]; then
+    echo "INSTALLER_EXECUTED_CORRECTLY"
+    exit 0
+fi
+echo "UNEXPECTED_INTERACTIVE_CALL"
+exit 1
 EOF
     chmod +x "$INSTALL_DIR/../install.sh"
-    
+
     # Mock ssmtp for email recipient
     export SSMTP_CONF="$MOCK_DIR/ssmtp.conf"
     echo "root=mock_admin@test.com" > "$SSMTP_CONF"
 
     run ./scripts/update_self.sh
-    
+
     [[ "$status" -eq 0 ]]
     [[ "$output" =~ "INSTALLER_EXECUTED_CORRECTLY" ]]
     [[ "$output" =~ "Update complete" ]]
     [[ "$output" =~ "Sending email to mock_admin@test.com" ]]
     [[ "$(cat $INSTALL_DIR/.version)" == "v1.2.0" ]]
+}
+
+@test "Self Update: No TTY interaction (Cron regression)" {
+    # Regression test: update_self.sh must NOT pipe input into install.sh.
+    # Piping caused /dev/tty: No such device or address when run from cron.
+    echo "v1.0.0" > "$INSTALL_DIR/.version"
+    export TEST_REMOTE_TAG="v1.3.0"
+    unset TEST_MODE
+
+    cat << 'EOF' > "$MOCK_DIR/curl"
+#!/bin/bash
+if [[ "$@" == *"api.github.com"* ]]; then
+    echo "{\"tag_name\": \"$TEST_REMOTE_TAG\"}"
+    exit 0
+elif [[ "$@" == *"install.sh"* ]]; then
+    exit 0
+fi
+exit 1
+EOF
+    chmod +x "$MOCK_DIR/curl"
+
+    # Mock install.sh: fails if stdin is a pipe (i.e., not a tty and data arrives)
+    cat << 'EOF' > "$INSTALL_DIR/../install.sh"
+#!/bin/bash
+# If stdin is NOT a terminal AND there is pending data, it was piped — that's the bug.
+if [ ! -t 0 ]; then
+    read -t 0.1 stray_input && {
+        echo "ERROR: Received unexpected piped input: $stray_input"
+        exit 1
+    }
+fi
+echo "INSTALLER_RAN_CLEANLY"
+exit 0
+EOF
+    chmod +x "$INSTALL_DIR/../install.sh"
+
+    export SSMTP_CONF="$MOCK_DIR/ssmtp.conf"
+    echo "root=mock_admin@test.com" > "$SSMTP_CONF"
+
+    run ./scripts/update_self.sh
+
+    [[ "$status" -eq 0 ]]
+    [[ "$output" =~ "INSTALLER_RAN_CLEANLY" ]]
+    [[ ! "$output" =~ "ERROR: Received unexpected piped input" ]]
 }
 
 @test "Self Update: API Failure" {
