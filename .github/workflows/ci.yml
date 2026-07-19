@@ -1,10 +1,11 @@
+---
 name: "CI Pipeline"
 
 on:
   push:
-    branches: [ "main" ]
+    branches: ["main"]
   pull_request:
-    branches: [ "main" ]
+    branches: ["main"]
   workflow_dispatch:
 
 jobs:
@@ -12,11 +13,30 @@ jobs:
     name: Lint Checks
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v6
-      - name: Install ShellCheck
-        run: sudo apt-get install -y shellcheck
-      - name: Run ShellCheck
-        run: shellcheck install.sh uninstall.sh scripts/*.sh tests/*.sh
+      - uses: actions/checkout@v7.0.0
+
+      - name: Install Coverage Report Dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y python3-pip
+          python3 -m pip install --user --upgrade lizard
+
+      - name: Install Coverage Report Dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y python3-pip
+          python3 -m pip install --user --upgrade lizard
+          echo "$HOME/.local/bin" >> "$GITHUB_PATH"
+      - name: Install Lint Dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y shellcheck shfmt yamllint python3-pip
+          python3 -m pip install --user --upgrade mdformat
+          echo "$HOME/.local/bin" >> "$GITHUB_PATH"
+      - name: Run Lint Suite
+        run: |
+          chmod +x tests/lint.sh
+          STRICT_MODE=true ./tests/lint.sh
 
   # Build the Docker image once and share it? NO, GitHub Actions doesn't easily share images between jobs without registry.
   # We will rely on GHA caching in the build-push-action or just build quickly in each job.
@@ -30,19 +50,19 @@ jobs:
     permissions:
       contents: read
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7.0.0
       - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v4
+        uses: docker/setup-buildx-action@v4.2.0
       - name: Build Test Image
-        uses: docker/build-push-action@v7
+        uses: docker/build-push-action@v7.3.0
         with:
           context: .
-          file: Dockerfile.test
+          file: docker/Dockerfile.test
           load: true
           tags: rpi-maintenance-test
           cache-from: type=gha
           cache-to: type=gha,mode=max
-      
+
       - name: Execute Installer Suite
         run: |
           mkdir -p coverage
@@ -52,11 +72,11 @@ jobs:
             --cap-add SYS_PTRACE \
             -e COVERAGE=1 \
             -e COVERAGE_OUTPUT=/home/pi/coverage \
-            -v $PWD/coverage:/home/pi/coverage \
+            -v "$PWD/coverage:/home/pi/coverage" \
             rpi-maintenance-test ./tests/run_suite.sh --installer-only
 
       - name: Upload Raw Coverage
-        uses: actions/upload-artifact@v7
+        uses: actions/upload-artifact@v7.0.1
         with:
           name: coverage-installer
           path: coverage/
@@ -69,19 +89,19 @@ jobs:
     permissions:
       contents: read
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7.0.0
       - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v4
+        uses: docker/setup-buildx-action@v4.2.0
       - name: Build Test Image
-        uses: docker/build-push-action@v7
+        uses: docker/build-push-action@v7.3.0
         with:
           context: .
-          file: Dockerfile.test
+          file: docker/Dockerfile.test
           load: true
           tags: rpi-maintenance-test
           cache-from: type=gha
           cache-to: type=gha,mode=max
-      
+
       - name: Execute Maintenance Suite
         run: |
           mkdir -p coverage
@@ -91,11 +111,11 @@ jobs:
             --cap-add SYS_PTRACE \
             -e COVERAGE=1 \
             -e COVERAGE_OUTPUT=/home/pi/coverage \
-            -v $PWD/coverage:/home/pi/coverage \
+            -v "$PWD/coverage:/home/pi/coverage" \
             rpi-maintenance-test ./tests/run_suite.sh --maintenance-only
 
       - name: Upload Raw Coverage
-        uses: actions/upload-artifact@v7
+        uses: actions/upload-artifact@v7.0.1
         with:
           name: coverage-component
           path: coverage/
@@ -106,19 +126,19 @@ jobs:
     runs-on: ubuntu-latest
     needs: lint
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7.0.0
       - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v4
+        uses: docker/setup-buildx-action@v4.2.0
       - name: Build Test Image
-        uses: docker/build-push-action@v7
+        uses: docker/build-push-action@v7.3.0
         with:
           context: .
-          file: Dockerfile.test
+          file: docker/Dockerfile.test
           load: true
           tags: rpi-maintenance-test
           cache-from: type=gha
           cache-to: type=gha,mode=max
-      
+
       - name: Execute Full Suite (E2E)
         run: |
           # Run everything (Unit + Component + Installer) in one go
@@ -139,29 +159,36 @@ jobs:
       pull-requests: write
       checks: write
     steps:
-      - uses: actions/checkout@v6
-      
+      - uses: actions/checkout@v7.0.0
+
+      - name: Install Coverage Report Dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y python3-pip
+          python3 -m pip install --user --upgrade lizard
+          echo "$HOME/.local/bin" >> "$GITHUB_PATH"
+
       # We need the Docker image to run kcov --merge
       - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v4
+        uses: docker/setup-buildx-action@v4.2.0
       - name: Build Test Image
-        uses: docker/build-push-action@v7
+        uses: docker/build-push-action@v7.3.0
         with:
           context: .
-          file: Dockerfile.test
+          file: docker/Dockerfile.test
           load: true
           tags: rpi-maintenance-test
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
       - name: Download Installer Coverage
-        uses: actions/download-artifact@v7
+        uses: actions/download-artifact@v8.0.1
         with:
           name: coverage-installer
           path: coverage_inputs/installer
 
       - name: Download Component Coverage
-        uses: actions/download-artifact@v7
+        uses: actions/download-artifact@v8.0.1
         with:
           name: coverage-component
           path: coverage_inputs/component
@@ -175,32 +202,34 @@ jobs:
             --security-opt seccomp=unconfined \
             --cap-add SYS_PTRACE \
             --user root \
-            -v $PWD:/workdir \
+            -v "$PWD:/workdir" \
             -w /workdir \
             rpi-maintenance-test \
             kcov --merge coverage/final \
                  coverage_inputs/installer/unit_tests \
                  coverage_inputs/installer/install_interactive \
                  coverage_inputs/installer/install_extended \
+                coverage_inputs/installer/install_non_pi_mode \
                  coverage_inputs/installer/install_phase1 \
                  coverage_inputs/installer/install_phase3_edge_cases \
                  coverage_inputs/installer/install_pi_mode \
                  coverage_inputs/installer/uninstall \
+                coverage_inputs/component/component_tests_samsung \
                  coverage_inputs/component/component_tests_self_update \
                  coverage_inputs/component/component_tests
-          
+
           # Move index.html to a clean structure if needed (kcov creates a subdirectory sometimes)
           # kcov output: coverage/final/<merged-report-hash>/index.html OR coverage/final/index.html
           # We want consistent path: coverage/html_report
-          
+
           mkdir -p coverage/html_report
           # Find where kcov put the report (usually coverage/final/kcov-merged or similar if inputs are merged)
           # But since we provide explicit output dir 'coverage/final', kcov usually puts 'merged' subdir there or uses it as root ??
           # Based on local test: coverage_final/html_report/kcov-merged/index.html (when output dir was coverage_final/html_report)
-          
+
           # Let's trust the "kcov --merge coverage/final ..."
           # We'll just look for index.html recursively and move its parent content to coverage/html_report
-          
+
           FOUND_INDEX=$(find coverage/final -name "index.html" | head -n 1)
           if [ -n "$FOUND_INDEX" ]; then
              echo "Found index at $FOUND_INDEX"
@@ -216,13 +245,13 @@ jobs:
           MERGED_XML=$(find coverage/html_report -name "cobertura.xml" | head -n 1)
           if [ -f "$MERGED_XML" ]; then
              cp "$MERGED_XML" coverage/cobertura.xml
-             
+
              # Reset branch validation counts
              sed -i 's/branches-covered="\([^"]*\)"/branches-covered="\1" branches-valid="0"/g' coverage/cobertura.xml
-             
+
              # Transform XML to show per-file stats in summary
              # This splits each script into its own package so the summary table lists them all
-             python3 tests/transform_coverage.py coverage/cobertura.xml
+             python3 tests/transform_coverage.py coverage/cobertura.xml --require-real-complexity
           fi
 
       - name: Validate Coverage
@@ -230,24 +259,32 @@ jobs:
         if: always()
         run: |
           if [ -f "coverage/cobertura.xml" ]; then
-             echo "✅ Final merged report generated."
-             echo "valid=true" >> $GITHUB_OUTPUT
-             # Enforce 90% coverage requirement
-             python3 tests/transform_coverage.py coverage/cobertura.xml --fail-under 90
+             echo "Final merged report generated."
+             echo "valid=true" >> "$GITHUB_OUTPUT"
+             # Enforce quality gates:
+             # Coverage: >= 90% overall and >= 90% per-file
+             # Complexity (lizard CCN best-practice warning boundary): <= 15 overall and <= 15 per-file
+             python3 tests/transform_coverage.py \
+               coverage/cobertura.xml \
+               --fail-under 90 \
+               --fail-under-per-file 90 \
+               --max-complexity-overall 15 \
+               --max-complexity-per-file 15 \
+               --require-real-complexity
           else
-             echo "❌ Failed to generate merged coverage."
-             echo "valid=false" >> $GITHUB_OUTPUT
+             echo "Failed to generate merged coverage."
+             echo "valid=false" >> "$GITHUB_OUTPUT"
              exit 1
           fi
 
       - name: Upload HTML Report
-        uses: actions/upload-artifact@v7
+        uses: actions/upload-artifact@v7.0.1
         with:
           name: full-html-coverage-report
           path: coverage/html_report/
 
       - name: Display Coverage in PR
-        uses: MishaKav/pytest-coverage-comment@v1
+        uses: MishaKav/pytest-coverage-comment@v1.10.0
         if: always() && steps.validate_coverage.outputs.valid == 'true'
         with:
           pytest-xml-coverage-path: coverage/cobertura.xml
@@ -261,17 +298,18 @@ jobs:
       # Then commit: git add assets/coverage.svg
 
       - name: Add Coverage PR Comment
-        uses: marocchino/sticky-pull-request-comment@v3
+        uses: marocchino/sticky-pull-request-comment@v3.0.5
         if: github.event_name == 'pull_request' && always() && steps.validate_coverage.outputs.valid == 'true'
         with:
           recreate: true
           path: code-coverage-results.md
+          message: "Coverage report generated. See workflow summary for details."
 
       - name: Publish Coverage to Summary
         if: always() && steps.validate_coverage.outputs.valid == 'true'
         run: |
           if [ -f code-coverage-results.md ]; then
-            cat code-coverage-results.md >> $GITHUB_STEP_SUMMARY
+            cat code-coverage-results.md >> "$GITHUB_STEP_SUMMARY"
           else
-            echo "⚠️ code-coverage-results.md not found."
+            echo "code-coverage-results.md not found."
           fi

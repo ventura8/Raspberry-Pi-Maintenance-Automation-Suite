@@ -122,7 +122,7 @@ echo '#!/bin/bash' > "$MOCK_DIR/pip3"
 echo 'exit 0' >> "$MOCK_DIR/pip3"
 
 # 12. /etc Redirection Mocks (mkdir, touch, tee, grep)
-cat <<'EOF' > "$MOCK_DIR/redirect_etc.sh"
+cat << 'EOF' > "$MOCK_DIR/redirect_etc.sh"
 #!/bin/bash
 MOCK_FS="/tmp/mocks/fs"
 CMD=$(basename "$0")
@@ -154,7 +154,7 @@ done
 
 # 13. Samsung Extraction Mocks
 for cmd in mount umount cpio 7z file gzip; do
-    cat <<EOF > "$MOCK_DIR/$cmd"
+    cat << EOF > "$MOCK_DIR/$cmd"
 #!/bin/bash
 if [[ "$cmd" == "file" ]]; then echo "gzip compressed data"; exit 0; fi
 if [[ "$cmd" == "cpio" ]]; then
@@ -170,7 +170,7 @@ EOF
 done
 
 # 14. fwupdmgr Mock (Simplified & Robust)
-cat <<'EOF' > "/tmp/mocks/fwupdmgr"
+cat << 'EOF' > "/tmp/mocks/fwupdmgr"
 #!/bin/bash
 STATE_FILE="/tmp/mocks/fwupd_mode"
 MODE="default"
@@ -210,7 +210,7 @@ esac
 EOF
 
 # 15. nvme Mock (Simplified & Robust)
-cat <<'EOF' > "/tmp/mocks/nvme"
+cat << 'EOF' > "/tmp/mocks/nvme"
 #!/bin/bash
 LIST_FILE="/tmp/mocks/nvme_output"
 REV_FILE="/tmp/mocks/nvme_fw_rev"

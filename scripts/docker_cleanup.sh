@@ -1,6 +1,6 @@
 #!/bin/bash
-# Description: Reclaims disk space by pruning unused Docker containers, images, 
-# and volumes. Automatically detects if the buildx plugin is installed to 
+# Description: Reclaims disk space by pruning unused Docker containers, images,
+# and volumes. Automatically detects if the buildx plugin is installed to
 # use modern pruning, otherwise falls back to the legacy builder.
 
 # --- Configuration ---
@@ -49,8 +49,8 @@ main() {
     } > "$LOG_FILE"
 
     # --- Send the report ---
-    if command -v ssmtp >/dev/null 2>&1; then
-        ssmtp "$RECIPIENT_EMAIL" <<EOF
+    if command -v ssmtp > /dev/null 2>&1; then
+        ssmtp "$RECIPIENT_EMAIL" << EOF
 To: $RECIPIENT_EMAIL
 Subject: $SUBJECT_LINE
 From: "Raspberry Pi Docker" <$RECIPIENT_EMAIL>

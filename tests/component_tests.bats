@@ -293,6 +293,8 @@ if [[ "$1" == "refresh" ]]; then
     exit 0
 elif [[ "$1" == "get-updates" ]]; then
     exit 0 # Updates available
+elif [[ "$1" == "get-upgrades" ]]; then
+    exit 0 # Updates available
 elif [[ "$1" == "update" ]]; then
     echo "Successfully installed"
     echo "Restarting device..."
@@ -320,8 +322,14 @@ EOF
     # Mock fwupdmgr
     cat << 'EOF' > "$MOCK_DIR/fwupdmgr"
 #!/bin/bash
-if [[ "$1" == "get-updates" ]]; then
-    exit 1 # No updates available
+if [[ "$1" == "refresh" ]]; then
+    exit 0
+elif [[ "$1" == "get-upgrades" ]]; then
+    echo "No upgrades for any device"
+    exit 0
+elif [[ "$1" == "get-updates" ]]; then
+    echo "No updates for any device"
+    exit 0
 fi
 EOF
     /bin/chmod +x "$MOCK_DIR/fwupdmgr"
@@ -334,7 +342,7 @@ EOF
 
     run bash -c "export PATH=$MOCK_DIR:$PATH; ./scripts/update_pi_firmware.sh"
     
-    [[ "$output" =~ "No updates available" ]]
+    [[ "$output" =~ "No updates available" || "$output" =~ "No upgrades available" ]]
     [[ ! "$output" =~ "FAIL_SHOULD_NOT_REBOOT" ]]
 }
 

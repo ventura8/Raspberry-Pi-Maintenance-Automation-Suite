@@ -28,9 +28,9 @@ log() {
 send_notification() {
     local subject="$1"
     local body="$2"
-    
-    if command -v ssmtp >/dev/null 2>&1; then
-        RECIPIENT_EMAIL=$(grep "^root=" "$SSMTP_CONF" 2>/dev/null | cut -d= -f2)
+
+    if command -v ssmtp > /dev/null 2>&1; then
+        RECIPIENT_EMAIL=$(grep "^root=" "$SSMTP_CONF" 2> /dev/null | cut -d= -f2)
         if [ -n "$RECIPIENT_EMAIL" ]; then
             log "Sending email to $RECIPIENT_EMAIL..."
             {
@@ -91,19 +91,19 @@ main() {
         exit 0
     else
         log "Update available! ($LOCAL_TAG -> $REMOTE_TAG)"
-        
+
         # Determine URL for install.sh based on the TAG
         # Construct raw URL: .../tag_name/install.sh? No, raw objects are usually by commit or branch.
         # But for releases, we can use the tag in the raw URL structure:
         # https://raw.githubusercontent.com/user/repo/TAG/install.sh
         RAW_URL="https://raw.githubusercontent.com/$GITHUB_USER/$REPO_NAME/$REMOTE_TAG"
-        
+
         log "Downloading installer from $REMOTE_TAG..."
         if ! curl -sSL "$RAW_URL/install.sh" -o "$INSTALL_SCRIPT"; then
-             exit_with_failure "Failed to download install.sh from $RAW_URL."
+            exit_with_failure "Failed to download install.sh from $RAW_URL."
         fi
         chmod +x "$INSTALL_SCRIPT"
-        
+
         if [ "$TEST_MODE" == "true" ]; then
             log "TEST_MODE: Skipping actual execution of install.sh"
             echo "$REMOTE_TAG" > "$VERSION_FILE"
@@ -113,20 +113,20 @@ main() {
         fi
 
         log "Running installer to update scripts..."
-        
+
         # Execute installer non-interactively via the --update flag.
         # --update causes install.sh to run check_dependencies + download_scripts and exit,
         # with no interactive prompts. Do NOT pipe fake input here: piping makes bash
         # treat stdin as non-terminal, which causes install.sh to attempt a /dev/tty
         # redirect that does not exist in a cron environment.
         if ! bash "$INSTALL_SCRIPT" --update; then
-             exit_with_failure "Installer execution failed."
+            exit_with_failure "Installer execution failed."
         fi
-        
+
         # Update version file on success
         echo "$REMOTE_TAG" > "$VERSION_FILE"
         log "Update complete. Version updated to $REMOTE_TAG"
-        
+
         send_notification "Pi Maintenance Suite Updated" "The suite has been updated to version $REMOTE_TAG."
     fi
 }

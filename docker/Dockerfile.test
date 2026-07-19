@@ -5,29 +5,33 @@ ENV DEBIAN_FRONTEND=noninteractive
 
 # 1. Install Real System Dependencies
 # Trixie includes newer versions of Python, likely requiring even stricter PEP 668 handling
-RUN apt-get update && apt-get install -y \
-    bash \
-    curl \
-    sudo \
-    ssmtp \
-    mailutils \
-    bats \
-    shellcheck \
-    git \
-    python3 \
-    python3-pip \
-    procps \
-    cmake \
-    g++ \
-    pkg-config \
-    libcurl4-openssl-dev \
-    libelf-dev \
-    libdw-dev \
-    binutils-dev \
-    libiberty-dev \
-    zlib1g-dev \
-    bc \
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    bash=* \
+    curl=* \
+    sudo=* \
+    ssmtp=* \
+    mailutils=* \
+    bats=* \
+    shellcheck=* \
+    git=* \
+    python3=* \
+    python3-pip=* \
+    procps=* \
+    cmake=* \
+    make=* \
+    g++=* \
+    pkg-config=* \
+    libcurl4-openssl-dev=* \
+    libelf-dev=* \
+    libdw-dev=* \
+    binutils-dev=* \
+    libiberty-dev=* \
+    zlib1g-dev=* \
+    bc=* \
     && rm -rf /var/lib/apt/lists/*
+
+# Install Python tooling used by local quality reporting
+RUN python3 -m pip install --break-system-packages --no-cache-dir lizard
 
 # 1.a Pre-configure SSMTP for testing (so 'pi' user can write to it)
 RUN mkdir -p /etc/ssmtp && \
@@ -35,15 +39,11 @@ RUN mkdir -p /etc/ssmtp && \
     chmod 666 /etc/ssmtp/ssmtp.conf /etc/ssmtp/revaliases
 
 # 1.1 Install kcov from source (not available in Trixie repos)
-RUN cd /tmp && \
-    git clone --depth 1 https://github.com/SimonKagstrom/kcov.git && \
-    cd kcov && \
-    mkdir build && \
-    cd build && \
-    cmake .. && \
-    make && \
-    make install && \
-    cd / && \
+WORKDIR /tmp
+RUN git clone --depth 1 --branch v43 https://github.com/SimonKagstrom/kcov.git && \
+    cmake -S /tmp/kcov -B /tmp/kcov/build && \
+    cmake --build /tmp/kcov/build && \
+    cmake --install /tmp/kcov/build && \
     rm -rf /tmp/kcov
 
 # 2. Create 'pi' user to simulate Raspberry Pi environment
