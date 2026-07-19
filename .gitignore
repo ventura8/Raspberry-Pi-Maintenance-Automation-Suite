@@ -1,25 +1,20 @@
-# **Ignore the actual configuration file containing passwords**
-
+# Ignore the actual configuration file containing passwords
 ssmtp.conf
 
-# **Ignore local log files**
+# Ignore local log files
+*.log
+tmp.*
 
-.log  
-tmp.
-
-# **Ignore system files**
-
-.DS\_Store  
+# Ignore system files
+.DS_Store
 Thumbs.db
 
-# **Python bytecode**
+# Python bytecode and cache
+__pycache__/
+*.py[cod]
+*$py.class
 
-pycache/  
-\*.py\[cod\]  
-\*$py.class
-
-# **Coverage reports**
-
+# Coverage reports and generated artifacts
 coverage/
 coverage_*/
 kcov-merged/

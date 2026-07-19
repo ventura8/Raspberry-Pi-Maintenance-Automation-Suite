@@ -1,7 +1,7 @@
 #!/bin/bash
 # Description: Performs a system-wide update of Raspberry Pi OS using apt-get.
-# Uses full-upgrade to handle dependency changes, which is recommended for 
-# Raspberry Pi kernel and firmware stability. It detects if a reboot is 
+# Uses full-upgrade to handle dependency changes, which is recommended for
+# Raspberry Pi kernel and firmware stability. It detects if a reboot is
 # required and schedules it after sending the report.
 
 # --- Configuration ---
@@ -60,8 +60,8 @@ main() {
     } > "$LOG_FILE"
 
     # --- Send the report ---
-    if command -v ssmtp >/dev/null 2>&1; then
-        ssmtp "$RECIPIENT_EMAIL" <<EOF
+    if command -v ssmtp > /dev/null 2>&1; then
+        ssmtp "$RECIPIENT_EMAIL" << EOF
 To: $RECIPIENT_EMAIL
 Subject: $SUBJECT_LINE
 From: "Raspberry Pi OS Update" <$RECIPIENT_EMAIL>

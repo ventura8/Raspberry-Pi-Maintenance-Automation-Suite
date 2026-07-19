@@ -14,10 +14,10 @@ source ./tests/setup_mocks.sh
 echo "--- Mocks Ready. Running Tests ---"
 echo "PATH is: $PATH"
 # Ensure Unix line endings (fix for Windows mounts)
-sed -i 's/\r$//' ./*.sh scripts/*.sh tests/*.sh 2>/dev/null || true
+sed -i 's/\r$//' ./*.sh scripts/*.sh tests/*.sh 2> /dev/null || true
 
 # Set execution permissions
-chmod +x install.sh uninstall.sh scripts/*.sh tests/*.sh 2>/dev/null || true
+chmod +x install.sh uninstall.sh scripts/*.sh tests/*.sh 2> /dev/null || true
 
 # Parse Mode Arguments
 MODE="all"
@@ -34,7 +34,8 @@ while [[ $# -gt 0 ]]; do
             ;;
         --test-file)
             TEST_FILE="$2"
-            shift; shift
+            shift
+            shift
             ;;
         *)
             shift
@@ -47,23 +48,25 @@ echo "--- Run Mode: $MODE ---"
 # Coverage configuration
 COVERAGE_ENABLED="${COVERAGE:-0}"
 COVERAGE_OUTPUT_DIR="${COVERAGE_OUTPUT:-./coverage}"
+KCOV_EXCLUDE_PATTERN="/usr/lib,/tmp,$PWD/tests,$PWD/coverage,.git,.github,$MOCK_DIR,.ps1,.bashrc,.profile,"
+KCOV_EXCLUDE_PATTERN+=".bash_logout,install_lib.sh,pi-apps/updater"
+KCOV_ARGS=(--exclude-pattern="$KCOV_EXCLUDE_PATTERN" --include-path="$PWD")
 
 if [ "$COVERAGE_ENABLED" = "1" ]; then
     echo "--- Coverage Mode: ENABLED ---"
     echo "Coverage output: $COVERAGE_OUTPUT_DIR"
     mkdir -p "$COVERAGE_OUTPUT_DIR"
-    
+
     # Helper function to run commands with kcov
     run_with_coverage() {
         local test_name="$1"
         local script_path="$2"
-        
+
         echo "Running with coverage: $test_name"
         # kcov has issues with stdin redirection, so we use bash -c wrapper
         # stdin is already piped from the caller
         kcov \
-            --exclude-pattern="/usr/lib,/tmp,$PWD/tests,$PWD/coverage,.git,.github,$MOCK_DIR,.ps1,.bashrc,.profile,.bash_logout,install_lib.sh,pi-apps/updater" \
-            --include-path="$PWD" \
+            "${KCOV_ARGS[@]}" \
             "$COVERAGE_OUTPUT_DIR/$test_name" \
             bash "$script_path"
     }
@@ -76,7 +79,7 @@ if [ -n "$TEST_FILE" ]; then
     echo "--- Running Specific Test File: $TEST_FILE ---"
     if [ "$COVERAGE_ENABLED" = "1" ]; then
         TEST_NAME=$(basename "$TEST_FILE" .bats)
-        kcov --exclude-pattern="/usr/lib,/tmp,$PWD/tests,$PWD/coverage,.git,.github,$MOCK_DIR,.ps1,.bashrc,.profile,.bash_logout,install_lib.sh,pi-apps/updater" --include-path="$PWD" "$COVERAGE_OUTPUT_DIR/$TEST_NAME" bats "$TEST_FILE"
+        kcov "${KCOV_ARGS[@]}" "$COVERAGE_OUTPUT_DIR/$TEST_NAME" bats "$TEST_FILE"
     else
         bats "$TEST_FILE"
     fi
@@ -87,16 +90,18 @@ fi
 if [ "$MODE" = "all" ] || [ "$MODE" = "installer" ]; then
     echo "--- Running Unit Tests ---"
     if [ "$COVERAGE_ENABLED" = "1" ]; then
-        kcov --exclude-pattern="/usr/lib,/tmp,$PWD/tests,$PWD/coverage,.git,.github,$MOCK_DIR,.ps1,.bashrc,.profile,.bash_logout,install_lib.sh,pi-apps/updater" --include-path="$PWD" "$COVERAGE_OUTPUT_DIR/unit_tests" bats tests/unit_tests.bats
-        kcov --exclude-pattern="/usr/lib,/tmp,$PWD/tests,$PWD/coverage,.git,.github,$MOCK_DIR,.ps1,.bashrc,.profile,.bash_logout,install_lib.sh,pi-apps/updater" --include-path="$PWD" "$COVERAGE_OUTPUT_DIR/install_interactive" bats tests/install_interactive.bats
-        kcov --exclude-pattern="/usr/lib,/tmp,$PWD/tests,$PWD/coverage,.git,.github,$MOCK_DIR,.ps1,.bashrc,.profile,.bash_logout,install_lib.sh,pi-apps/updater" --include-path="$PWD" "$COVERAGE_OUTPUT_DIR/install_extended" bats tests/install_extended.bats
-        kcov --exclude-pattern="/usr/lib,/tmp,$PWD/tests,$PWD/coverage,.git,.github,$MOCK_DIR,.ps1,.bashrc,.profile,.bash_logout,install_lib.sh,pi-apps/updater" --include-path="$PWD" "$COVERAGE_OUTPUT_DIR/install_pi_mode" bats tests/install_pi_mode.bats
-        kcov --exclude-pattern="/usr/lib,/tmp,$PWD/tests,$PWD/coverage,.git,.github,$MOCK_DIR,.ps1,.bashrc,.profile,.bash_logout,install_lib.sh,pi-apps/updater" --include-path="$PWD" "$COVERAGE_OUTPUT_DIR/uninstall" bats tests/uninstall.bats
+        kcov "${KCOV_ARGS[@]}" "$COVERAGE_OUTPUT_DIR/unit_tests" bats tests/unit_tests.bats
+        kcov "${KCOV_ARGS[@]}" "$COVERAGE_OUTPUT_DIR/install_interactive" bats tests/install_interactive.bats
+        kcov "${KCOV_ARGS[@]}" "$COVERAGE_OUTPUT_DIR/install_extended" bats tests/install_extended.bats
+        kcov "${KCOV_ARGS[@]}" "$COVERAGE_OUTPUT_DIR/install_pi_mode" bats tests/install_pi_mode.bats
+        kcov "${KCOV_ARGS[@]}" "$COVERAGE_OUTPUT_DIR/install_non_pi_mode" bats tests/install_non_pi_mode.bats
+        kcov "${KCOV_ARGS[@]}" "$COVERAGE_OUTPUT_DIR/uninstall" bats tests/uninstall.bats
     else
         bats tests/unit_tests.bats
         bats tests/install_interactive.bats
         bats tests/install_extended.bats
         bats tests/install_pi_mode.bats
+        bats tests/install_non_pi_mode.bats
         bats tests/uninstall.bats
     fi
 fi
@@ -104,9 +109,9 @@ fi
 if [ "$MODE" = "all" ] || [ "$MODE" = "maintenance" ]; then
     echo "--- Running Component Tests ---"
     if [ "$COVERAGE_ENABLED" = "1" ]; then
-        kcov --exclude-pattern="/usr/lib,/tmp,$PWD/tests,$PWD/coverage,.git,.github,$MOCK_DIR,.ps1,.bashrc,.profile,.bash_logout,install_lib.sh,pi-apps/updater" --include-path="$PWD" "$COVERAGE_OUTPUT_DIR/component_tests" bats tests/component_tests.bats
-        kcov --exclude-pattern="/usr/lib,/tmp,$PWD/tests,$PWD/coverage,.git,.github,$MOCK_DIR,.ps1,.bashrc,.profile,.bash_logout,install_lib.sh,pi-apps/updater" --include-path="$PWD" "$COVERAGE_OUTPUT_DIR/component_tests_samsung" bats tests/component_tests_samsung.bats
-        kcov --exclude-pattern="/usr/lib,/tmp,$PWD/tests,$PWD/coverage,.git,.github,$MOCK_DIR,.ps1,.bashrc,.profile,.bash_logout,install_lib.sh,pi-apps/updater" --include-path="$PWD" "$COVERAGE_OUTPUT_DIR/component_tests_self_update" bats tests/component_tests_self_update.bats
+        kcov "${KCOV_ARGS[@]}" "$COVERAGE_OUTPUT_DIR/component_tests" bats tests/component_tests.bats
+        kcov "${KCOV_ARGS[@]}" "$COVERAGE_OUTPUT_DIR/component_tests_samsung" bats tests/component_tests_samsung.bats
+        kcov "${KCOV_ARGS[@]}" "$COVERAGE_OUTPUT_DIR/component_tests_self_update" bats tests/component_tests_self_update.bats
     else
         bats tests/component_tests.bats
         bats tests/component_tests_samsung.bats
@@ -130,23 +135,95 @@ if [ "$MODE" = "all" ] || [ "$MODE" = "installer" ]; then
     echo "--- [PHASE 1] Install, Configure, Schedule ---"
     if [ "$COVERAGE_ENABLED" = "1" ]; then
         (
-            echo "Y"; sleep 1; echo "test@initial.com"; sleep 1; echo "pass1"
-            sleep 1; echo ""; echo ""; echo ""; echo ""; echo ""; echo ""; echo ""
-            sleep 2; echo "2"; sleep 1; echo ""; sleep 1; echo "1"; sleep 1
-            echo "Y"; sleep 1; echo "test@final.com"; sleep 1; echo "pass2"
-            sleep 1; echo "4"; sleep 1; echo "3"; sleep 1; echo "1"; sleep 1
-            echo "e"; sleep 1; echo "0 0 * * *"; sleep 1; echo "4"; sleep 1
-            echo "y"; sleep 1; echo "0"; sleep 1; echo "0"
+            echo "Y"
+            sleep 1
+            echo "test@initial.com"
+            sleep 1
+            echo "pass1"
+            sleep 1
+            echo ""
+            echo ""
+            echo ""
+            echo ""
+            echo ""
+            echo ""
+            echo ""
+            sleep 2
+            echo "2"
+            sleep 1
+            echo ""
+            sleep 1
+            echo "1"
+            sleep 1
+            echo "Y"
+            sleep 1
+            echo "test@final.com"
+            sleep 1
+            echo "pass2"
+            sleep 1
+            echo "4"
+            sleep 1
+            echo "3"
+            sleep 1
+            echo "1"
+            sleep 1
+            echo "e"
+            sleep 1
+            echo "0 0 * * *"
+            sleep 1
+            echo "4"
+            sleep 1
+            echo "y"
+            sleep 1
+            echo "0"
+            sleep 1
+            echo "0"
         ) | run_with_coverage "install_phase1" ./install.sh
     else
         (
-            echo "Y"; sleep 0.5; echo "test@initial.com"; sleep 0.5; echo "pass1"
-            sleep 0.5; echo ""; echo ""; echo ""; echo ""; echo ""; echo ""; echo ""
-            sleep 1; echo "2"; sleep 0.5; echo ""; sleep 0.5; echo "1"; sleep 0.5
-            echo "Y"; sleep 0.5; echo "test@final.com"; sleep 0.5; echo "pass2"
-            sleep 0.5; echo "4"; sleep 0.5; echo "3"; sleep 0.5; echo "1"; sleep 0.5
-            echo "e"; sleep 0.5; echo "0 0 * * *"; sleep 0.5; echo "4"; sleep 0.5
-            echo "y"; sleep 0.5; echo "0"; sleep 0.5; echo "0"
+            echo "Y"
+            sleep 0.5
+            echo "test@initial.com"
+            sleep 0.5
+            echo "pass1"
+            sleep 0.5
+            echo ""
+            echo ""
+            echo ""
+            echo ""
+            echo ""
+            echo ""
+            echo ""
+            sleep 1
+            echo "2"
+            sleep 0.5
+            echo ""
+            sleep 0.5
+            echo "1"
+            sleep 0.5
+            echo "Y"
+            sleep 0.5
+            echo "test@final.com"
+            sleep 0.5
+            echo "pass2"
+            sleep 0.5
+            echo "4"
+            sleep 0.5
+            echo "3"
+            sleep 0.5
+            echo "1"
+            sleep 0.5
+            echo "e"
+            sleep 0.5
+            echo "0 0 * * *"
+            sleep 0.5
+            echo "4"
+            sleep 0.5
+            echo "y"
+            sleep 0.5
+            echo "0"
+            sleep 0.5
+            echo "0"
         ) | ./install.sh
     fi
     echo "--- [VERIFY] Checking Phase 1 State ---"
@@ -155,7 +232,9 @@ if [ "$MODE" = "all" ] || [ "$MODE" = "installer" ]; then
     if grep -q "AuthUser=test@final.com" "$TARGET_CONF"; then
         echo "✅ SSMTP: Configured correctly to test@final.com"
     else
-        echo "❌ SSMTP: Config failed (Expected test@final.com)"; cat "$TARGET_CONF"; exit 1
+        echo "❌ SSMTP: Config failed (Expected test@final.com)"
+        cat "$TARGET_CONF"
+        exit 1
     fi
 
     # PHASE 3: Edge Cases
@@ -163,11 +242,42 @@ if [ "$MODE" = "all" ] || [ "$MODE" = "installer" ]; then
     echo "--- [PHASE 3] Edge Cases ---"
     if [ "$COVERAGE_ENABLED" = "1" ]; then
         (
-            echo "1"; sleep 0.2; echo "Y"; sleep 0.2; echo "invalid_email"; sleep 0.2; echo ""
-            echo "1"; sleep 0.2; echo "Y"; sleep 0.2; echo "valid@email.com"; sleep 0.2; echo ""
-            echo "1"; sleep 0.2; echo "N"; sleep 0.2; echo "2"; sleep 0.2; echo ""
-            echo "3"; sleep 0.2; echo "9"; sleep 0.2; echo "0"; sleep 0.2; echo "4"; sleep 0.5
-            echo "9"; sleep 0.2; echo "5"; sleep 0.2; echo "N"; sleep 0.2; echo "0"
+            echo "1"
+            sleep 0.2
+            echo "Y"
+            sleep 0.2
+            echo "invalid_email"
+            sleep 0.2
+            echo ""
+            echo "1"
+            sleep 0.2
+            echo "Y"
+            sleep 0.2
+            echo "valid@email.com"
+            sleep 0.2
+            echo ""
+            echo "1"
+            sleep 0.2
+            echo "N"
+            sleep 0.2
+            echo "2"
+            sleep 0.2
+            echo ""
+            echo "3"
+            sleep 0.2
+            echo "9"
+            sleep 0.2
+            echo "0"
+            sleep 0.2
+            echo "4"
+            sleep 0.5
+            echo "9"
+            sleep 0.2
+            echo "5"
+            sleep 0.2
+            echo "N"
+            sleep 0.2
+            echo "0"
         ) | run_with_coverage "install_phase3_edge_cases" ./install.sh
     fi
 fi
@@ -178,11 +288,28 @@ if [ "$COVERAGE_ENABLED" = "1" ]; then
     HTML_REPORT_DIR="$COVERAGE_OUTPUT_DIR/html_report"
     mkdir -p "$HTML_REPORT_DIR"
     if [ "$MODE" = "installer" ]; then
-        kcov --merge "$HTML_REPORT_DIR" "$COVERAGE_OUTPUT_DIR/unit_tests" "$COVERAGE_OUTPUT_DIR/install_interactive" "$COVERAGE_OUTPUT_DIR/install_extended" "$COVERAGE_OUTPUT_DIR/install_phase1" "$COVERAGE_OUTPUT_DIR/install_phase3_edge_cases" "$COVERAGE_OUTPUT_DIR/uninstall"
+        kcov --merge "$HTML_REPORT_DIR" \
+            "$COVERAGE_OUTPUT_DIR/unit_tests" \
+            "$COVERAGE_OUTPUT_DIR/install_interactive" \
+            "$COVERAGE_OUTPUT_DIR/install_extended" \
+            "$COVERAGE_OUTPUT_DIR/install_phase1" \
+            "$COVERAGE_OUTPUT_DIR/install_phase3_edge_cases" \
+            "$COVERAGE_OUTPUT_DIR/uninstall"
     elif [ "$MODE" = "maintenance" ]; then
         cp -r "$COVERAGE_OUTPUT_DIR/component_tests/"* "$HTML_REPORT_DIR/"
     else
-        kcov --merge "$HTML_REPORT_DIR" "$COVERAGE_OUTPUT_DIR/unit_tests" "$COVERAGE_OUTPUT_DIR/component_tests" "$COVERAGE_OUTPUT_DIR/component_tests_samsung" "$COVERAGE_OUTPUT_DIR/component_tests_self_update" "$COVERAGE_OUTPUT_DIR/install_interactive" "$COVERAGE_OUTPUT_DIR/install_extended" "$COVERAGE_OUTPUT_DIR/install_pi_mode" "$COVERAGE_OUTPUT_DIR/install_phase1" "$COVERAGE_OUTPUT_DIR/install_phase3_edge_cases" "$COVERAGE_OUTPUT_DIR/uninstall"
+        kcov --merge "$HTML_REPORT_DIR" \
+            "$COVERAGE_OUTPUT_DIR/unit_tests" \
+            "$COVERAGE_OUTPUT_DIR/component_tests" \
+            "$COVERAGE_OUTPUT_DIR/component_tests_samsung" \
+            "$COVERAGE_OUTPUT_DIR/component_tests_self_update" \
+            "$COVERAGE_OUTPUT_DIR/install_interactive" \
+            "$COVERAGE_OUTPUT_DIR/install_extended" \
+            "$COVERAGE_OUTPUT_DIR/install_non_pi_mode" \
+            "$COVERAGE_OUTPUT_DIR/install_pi_mode" \
+            "$COVERAGE_OUTPUT_DIR/install_phase1" \
+            "$COVERAGE_OUTPUT_DIR/install_phase3_edge_cases" \
+            "$COVERAGE_OUTPUT_DIR/uninstall"
     fi
 
     echo "--- Patching Cobertura XMLs ---"
@@ -201,13 +328,13 @@ if [ "$COVERAGE_ENABLED" = "1" ] && [ -f "$COVERAGE_OUTPUT_DIR/cobertura.xml" ];
     echo ""
     echo "--- Updating Coverage Badge ---"
     python3 tests/transform_coverage.py "$COVERAGE_OUTPUT_DIR/cobertura.xml"
-    
+
     # Extract coverage percentage and enforce 90% threshold
     COVERAGE_PERCENT=$(grep -oP 'line-rate="\K[^"]+' "$COVERAGE_OUTPUT_DIR/cobertura.xml" | head -1)
     if [ -n "$COVERAGE_PERCENT" ]; then
         COVERAGE_INT=$(echo "$COVERAGE_PERCENT * 100" | bc | cut -d'.' -f1)
         echo "Coverage: ${COVERAGE_INT}%"
-        
+
         if [ "$COVERAGE_INT" -lt 90 ]; then
             echo ""
             echo "⚠️  WARNING: Coverage ${COVERAGE_INT}% is below mandatory 90% threshold!"
@@ -216,9 +343,8 @@ if [ "$COVERAGE_ENABLED" = "1" ] && [ -f "$COVERAGE_OUTPUT_DIR/cobertura.xml" ];
             echo "✅ Coverage meets 90% requirement"
         fi
     fi
-    
+
     echo ""
     echo "📦 Remember to commit the updated badge:"
     echo "   git add assets/coverage.svg"
 fi
-

@@ -137,7 +137,7 @@ EOF
 }
 
 @test "Install: Main Menu - Uninstall No" {
-    run bash -c "export PATH=$MOCK_DIR:$PATH; source ./install.sh; main_menu <<< $'5\nn\n0'"
+    run bash -c "export PATH=$MOCK_DIR:$PATH; source ./install.sh; main_menu <<< $'6\nn\n0'"
     [[ "$output" =~ "Configure Email Settings" ]] # Should still be in menu
 }
 
@@ -156,7 +156,7 @@ EOF
     cp ./install.sh "$TD/"
     cd "$TD"
     
-    run bash -c "export PATH=$MOCK_DIR:$PATH; source ./install.sh; main_menu <<< $'5\ny'"
+    run bash -c "export PATH=$MOCK_DIR:$PATH; source ./install.sh; main_menu <<< $'6\ny'"
     
     cd - >/dev/null
     rm -rf "$TD"
@@ -267,7 +267,7 @@ EOF
     echo "echo 'LOCAL_UNINSTALL_RUN'" >> "./uninstall.sh"
     chmod +x "./uninstall.sh"
     
-    run bash -c "export PATH=$MOCK_DIR:$PATH; source ./install.sh; main_menu <<< $'5\ny'"
+    run bash -c "export PATH=$MOCK_DIR:$PATH; source ./install.sh; main_menu <<< $'6\ny'"
     
     # Cleanup
     rm -f "./uninstall.sh"
@@ -281,6 +281,94 @@ EOF
     # Pass 0 to exit menu.
     run ./install.sh <<< $'0'
     [[ "$output" =~ "Raspberry Pi Maintenance Suite Manager" ]]
+}
+
+@test "Install: Run Enabled Tasks Now - Runs Root and User Tasks" {
+    mkdir -p "$INSTALL_DIR"
+
+    cat << 'EOF' > "$INSTALL_DIR/update_pi_os.sh"
+#!/bin/bash
+echo "RUN_OS_UPDATE"
+EOF
+    chmod +x "$INSTALL_DIR/update_pi_os.sh"
+
+    cat << 'EOF' > "$INSTALL_DIR/update_pi_apps.sh"
+#!/bin/bash
+echo "RUN_PI_APPS_UPDATE"
+EOF
+    chmod +x "$INSTALL_DIR/update_pi_apps.sh"
+
+    echo "0 3 * * 0 $INSTALL_DIR/update_pi_os.sh >/dev/null" > "$MOCK_DIR/root_cron"
+    echo "0 5 * * 0 $INSTALL_DIR/update_pi_apps.sh >/dev/null" > "$MOCK_DIR/user_cron"
+
+    run bash -c "export PATH=$MOCK_DIR:$PATH; source ./install.sh; run_enabled_tasks_now <<< $'y\\n\\n'"
+
+    [[ "$output" =~ "RUN_OS_UPDATE" ]]
+    [[ "$output" =~ "RUN_PI_APPS_UPDATE" ]]
+    [[ "$output" =~ "All enabled tasks completed successfully" ]]
+}
+
+@test "Install: Run Enabled Tasks Now - Cancel on Reboot Warning" {
+    mkdir -p "$INSTALL_DIR"
+
+    cat << 'EOF' > "$INSTALL_DIR/update_pi_os.sh"
+#!/bin/bash
+echo "RUN_OS_UPDATE_SHOULD_NOT_HAPPEN"
+EOF
+    chmod +x "$INSTALL_DIR/update_pi_os.sh"
+
+    echo "0 3 * * 0 $INSTALL_DIR/update_pi_os.sh >/dev/null" > "$MOCK_DIR/root_cron"
+
+    run bash -c "export PATH=$MOCK_DIR:$PATH; source ./install.sh; run_enabled_tasks_now <<< $'n\\n\\n'"
+
+    [[ "$output" =~ "Warning: One or more enabled tasks may reboot" ]]
+    [[ "$output" =~ "Cancelled: Enabled tasks were not run" ]]
+    [[ ! "$output" =~ "RUN_OS_UPDATE_SHOULD_NOT_HAPPEN" ]]
+}
+
+@test "Install: Run Enabled Tasks Now - No Enabled Tasks" {
+    rm -f "$MOCK_DIR/root_cron" "$MOCK_DIR/user_cron"
+
+    run bash -c "export PATH=$MOCK_DIR:$PATH; source ./install.sh; run_enabled_tasks_now <<< $'\\n'"
+
+    [[ "$output" =~ "No enabled tasks found" ]]
+}
+
+@test "Install: Run Enabled Tasks Now - Missing Script Reports Failure" {
+    rm -rf "$INSTALL_DIR"
+    mkdir -p "$INSTALL_DIR"
+
+    # Enable a reboot-capable root task, but intentionally do not create the script file.
+    echo "0 3 * * 0 $INSTALL_DIR/update_pi_os.sh >/dev/null" > "$MOCK_DIR/root_cron"
+
+    run bash -c "export PATH=$MOCK_DIR:$PATH; source ./install.sh; run_enabled_tasks_now <<< $'y\\n\\n'"
+
+    [[ "$output" =~ "Skipped: Script not found" ]]
+    [[ "$output" =~ "Completed with failures" ]]
+}
+
+@test "Install: Main Menu - Run Enabled Tasks Option" {
+    mkdir -p "$INSTALL_DIR"
+
+    cat << 'EOF' > "$INSTALL_DIR/update_pi_os.sh"
+#!/bin/bash
+echo "RUN_OS_UPDATE_MENU"
+EOF
+    chmod +x "$INSTALL_DIR/update_pi_os.sh"
+
+    echo "0 3 * * 0 $INSTALL_DIR/update_pi_os.sh >/dev/null" > "$MOCK_DIR/root_cron"
+
+    run bash -c "export PATH=$MOCK_DIR:$PATH; source ./install.sh; main_menu <<< $'5\\ny\\n\\n0'"
+
+    [[ "$output" =~ "Run Enabled Tasks Now" ]]
+    [[ "$output" =~ "RUN_OS_UPDATE_MENU" ]]
+}
+
+@test "Install: Main Menu - Force Update Scripts Option" {
+    run bash -c "export PATH=$MOCK_DIR:$PATH; source ./install.sh; main_menu <<< $'4\n0'"
+
+    [[ "$output" =~ "Downloading/Updating scripts" ]]
+    [[ "$output" =~ "Scripts updated" ]]
 }
 
 @test "Install: Entry Point - Fresh Install" {

@@ -38,12 +38,11 @@ NAMES[7]="Self-Update Service"
 IS_PI=false
 if [ "$TEST_MODE" == "true" ] && [ -n "$MOCK_IS_PI" ]; then
     IS_PI="$MOCK_IS_PI"
-elif grep -q "Raspberry Pi" /proc/device-tree/model 2>/dev/null; then
+elif grep -q "Raspberry Pi" /proc/device-tree/model 2> /dev/null; then
     IS_PI=true
-elif grep -q "Raspberry Pi" /proc/cpuinfo 2>/dev/null; then
+elif grep -q "Raspberry Pi" /proc/cpuinfo 2> /dev/null; then
     IS_PI=true
 fi
-
 
 # Default Schedules
 declare -A DEFAULTS
@@ -61,28 +60,35 @@ read_input() {
     local prompt="$1"
     local var_name="$2"
     local is_secret="$3"
-    
-    local read_opts=("-r")
-    [[ "$is_secret" == "true" ]] && read_opts+=("-s")
-    
+
     local user_val=""
     local status=0
     # If piped (curl | bash) AND not in test mode, use /dev/tty for prompt AND input
     if [ ! -t 0 ] && [ -c /dev/tty ] && [ "${TEST_MODE}" != "true" ]; then
         printf "%s" "$prompt" > /dev/tty
-        # shellcheck disable=SC2229,SC2162
-        read "${read_opts[@]}" user_val < /dev/tty
+        if [[ "$is_secret" == "true" ]]; then
+            read -r -s user_val < /dev/tty
+        else
+            read -r user_val < /dev/tty
+        fi
         status=$?
-        if [[ "$is_secret" == "true" ]]; then echo "" > /dev/tty; fi
+        if [[ "$is_secret" == "true" ]]; then
+            echo "" > /dev/tty
+        fi
     else
         # Standard interactive or automated/test mode
         printf "%s" "$prompt" >&2
-        # shellcheck disable=SC2229,SC2162
-        read "${read_opts[@]}" user_val
+        if [[ "$is_secret" == "true" ]]; then
+            read -r -s user_val
+        else
+            read -r user_val
+        fi
         status=$?
-        if [[ "$is_secret" == "true" ]]; then echo "" >&2; fi
+        if [[ "$is_secret" == "true" ]]; then
+            echo "" >&2
+        fi
     fi
-    
+
     # Clean up the input: strip carriage returns and leading/trailing whitespace
     user_val=$(echo "$user_val" | tr -d '\r' | xargs)
     printf -v "$var_name" "%s" "$user_val"
@@ -103,7 +109,7 @@ is_installed() {
 
 check_dependencies() {
     echo "Checking dependencies..."
-    
+
     # Check for curl
     if ! is_installed curl; then
         echo "Installing curl..."
@@ -123,17 +129,22 @@ check_dependencies() {
 
 cron_to_human() {
     local cron_str=$1
-    
+
     if [[ -z "$cron_str" || "$cron_str" == "-" ]]; then
         echo "-"
         return
     fi
 
-    local m; m=$(echo "$cron_str" | awk '{print $1}')
-    local h; h=$(echo "$cron_str" | awk '{print $2}')
-    local dom; dom=$(echo "$cron_str" | awk '{print $3}')
-    local mon; mon=$(echo "$cron_str" | awk '{print $4}')
-    local dow; dow=$(echo "$cron_str" | awk '{print $5}')
+    local m
+    m=$(echo "$cron_str" | awk '{print $1}')
+    local h
+    h=$(echo "$cron_str" | awk '{print $2}')
+    local dom
+    dom=$(echo "$cron_str" | awk '{print $3}')
+    local mon
+    mon=$(echo "$cron_str" | awk '{print $4}')
+    local dow
+    dow=$(echo "$cron_str" | awk '{print $5}')
 
     # Pad time
     if [[ ${#m} -eq 1 ]]; then m="0$m"; fi
@@ -143,7 +154,7 @@ cron_to_human() {
         echo "Daily @ $h:$m"
     elif [[ "$dom" == "*" && "$mon" == "*" && "$dow" != "*" ]]; then
         case $dow in
-            0|7) day="Sun" ;;
+            0 | 7) day="Sun" ;;
             1) day="Mon" ;;
             2) day="Tue" ;;
             3) day="Wed" ;;
@@ -163,7 +174,7 @@ cron_to_human() {
 configure_email_interactive() {
     print_header
     echo "--- Email Configuration ---"
-    
+
     local current_user=""
     if [ -f "$SSMTP_CONF" ]; then
         current_user=$(sudo grep "^AuthUser=" "$SSMTP_CONF" | cut -d= -f2)
@@ -188,14 +199,14 @@ configure_email_interactive() {
     # Remove all spaces (Google displays them as 'aaaa bbbb cccc dddd')
     app_pass=$(echo "$app_pass" | tr -d ' ')
     echo "" # Newline after secret input
-   
+
     if [ -z "$app_pass" ]; then
         echo "Password empty. Returning."
         return
     fi
 
     echo "Saving configuration..."
-    cat <<EOF | sudo tee "$SSMTP_CONF" > /dev/null
+    cat << EOF | sudo tee "$SSMTP_CONF" > /dev/null
 root=$user_email
 mailhub=smtp.gmail.com:587
 AuthUser=$user_email
@@ -210,21 +221,27 @@ EOF
     sudo chmod 640 "$SSMTP_CONF"
     sudo usermod -a -G mail "$USER"
 
-    cat <<EOF | sudo tee "$REVALIASES" > /dev/null
+    cat << EOF | sudo tee "$REVALIASES" > /dev/null
 root:$user_email:smtp.gmail.com:587
 $USER:$user_email:smtp.gmail.com:587
 EOF
-    
+
     # Update scripts with new email
     if [ -d "$INSTALL_DIR" ]; then
         for file in "$INSTALL_DIR"/*.sh; do
-             sed -i "s/RECIPIENT_EMAIL=\".*\"/RECIPIENT_EMAIL=\"$user_email\"/" "$file"
+            sed -i "s/RECIPIENT_EMAIL=\".*\"/RECIPIENT_EMAIL=\"$user_email\"/" "$file"
         done
     fi
 
     # Configure cron MAILTO so that cron failures are sent to this email
-    (echo "MAILTO=\"$user_email\""; sudo crontab -l 2>/dev/null | grep -v "^MAILTO=") | sudo crontab -
-    (echo "MAILTO=\"$user_email\""; crontab -l 2>/dev/null | grep -v "^MAILTO=") | crontab -
+    {
+        echo "MAILTO=\"$user_email\""
+        sudo crontab -l 2> /dev/null | grep -v "^MAILTO="
+    } | sudo crontab -
+    {
+        echo "MAILTO=\"$user_email\""
+        crontab -l 2> /dev/null | grep -v "^MAILTO="
+    } | crontab -
 
     echo "Email configured successfully."
     sleep 1
@@ -249,7 +266,7 @@ show_email_config() {
 download_scripts() {
     echo "Downloading/Updating scripts..."
     mkdir -p "$INSTALL_DIR"
-    
+
     # Get email for injection
     local email_to_inject="your_email@gmail.com"
     if [ -f "$SSMTP_CONF" ]; then
@@ -258,17 +275,17 @@ download_scripts() {
 
     for i in {1..7}; do
         local script="${SCRIPTS[$i]}"
-        
-        # Skip Pi specific scripts on non-Pi hardware
+
+        # Skip Pi-only script on non-Pi hardware
         if [ "$IS_PI" == "false" ]; then
-            if [[ "$script" == "update_pi_firmware.sh" || "$script" == "update_pip.sh" ]]; then
+            if [[ "$script" == "update_pip.sh" ]]; then
                 continue
             fi
         fi
 
         # echo "Fetching $script..."
         curl -sSL "$RAW_URL/scripts/$script" -o "$INSTALL_DIR/$script"
-        
+
         if [ -f "$INSTALL_DIR/$script" ]; then
             sed -i "s/your_email@gmail.com/$email_to_inject/g" "$INSTALL_DIR/$script"
             chmod +x "$INSTALL_DIR/$script"
@@ -284,8 +301,8 @@ download_scripts() {
     if REMOTE_JSON=$(curl -s -L --max-time 10 "$RELEASE_API_URL"); then
         REMOTE_TAG=$(echo "$REMOTE_JSON" | grep -o '"tag_name": *"[^"]*"' | head -n 1 | cut -d'"' -f4)
         if [ -n "$REMOTE_TAG" ]; then
-             echo "$REMOTE_TAG" > "$INSTALL_DIR/.version"
-             echo "Version set to: $REMOTE_TAG"
+            echo "$REMOTE_TAG" > "$INSTALL_DIR/.version"
+            echo "Version set to: $REMOTE_TAG"
         fi
     fi
 
@@ -296,18 +313,19 @@ get_task_status() {
     local script_name=$1
     local is_root=$2
     local line=""
-    
+
     if [ "$is_root" == "true" ]; then
-        line=$(sudo crontab -l 2>/dev/null | grep "$script_name")
+        line=$(sudo crontab -l 2> /dev/null | grep "$script_name")
     else
-        line=$(crontab -l 2>/dev/null | grep "$script_name")
+        line=$(crontab -l 2> /dev/null | grep "$script_name")
     fi
 
     if [ -z "$line" ]; then
         echo "DISABLED|-"
     else
         # Extract schedule part (remove the command path)
-        local sched; sched=${line% "$INSTALL_DIR"/*}
+        local sched
+        sched=${line% "$INSTALL_DIR"/*}
         echo "ENABLED|$sched"
     fi
 }
@@ -317,15 +335,18 @@ toggle_task() {
     local script_name="${SCRIPTS[$id]}"
     local default_sched="${DEFAULTS[$id]}"
     local is_root="true"
-    
+
     # Pi-Apps is the only user-crontab script
     if [ "$script_name" == "update_pi_apps.sh" ]; then
         is_root="false"
     fi
 
-    local status_info; status_info=$(get_task_status "$script_name" "$is_root")
-    local state; state=$(echo "$status_info" | cut -d'|' -f1)
-    local current_sched; current_sched=$(echo "$status_info" | cut -d'|' -f2)
+    local status_info
+    status_info=$(get_task_status "$script_name" "$is_root")
+    local state
+    state=$(echo "$status_info" | cut -d'|' -f1)
+    local current_sched
+    current_sched=$(echo "$status_info" | cut -d'|' -f2)
 
     echo ""
     echo "Task: ${NAMES[$id]}"
@@ -340,21 +361,27 @@ toggle_task() {
         choice=$(echo "$choice" | tr '[:upper:]' '[:lower:]')
         if [[ "$choice" == "y" ]]; then
             if [ "$is_root" == "true" ]; then
-                sudo crontab -l 2>/dev/null | grep -v "$script_name" | sudo crontab -
+                sudo crontab -l 2> /dev/null | grep -v "$script_name" | sudo crontab -
             else
-                crontab -l 2>/dev/null | grep -v "$script_name" | crontab -
+                crontab -l 2> /dev/null | grep -v "$script_name" | crontab -
             fi
             echo "Task disabled."
         elif [[ "$choice" == "e" ]]; then
-             read_input "Enter new cron schedule (Default: $default_sched): " new_time
-             new_time=${new_time:-$default_sched}
-             # Remove old, add new
-             if [ "$is_root" == "true" ]; then
-                (sudo crontab -l 2>/dev/null | grep -v "$script_name"; echo "$new_time $INSTALL_DIR/$script_name >/dev/null") | sudo crontab -
-             else
-                (crontab -l 2>/dev/null | grep -v "$script_name"; echo "$new_time $INSTALL_DIR/$script_name >/dev/null") | crontab -
-             fi
-             echo "Schedule updated."
+            read_input "Enter new cron schedule (Default: $default_sched): " new_time
+            new_time=${new_time:-$default_sched}
+            # Remove old, add new
+            if [ "$is_root" == "true" ]; then
+                {
+                    sudo crontab -l 2> /dev/null | grep -v "$script_name"
+                    echo "$new_time $INSTALL_DIR/$script_name >/dev/null"
+                } | sudo crontab -
+            else
+                {
+                    crontab -l 2> /dev/null | grep -v "$script_name"
+                    echo "$new_time $INSTALL_DIR/$script_name >/dev/null"
+                } | crontab -
+            fi
+            echo "Schedule updated."
         fi
     else
         read_input "Do you want to ENABLE this task? [y/N]: " choice
@@ -362,16 +389,114 @@ toggle_task() {
         if [[ "$choice" == "y" ]]; then
             read_input "Enter cron schedule (Default: $default_sched): " new_time
             new_time=${new_time:-$default_sched}
-            
+
             if [ "$is_root" == "true" ]; then
-                (sudo crontab -l 2>/dev/null | grep -v "$script_name"; echo "$new_time $INSTALL_DIR/$script_name >/dev/null") | sudo crontab -
+                {
+                    sudo crontab -l 2> /dev/null | grep -v "$script_name"
+                    echo "$new_time $INSTALL_DIR/$script_name >/dev/null"
+                } | sudo crontab -
             else
-                (crontab -l 2>/dev/null | grep -v "$script_name"; echo "$new_time $INSTALL_DIR/$script_name >/dev/null") | crontab -
+                {
+                    crontab -l 2> /dev/null | grep -v "$script_name"
+                    echo "$new_time $INSTALL_DIR/$script_name >/dev/null"
+                } | crontab -
             fi
             echo "Task enabled."
         fi
     fi
     sleep 1
+}
+
+run_enabled_tasks_now() {
+    print_header
+    echo "--- Run Enabled Tasks Now ---"
+
+    local ran_any=false
+    local failed_any=false
+    local has_enabled_reboot_task=false
+
+    for reboot_script in "update_pi_os.sh" "update_pi_firmware.sh" "update_samsung_ssd.sh"; do
+        local reboot_status_info
+        local reboot_state
+        reboot_status_info=$(get_task_status "$reboot_script" "true")
+        reboot_state=$(echo "$reboot_status_info" | cut -d'|' -f1)
+        if [ "$reboot_state" == "ENABLED" ]; then
+            has_enabled_reboot_task=true
+            break
+        fi
+    done
+
+    if [ "$has_enabled_reboot_task" == "true" ]; then
+        local confirm_reboot_run=""
+        echo "Warning: One or more enabled tasks may reboot the system and terminate this session."
+        read_input "Proceed with running enabled tasks now? [y/N]: " confirm_reboot_run
+        confirm_reboot_run=$(echo "$confirm_reboot_run" | tr '[:upper:]' '[:lower:]')
+        if [ "$confirm_reboot_run" != "y" ]; then
+            echo "Cancelled: Enabled tasks were not run."
+            read_input "Press Enter to return..." _
+            return
+        fi
+    fi
+
+    for i in {1..7}; do
+        local script_name="${SCRIPTS[$i]}"
+        local task_name="${NAMES[$i]}"
+        local is_root="true"
+        local status_info=""
+        local state=""
+
+        if [ "$IS_PI" == "false" ] && [ "$script_name" == "update_pip.sh" ]; then
+            continue
+        fi
+
+        if [ "$script_name" == "update_pi_apps.sh" ]; then
+            is_root="false"
+        fi
+
+        status_info=$(get_task_status "$script_name" "$is_root")
+        state=$(echo "$status_info" | cut -d'|' -f1)
+
+        if [ "$state" != "ENABLED" ]; then
+            continue
+        fi
+
+        ran_any=true
+        echo ""
+        echo "Running: $task_name ($script_name)"
+
+        if [ ! -f "$INSTALL_DIR/$script_name" ]; then
+            echo "  Skipped: Script not found: $INSTALL_DIR/$script_name"
+            failed_any=true
+            continue
+        fi
+
+        if [ "$script_name" == "update_pi_apps.sh" ] && [ "$(id -u)" -eq 0 ] && [ -n "$SUDO_USER" ]; then
+            if sudo -u "$SUDO_USER" bash "$INSTALL_DIR/$script_name"; then
+                echo "  Success"
+            else
+                echo "  Failed"
+                failed_any=true
+            fi
+        else
+            if bash "$INSTALL_DIR/$script_name"; then
+                echo "  Success"
+            else
+                echo "  Failed"
+                failed_any=true
+            fi
+        fi
+    done
+
+    echo ""
+    if [ "$ran_any" != "true" ]; then
+        echo "No enabled tasks found."
+    elif [ "$failed_any" == "true" ]; then
+        echo "Completed with failures."
+    else
+        echo "All enabled tasks completed successfully."
+    fi
+
+    read_input "Press Enter to return..." _
 }
 
 manage_tasks_ui() {
@@ -387,9 +512,9 @@ manage_tasks_ui() {
             local script="${SCRIPTS[$i]}"
             local name="${NAMES[$i]}"
 
-            # Skip Pi specific scripts on non-Pi hardware
+            # Skip Pi-only script on non-Pi hardware
             if [ "$IS_PI" == "false" ]; then
-                if [[ "$script" == "update_pi_firmware.sh" || "$script" == "update_pip.sh" ]]; then
+                if [[ "$script" == "update_pip.sh" ]]; then
                     continue
                 fi
             fi
@@ -397,12 +522,16 @@ manage_tasks_ui() {
             local is_root="true"
             [ "$script" == "update_pi_apps.sh" ] && is_root="false"
 
-            local info; info=$(get_task_status "$script" "$is_root")
-            local state; state=$(echo "$info" | cut -d'|' -f1)
-            local sched; sched=$(echo "$info" | cut -d'|' -f2)
-            
-            local human_time; human_time=$(cron_to_human "$sched")
-            
+            local info
+            info=$(get_task_status "$script" "$is_root")
+            local state
+            state=$(echo "$info" | cut -d'|' -f1)
+            local sched
+            sched=$(echo "$info" | cut -d'|' -f2)
+
+            local human_time
+            human_time=$(cron_to_human "$sched")
+
             printf "   %-3s %-30s %-10s %-20s %-15s\n" "$i" "$name" "$state" "$human_time" "$sched"
         done
         echo ""
@@ -428,37 +557,44 @@ run_fresh_install() {
     check_dependencies
     configure_email_interactive
     download_scripts
-    
+
     echo ""
     echo "Setting up default schedules..."
     echo "Select which tasks to enable. Press Enter to accept default [Y]."
-    
+
     # Enable all by default for fresh install but allow opt-out
     for i in {1..7}; do
         local script="${SCRIPTS[$i]}"
         local name="${NAMES[$i]}"
-        
-        # Skip Pi specific scripts on non-Pi hardware
+
+        # Skip Pi-only script on non-Pi hardware
         if [ "$IS_PI" == "false" ]; then
-            if [[ "$script" == "update_pi_firmware.sh" || "$script" == "update_pip.sh" ]]; then
+            if [[ "$script" == "update_pip.sh" ]]; then
                 echo "Skipping $name (Raspberry Pi hardware not detected)"
                 continue
             fi
         fi
 
         local sched="${DEFAULTS[$i]}"
-        local human; human=$(cron_to_human "$sched")
-        
+        local human
+        human=$(cron_to_human "$sched")
+
         read_input "$i. Enable $name ($human)? [Y/n]: " choice
         choice=$(echo "$choice" | tr '[:upper:]' '[:lower:]')
         choice=${choice:-y}
-       
+
         if [[ "$choice" == "y" ]]; then
             # Determine root/user
             if [ "$script" == "update_pi_apps.sh" ]; then
-                 (crontab -l 2>/dev/null | grep -v "$script"; echo "$sched $INSTALL_DIR/$script >/dev/null") | crontab -
+                (
+                    crontab -l 2> /dev/null | grep -v "$script"
+                    echo "$sched $INSTALL_DIR/$script >/dev/null"
+                ) | crontab -
             else
-                 (sudo crontab -l 2>/dev/null | grep -v "$script"; echo "$sched $INSTALL_DIR/$script >/dev/null") | sudo crontab -
+                (
+                    sudo crontab -l 2> /dev/null | grep -v "$script"
+                    echo "$sched $INSTALL_DIR/$script >/dev/null"
+                ) | sudo crontab -
             fi
             echo "Enabled $name"
         else
@@ -466,7 +602,7 @@ run_fresh_install() {
         fi
         echo "" # Newline separator after status
     done
-   
+
     echo ""
     echo "Installation Complete!"
     read_input "Press Enter to open the Manager Menu..." _
@@ -480,10 +616,11 @@ main_menu() {
         echo "   2. View Current Email Config"
         echo "   3. Manage Tasks & Schedules (Enable/Disable)"
         echo "   4. Force Update Scripts (from GitHub)"
-        echo "   5. Uninstall Suite"
+        echo "   5. Run Enabled Tasks Now"
+        echo "   6. Uninstall Suite"
         echo "   0. Exit"
         echo ""
-        
+
         # Prevent infinite loops during automated testing if input stream runs dry
         local opt=""
         if ! read_input "   Choose an option: " opt; then
@@ -496,7 +633,8 @@ main_menu() {
             2) show_email_config ;;
             3) manage_tasks_ui ;;
             4) download_scripts ;;
-            5) 
+            5) run_enabled_tasks_now ;;
+            6)
                 read_input "Are you sure you want to uninstall? [y/N]: " un
                 un=$(echo "$un" | tr '[:upper:]' '[:lower:]')
                 if [[ "$un" == "y" ]]; then
@@ -511,7 +649,7 @@ main_menu() {
                 fi
                 ;;
             0) exit 0 ;;
-            *) 
+            *)
                 echo "Invalid option: '$opt'"
                 sleep 2
                 ;;
@@ -529,7 +667,7 @@ run_interactive() {
     if [ -t 0 ]; then
         # Standard terminal execution
         "$@"
-    elif [[ "${TEST_MODE}" != "true" ]] && [ -c /dev/tty ] && { true < /dev/tty; } 2>/dev/null; then
+    elif [[ "${TEST_MODE}" != "true" ]] && [ -c /dev/tty ] && { true < /dev/tty; } 2> /dev/null; then
         # Piped execution (curl | bash). Input is now explicitly from terminal.
         "$@" < /dev/tty
     else

@@ -75,7 +75,7 @@ EOF
     cp ./install.sh "$TD/"
     cd "$TD"
     
-    run bash -c "export PATH=$MOCK_DIR:$PATH; export RAW_URL='http://mock'; source ./install.sh; main_menu <<< $'5\ny'"
+    run bash -c "export PATH=$MOCK_DIR:$PATH; export RAW_URL='http://mock'; source ./install.sh; main_menu <<< $'6\ny'"
     
     cd - > /dev/null
     rm -rf "$TD"

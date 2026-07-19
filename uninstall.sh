@@ -12,19 +12,19 @@ main() {
     # 1. Remove Crontab entries
     echo "Cleaning up crontabs..."
 
-    sudo crontab -l 2>/dev/null | tr -d '\r' > /tmp/root_cron.bak || true
+    sudo crontab -l 2> /dev/null | tr -d '\r' > /tmp/root_cron.bak || true
     if [ -s /tmp/root_cron.bak ]; then
-        grep -v "update_pi_os.sh" < /tmp/root_cron.bak \
-            | grep -v "update_pip.sh" \
-            | grep -v "update_pi_firmware.sh" \
-            | grep -v "docker_cleanup.sh" \
-            | grep -v "update_samsung_ssd.sh" \
-            | grep -v "update_self.sh" \
-            | grep -v "^MAILTO=" \
-            > /tmp/root_cron.new
-        
+        grep -v "update_pi_os.sh" < /tmp/root_cron.bak |
+            grep -v "update_pip.sh" |
+            grep -v "update_pi_firmware.sh" |
+            grep -v "docker_cleanup.sh" |
+            grep -v "update_samsung_ssd.sh" |
+            grep -v "update_self.sh" |
+            grep -v "^MAILTO=" \
+                > /tmp/root_cron.new
+
         # Check if the new crontab is different from the old one
-        if ! diff -q /tmp/root_cron.bak /tmp/root_cron.new >/dev/null; then
+        if ! diff -q /tmp/root_cron.bak /tmp/root_cron.new > /dev/null; then
             sudo crontab /tmp/root_cron.new
             echo "Root crontab updated."
         fi
@@ -32,7 +32,7 @@ main() {
     fi
 
     # Remove from User Crontab
-    crontab -l 2>/dev/null | tr -d '\r' > /tmp/user_cron.bak || true
+    crontab -l 2> /dev/null | tr -d '\r' > /tmp/user_cron.bak || true
     if [ -s /tmp/user_cron.bak ]; then
         grep -v 'update_pi_apps.sh' < /tmp/user_cron.bak | grep -v "^MAILTO=" > /tmp/user_cron.new
         crontab /tmp/user_cron.new
@@ -44,12 +44,13 @@ main() {
     # Try to detect INSTALL_DIR from crontab if it doesn't exist or is the default
     if [ ! -d "$INSTALL_DIR" ] || [ "$INSTALL_DIR" == "$HOME/pi-scripts" ]; then
         # Check root crontab
-        local detected; detected=$(sudo crontab -l 2>/dev/null | grep "update_pi_os.sh" | awk '{print $NF}' | sed 's/\/update_pi_os.sh//')
+        local detected
+        detected=$(sudo crontab -l 2> /dev/null | grep "update_pi_os.sh" | awk '{print $NF}' | sed 's/\/update_pi_os.sh//')
         # If not in root, check user crontab
         if [ -z "$detected" ]; then
-            detected=$(crontab -l 2>/dev/null | grep "update_pi_apps.sh" | awk '{print $NF}' | sed 's/\/update_pi_apps.sh//')
+            detected=$(crontab -l 2> /dev/null | grep "update_pi_apps.sh" | awk '{print $NF}' | sed 's/\/update_pi_apps.sh//')
         fi
-        
+
         if [ -n "$detected" ] && [ -d "$detected" ]; then
             INSTALL_DIR="$detected"
             echo "Detected installation directory: $INSTALL_DIR"
@@ -72,13 +73,13 @@ main() {
 
 run_interactive() {
     if [ "${TEST_MODE:-false}" = "true" ]; then
-         "$@"
-         return
+        "$@"
+        return
     fi
 
     if [ -t 0 ]; then
         "$@"
-    elif [[ "${TEST_MODE:-false}" != "true" ]] && [ -c /dev/tty ] && { true < /dev/tty; } 2>/dev/null; then
+    elif [[ "${TEST_MODE:-false}" != "true" ]] && [ -c /dev/tty ] && { true < /dev/tty; } 2> /dev/null; then
         # If stdin is not a terminal (e.g. piped from curl), try to use /dev/tty
         "$@" < /dev/tty
     else
