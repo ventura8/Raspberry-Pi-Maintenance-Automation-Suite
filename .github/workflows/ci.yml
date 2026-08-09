@@ -284,7 +284,7 @@ jobs:
           path: coverage/html_report/
 
       - name: Display Coverage in PR
-        uses: MishaKav/pytest-coverage-comment@v1.10.0
+        uses: MishaKav/pytest-coverage-comment@v1.11.0
         if: always() && steps.validate_coverage.outputs.valid == 'true'
         with:
           pytest-xml-coverage-path: coverage/cobertura.xml
