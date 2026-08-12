@@ -1,0 +1,629 @@
+# Raspberry Pi Maintenance Automation Suite
+# Copyright (C) 2026
+# This file is distributed under the same license as the package.
+msgid ""
+msgstr ""
+"Project-Id-Version: pi-maintenance-suite\n"
+"Report-Msgid-Bugs-To: https://github.com/ventura8/Raspberry-Pi-Maintenance-Automation-Suite/issues\n"
+"POT-Creation-Date: 1970-01-01 00:00+0000\n"
+"PO-Revision-Date: 2026-01-01 00:00+0000\n"
+"Last-Translator: AUTO\n"
+"Language-Team: ქართული\n"
+"Language: ka\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+
+msgid "      Raspberry Pi Maintenance Suite Manager"
+msgstr "[ქართული]       Raspberry Pi Maintenance Suite Manager"
+
+msgid "   -------------------"
+msgstr "[ქართული]    -------------------"
+
+msgid "   ----------------------------------------------------------------------------------"
+msgstr "[ქართული]    ----------------------------------------------------------------------------------"
+
+msgid "   0. Exit"
+msgstr "[ქართული]    0. Exit"
+
+msgid "   1. Configure Email Settings"
+msgstr "[ქართული]    1. Configure Email Settings"
+
+msgid "   2. View Current Email Config"
+msgstr "[ქართული]    2. View Current Email Config"
+
+msgid "   3. Manage Tasks & Schedules (Enable/Disable)"
+msgstr "[ქართული]    3. Manage Tasks & Schedules (Enable/Disable)"
+
+msgid "   4. Force Update Scripts (from GitHub)"
+msgstr "[ქართული]    4. Force Update Scripts (from GitHub)"
+
+msgid "   5. Run Enabled Tasks Now"
+msgstr "[ქართული]    5. Run Enabled Tasks Now"
+
+msgid "   6. Uninstall Suite"
+msgstr "[ქართული]    6. Uninstall Suite"
+
+msgid "   Enter ID to toggle/edit, or '0' to return to Main Menu."
+msgstr "[ქართული]    Enter ID to toggle/edit, or '0' to return to Main Menu."
+
+msgid "   RPi Maintenance Suite Uninstaller"
+msgstr "[ქართული]    RPi Maintenance Suite Uninstaller"
+
+msgid "   Task Status Manager"
+msgstr "[ქართული]    Task Status Manager"
+
+msgid "  Failed"
+msgstr "[ქართული]   Failed"
+
+msgid "  Success"
+msgstr "[ქართული]   Success"
+
+msgid "-"
+msgstr "[ქართული] -"
+
+msgid "--- Checking Dependencies ---"
+msgstr "[ქართული] --- Checking Dependencies ---"
+
+msgid "--- Checking for Samsung SSDs via fwupd ---"
+msgstr "[ქართული] --- Checking for Samsung SSDs via fwupd ---"
+
+msgid "--- Checking for Updates ---"
+msgstr "[ქართული] --- Checking for Updates ---"
+
+msgid "--- Current Email Settings ---"
+msgstr "[ქართული] --- Current Email Settings ---"
+
+msgid "--- Email Configuration ---"
+msgstr "[ქართული] --- Email Configuration ---"
+
+msgid "--- Fallback: Samsung Official ISO Update ---"
+msgstr "[ქართული] --- Fallback: Samsung Official ISO Update ---"
+
+msgid "--- REBOOT STATUS ---"
+msgstr "[ქართული] --- REBOOT STATUS ---"
+
+msgid "--- Refreshing Metadata ---"
+msgstr "[ქართული] --- Refreshing Metadata ---"
+
+msgid "--- Run Enabled Tasks Now ---"
+msgstr "[ქართული] --- Run Enabled Tasks Now ---"
+
+msgid "--- Running 'fwupdmgr' ---"
+msgstr "[ქართული] --- Running 'fwupdmgr' ---"
+
+msgid "--- Running 'sudo rpi-eeprom-update -a' ---"
+msgstr "[ქართული] --- Running 'sudo rpi-eeprom-update -a' ---"
+
+msgid "--- Skipping pip3 self-upgrade ---"
+msgstr "[ქართული] --- Skipping pip3 self-upgrade ---"
+
+msgid "--- Step 1: System Prune ---"
+msgstr "[ქართული] --- Step 1: System Prune ---"
+
+msgid "--- Step 2: Builder Prune ---"
+msgstr "[ქართული] --- Step 2: Builder Prune ---"
+
+msgid "--- Updating Pi-Apps and Installed Apps ---"
+msgstr "[ქართული] --- Updating Pi-Apps and Installed Apps ---"
+
+msgid "--- Upgrading outdated pip3 packages ---"
+msgstr "[ქართული] --- Upgrading outdated pip3 packages ---"
+
+msgid "--------------------------------------------"
+msgstr "[ქართული] --------------------------------------------"
+
+msgid "7z required but not installed."
+msgstr "[ქართული] 7z required but not installed."
+
+msgid "============================================"
+msgstr "[ქართული] ============================================"
+
+msgid "===================================================="
+msgstr "[ქართული] ===================================================="
+
+msgid "======================================================="
+msgstr "[ქართული] ======================================================="
+
+msgid "========================================================="
+msgstr "[ქართული] ========================================================="
+
+msgid "==========================================================="
+msgstr "[ქართული] ==========================================================="
+
+msgid "A firmware update was applied. A reboot is required."
+msgstr "[ქართული] A firmware update was applied. A reboot is required."
+
+msgid "A reboot is required to finish applying updates."
+msgstr "[ქართული] A reboot is required to finish applying updates."
+
+msgid "All dependencies are installed."
+msgstr "[ქართული] All dependencies are installed."
+
+msgid "All enabled tasks completed successfully."
+msgstr "[ქართული] All enabled tasks completed successfully."
+
+msgid "All pip3 packages are up-to-date."
+msgstr "[ქართული] All pip3 packages are up-to-date."
+
+msgid "All tasks are ON by default. Space toggles. Enter confirms."
+msgstr "[ქართული] All tasks are ON by default. Space toggles. Enter confirms."
+
+msgid "Are you sure you want to uninstall?"
+msgstr "[ქართული] Are you sure you want to uninstall?"
+
+msgid "Base pip3 is managed by the OS (Debian) to avoid record-file errors."
+msgstr "[ქართული] Base pip3 is managed by the OS (Debian) to avoid record-file errors."
+
+msgid "Buildx not detected. Falling back to legacy builder..."
+msgstr "[ქართული] Buildx not detected. Falling back to legacy builder..."
+
+msgid "Cancel"
+msgstr "[ქართული] Cancel"
+
+msgid "Cancelled: Enabled tasks were not run."
+msgstr "[ქართული] Cancelled: Enabled tasks were not run."
+
+msgid "Checking dependencies..."
+msgstr "[ქართული] Checking dependencies..."
+
+msgid "Checking for updates..."
+msgstr "[ქართული] Checking for updates..."
+
+msgid "Choose Continue to proceed, or Cancel to abort without installing."
+msgstr "[ქართული] Choose Continue to proceed, or Cancel to abort without installing."
+
+msgid "Cleaning up crontabs..."
+msgstr "[ქართული] Cleaning up crontabs..."
+
+msgid "Completed with failures."
+msgstr "[ქართული] Completed with failures."
+
+msgid "Configure Email Settings"
+msgstr "[ქართული] Configure Email Settings"
+
+msgid "Continue"
+msgstr "[ქართული] Continue"
+
+msgid "Could not find fumagician in initrd."
+msgstr "[ქართული] Could not find fumagician in initrd."
+
+msgid "Could not find initrd in ISO."
+msgstr "[ქართული] Could not find initrd in ISO."
+
+msgid "Could not parse remote tag from GitHub response."
+msgstr "[ქართული] Could not parse remote tag from GitHub response."
+
+msgid "Current Email Settings"
+msgstr "[ქართული] Current Email Settings"
+
+msgid "Custom Schedule"
+msgstr "[ქართული] Custom Schedule"
+
+msgid "DISABLED|-"
+msgstr "[ქართული] DISABLED|-"
+
+msgid "Daily @ %s:%s"
+msgstr "[ქართული] Daily @ %s:%s"
+
+msgid "Dependencies installed successfully."
+msgstr "[ქართული] Dependencies installed successfully."
+
+msgid "Docker Cleanup"
+msgstr "[ქართული] Docker Cleanup"
+
+msgid "Dow %s"
+msgstr "[ქართული] Dow %s"
+
+msgid "Download"
+msgstr "[ქართული] Download"
+
+msgid "Download Scripts"
+msgstr "[ქართული] Download Scripts"
+
+msgid "Downloaded file is empty."
+msgstr "[ქართული] Downloaded file is empty."
+
+msgid "Downloading/Updating scripts..."
+msgstr "[ქართული] Downloading/Updating scripts..."
+
+msgid "EOF detected"
+msgstr "[ქართული] EOF detected"
+
+msgid "Edit Schedule"
+msgstr "[ქართული] Edit Schedule"
+
+msgid "Email Configuration"
+msgstr "[ქართული] Email Configuration"
+
+msgid "Email configured successfully."
+msgstr "[ქართული] Email configured successfully."
+
+msgid "Enable Task"
+msgstr "[ქართული] Enable Task"
+
+msgid "Enabled %s"
+msgstr "[ქართული] Enabled %s"
+
+msgid "Enter App Password (16-char):"
+msgstr "[ქართული] Enter App Password (16-char):"
+
+msgid "Enter App Password (16-char, input hidden):"
+msgstr "[ქართული] Enter App Password (16-char, input hidden):"
+
+msgid "Enter Gmail address:"
+msgstr "[ქართული] Enter Gmail address:"
+
+msgid "Enter cron schedule:"
+msgstr "[ქართული] Enter cron schedule:"
+
+msgid "Error downloading %s"
+msgstr "[ქართული] Error downloading %s"
+
+msgid "Error downloading lib/%s"
+msgstr "[ქართული] Error downloading lib/%s"
+
+msgid "Error: This script supports 64-bit systems only."
+msgstr "[ქართული] Error: This script supports 64-bit systems only."
+
+msgid "Error: curl is required but not installed."
+msgstr "[ქართული] Error: curl is required but not installed."
+
+msgid "Error: fwupdmgr (fwupd) is not installed."
+msgstr "[ქართული] Error: fwupdmgr (fwupd) is not installed."
+
+msgid "Esc / Cancel aborts the installer without enabling tasks."
+msgstr "[ქართული] Esc / Cancel aborts the installer without enabling tasks."
+
+msgid "Exit"
+msgstr "[ქართული] Exit"
+
+msgid "Extracting initrd..."
+msgstr "[ქართული] Extracting initrd..."
+
+msgid "Failed to contact GitHub API."
+msgstr "[ქართული] Failed to contact GitHub API."
+
+msgid "Failed to download firmware ISO."
+msgstr "[ქართული] Failed to download firmware ISO."
+
+msgid "Failed to fetch Samsung firmware page."
+msgstr "[ქართული] Failed to fetch Samsung firmware page."
+
+msgid "Failed to mount ISO."
+msgstr "[ქართული] Failed to mount ISO."
+
+msgid "Fetching Samsung firmware page..."
+msgstr "[ქართული] Fetching Samsung firmware page..."
+
+msgid "Finished running enabled tasks.\\nSee terminal output for details."
+msgstr "[ქართული] Finished running enabled tasks.\\nSee terminal output for details."
+
+msgid "Firmware Update"
+msgstr "[ქართული] Firmware Update"
+
+msgid "Firmware is already up to date."
+msgstr "[ქართული] Firmware is already up to date."
+
+msgid "Firmware update applied successfully."
+msgstr "[ქართული] Firmware update applied successfully."
+
+msgid "Firmware update via fumagician failed."
+msgstr "[ქართული] Firmware update via fumagician failed."
+
+msgid "Force Update Scripts (from GitHub)"
+msgstr "[ქართული] Force Update Scripts (from GitHub)"
+
+msgid "Fri"
+msgstr "[ქართული] Fri"
+
+msgid "Installation Cancelled"
+msgstr "[ქართული] Installation Cancelled"
+
+msgid "Installation Complete"
+msgstr "[ქართული] Installation Complete"
+
+msgid "Installation Complete!"
+msgstr "[ქართული] Installation Complete!"
+
+msgid "Installing curl..."
+msgstr "[ქართული] Installing curl..."
+
+msgid "Invalid email address."
+msgstr "[ქართული] Invalid email address."
+
+msgid "Invalid email. returning to menu."
+msgstr "[ქართული] Invalid email. returning to menu."
+
+msgid "Invalid option: '%s'"
+msgstr "[ქართული] Invalid option: '%s'"
+
+msgid "Mail sender not found. Installing mail-transport packages..."
+msgstr "[ქართული] Mail sender not found. Installing mail-transport packages..."
+
+msgid "Mail transport installed successfully."
+msgstr "[ქართული] Mail transport installed successfully."
+
+msgid "Mailer configuration files under /etc/ssmtp/ or /etc/msmtprc were not removed to preserve backups."
+msgstr "[ქართული] Mailer configuration files under /etc/ssmtp/ or /etc/msmtprc were not removed to preserve backups."
+
+msgid "Manage Tasks & Schedules"
+msgstr "[ქართული] Manage Tasks & Schedules"
+
+msgid "Manual update: https://semiconductor.samsung.com/consumer-storage/support/tools/"
+msgstr "[ქართული] Manual update: https://semiconductor.samsung.com/consumer-storage/support/tools/"
+
+msgid "Matrix/non-interactive fresh install."
+msgstr "[ქართული] Matrix/non-interactive fresh install."
+
+msgid "Modern Buildx detected. Pruning build cache..."
+msgstr "[ქართული] Modern Buildx detected. Pruning build cache..."
+
+msgid "Mon"
+msgstr "[ქართული] Mon"
+
+msgid "Monthly %s @ %s:%s"
+msgstr "[ქართული] Monthly %s @ %s:%s"
+
+msgid "Mounting ISO..."
+msgstr "[ქართული] Mounting ISO..."
+
+msgid "New firmware available! Downloading..."
+msgstr "[ქართული] New firmware available! Downloading..."
+
+msgid "No SSMTP configuration found."
+msgstr "[ქართული] No SSMTP configuration found."
+
+msgid "No Samsung SSDs detected by fwupd."
+msgstr "[ქართული] No Samsung SSDs detected by fwupd."
+
+msgid "No Samsung SSDs detected by nvme-cli."
+msgstr "[ქართული] No Samsung SSDs detected by nvme-cli."
+
+msgid "No enabled tasks found."
+msgstr "[ქართული] No enabled tasks found."
+
+msgid "No firmware update was applied or no reboot is required."
+msgstr "[ქართული] No firmware update was applied or no reboot is required."
+
+msgid "No mail recipient configured, skipping email notification."
+msgstr "[ქართული] No mail recipient configured, skipping email notification."
+
+msgid "No mail sender (ssmtp/msmtp) found, skipping email notification."
+msgstr "[ქართული] No mail sender (ssmtp/msmtp) found, skipping email notification."
+
+msgid "No reboot is required at this time."
+msgstr "[ქართული] No reboot is required at this time."
+
+msgid "No supported firmware update tool found (rpi-eeprom-update or fwupdmgr)."
+msgstr "[ქართული] No supported firmware update tool found (rpi-eeprom-update or fwupdmgr)."
+
+msgid "No updates available via LVFS."
+msgstr "[ქართული] No updates available via LVFS."
+
+msgid "No updates available."
+msgstr "[ქართული] No updates available."
+
+msgid "Note: Mail transport packages (ssmtp/mailutils or msmtp/s-nail) were left installed as system packages."
+msgstr "[ქართული] Note: Mail transport packages (ssmtp/mailutils or msmtp/s-nail) were left installed as system packages."
+
+msgid "Password empty. Returning."
+msgstr "[ქართული] Password empty. Returning."
+
+msgid "Password: [HIDDEN/MASKED]"
+msgstr "[ქართული] Password: [HIDDEN/MASKED]"
+
+msgid "Pi Maintenance Update Failed"
+msgstr "[ქართული] Pi Maintenance Update Failed"
+
+msgid "Pi Maintenance: System Up to Date"
+msgstr "[ქართული] Pi Maintenance: System Up to Date"
+
+msgid "Pi-Apps Update"
+msgstr "Pi-Apps Update"
+
+msgid "Python Pip Update"
+msgstr "[ქართული] Python Pip Update"
+
+msgid "Raspberry Pi Maintenance Suite"
+msgstr "[ქართული] Raspberry Pi Maintenance Suite"
+
+msgid "Raspberry Pi Maintenance Suite %s"
+msgstr "[ქართული] Raspberry Pi Maintenance Suite %s"
+
+msgid "Raspberry Pi Maintenance Suite Manager"
+msgstr "[ქართული] Raspberry Pi Maintenance Suite Manager"
+
+msgid "Refreshing metadata..."
+msgstr "[ქართული] Refreshing metadata..."
+
+msgid "Return to Main Menu"
+msgstr "[ქართული] Return to Main Menu"
+
+msgid "Root crontab updated."
+msgstr "[ქართული] Root crontab updated."
+
+msgid "Run Enabled Tasks Now"
+msgstr "[ქართული] Run Enabled Tasks Now"
+
+msgid "Running firmware update..."
+msgstr "[ქართული] Running firmware update..."
+
+msgid "Samsung SSD Firmware Update"
+msgstr "[ქართული] Samsung SSD Firmware Update"
+
+msgid "Samsung SSD detected by fwupd."
+msgstr "[ქართული] Samsung SSD detected by fwupd."
+
+msgid "Sat"
+msgstr "[ქართული] Sat"
+
+msgid "Saving configuration..."
+msgstr "[ქართული] Saving configuration..."
+
+msgid "Schedule updated."
+msgstr "[ქართული] Schedule updated."
+
+msgid "Scripts updated."
+msgstr "[ქართული] Scripts updated."
+
+msgid "Select which tasks to enable. Press Enter to accept default [Y]."
+msgstr "[ქართული] Select which tasks to enable. Press Enter to accept default [Y]."
+
+msgid "Selected tasks use their default weekly schedules."
+msgstr "[ქართული] Selected tasks use their default weekly schedules."
+
+msgid "Self-Update Service"
+msgstr "[ქართული] Self-Update Service"
+
+msgid "Setting up default schedules..."
+msgstr "[ქართული] Setting up default schedules..."
+
+msgid "Skipping update (not installed or wrong path)."
+msgstr "[ქართული] Skipping update (not installed or wrong path)."
+
+msgid "Starting uninstallation process..."
+msgstr "[ქართული] Starting uninstallation process..."
+
+msgid "Suite version: %s"
+msgstr "[ქართული] Suite version: %s"
+
+msgid "Sun"
+msgstr "[ქართული] Sun"
+
+msgid "System OS Update"
+msgstr "[ქართული] System OS Update"
+
+msgid "System is up to date."
+msgstr "[ქართული] System is up to date."
+
+msgid "Task Status Manager"
+msgstr "[ქართული] Task Status Manager"
+
+msgid "Task disabled."
+msgstr "[ქართული] Task disabled."
+
+msgid "Task enabled."
+msgstr "[ქართული] Task enabled."
+
+msgid "Task: %s"
+msgstr "[ქართული] Task: %s"
+
+msgid "The auto-update failed. Reason: %s"
+msgstr "[ქართული] The auto-update failed. Reason: %s"
+
+msgid "The system is running the latest version: %s."
+msgstr "[ქართული] The system is running the latest version: %s."
+
+msgid "The system will reboot shortly after this report is sent."
+msgstr "[ქართული] The system will reboot shortly after this report is sent."
+
+msgid "This wizard configures email, downloads scripts, and schedules maintenance tasks."
+msgstr "[ქართული] This wizard configures email, downloads scripts, and schedules maintenance tasks."
+
+msgid "This wizard will set up your email and default schedules."
+msgstr "[ქართული] This wizard will set up your email and default schedules."
+
+msgid "Thu"
+msgstr "[ქართული] Thu"
+
+msgid "Tue"
+msgstr "[ქართული] Tue"
+
+msgid "Uninstall"
+msgstr "[ქართული] Uninstall"
+
+msgid "Uninstall Suite"
+msgstr "[ქართული] Uninstall Suite"
+
+msgid "Uninstallation complete."
+msgstr "[ქართული] Uninstallation complete."
+
+msgid "Unsupported OS family for system update."
+msgstr "[ქართული] Unsupported OS family for system update."
+
+msgid "Updates available. Installing..."
+msgstr "[ქართული] Updates available. Installing..."
+
+msgid "Updating version tracking..."
+msgstr "[ქართული] Updating version tracking..."
+
+msgid "Version set to: %s"
+msgstr "[ქართული] Version set to: %s"
+
+msgid "Version: %s\\n\\nChoose an option. Enter selects. Esc cancels/exits."
+msgstr "[ქართული] Version: %s\\n\\nChoose an option. Enter selects. Esc cancels/exits."
+
+msgid "View Current Email Config"
+msgstr "[ქართული] View Current Email Config"
+
+msgid "Warning: Failed to install curl."
+msgstr "[ქართული] Warning: Failed to install curl."
+
+msgid "Warning: Failed to install gettext. UI will stay in English."
+msgstr "[ქართული] Warning: Failed to install gettext. UI will stay in English."
+
+msgid "Warning: Failed to install mail transport. Email notifications will be disabled."
+msgstr "[ქართული] Warning: Failed to install mail transport. Email notifications will be disabled."
+
+msgid "Warning: Failed to install whiptail. Falling back to text UI."
+msgstr "[ქართული] Warning: Failed to install whiptail. Falling back to text UI."
+
+msgid "Warning: One or more enabled tasks may reboot the system and terminate this session."
+msgstr "[ქართული] Warning: One or more enabled tasks may reboot the system and terminate this session."
+
+msgid "Warning: Some dependencies may have failed to install."
+msgstr "[ქართული] Warning: Some dependencies may have failed to install."
+
+msgid "Warning: could not read VERSION (local or %s)."
+msgstr "[ქართული] Warning: could not read VERSION (local or %s)."
+
+msgid "Warning: no package mapping for '%s' on this OS family; skipping."
+msgstr "[ქართული] Warning: no package mapping for '%s' on this OS family; skipping."
+
+msgid "Wed"
+msgstr "[ქართული] Wed"
+
+msgid "Weekly %s @ %s:%s"
+msgstr "[ქართული] Weekly %s @ %s:%s"
+
+msgid "Welcome to the One-Line Installer (%s)."
+msgstr "[ქართული] Welcome to the One-Line Installer (%s)."
+
+msgid "Whiptail UI unavailable; switching to text interface."
+msgstr "[ქართული] Whiptail UI unavailable; switching to text interface."
+
+msgid "[1/4] Welcome"
+msgstr "[ქართული] [1/4] Welcome"
+
+msgid "[2/4] Email configuration..."
+msgstr "[ქართული] [2/4] Email configuration..."
+
+msgid "[3/4] Downloading scripts..."
+msgstr "[ქართული] [3/4] Downloading scripts..."
+
+msgid "[4/4] Select maintenance tasks to enable."
+msgstr "[ქართული] [4/4] Select maintenance tasks to enable."
+
+msgid "[4/4] Task selection..."
+msgstr "[ქართული] [4/4] Task selection..."
+
+msgid "fwupdmgr failed to query update availability. Skipping firmware apply step."
+msgstr "[ქართული] fwupdmgr failed to query update availability. Skipping firmware apply step."
+
+msgid "gettext installed successfully."
+msgstr "[ქართული] gettext installed successfully."
+
+msgid "gettext not found. Installing gettext..."
+msgstr "[ქართული] gettext not found. Installing gettext..."
+
+msgid "nvme-cli is not installed and could not be installed automatically."
+msgstr "[ქართული] nvme-cli is not installed and could not be installed automatically."
+
+msgid "whiptail installed successfully."
+msgstr "[ქართული] whiptail installed successfully."
+
+msgid "whiptail not found. Installing whiptail..."
+msgstr "[ქართული] whiptail not found. Installing whiptail..."
+

@@ -91,3 +91,19 @@ setup() {
     [ "$status" -eq 0 ]
     [ "$output" = "Checking apps...Done" ]
 }
+
+@test "Unit: os_pkg resolve_pkg_names for curl" {
+    # shellcheck source=../lib/os_pkg.sh
+    source ./lib/os_pkg.sh
+    run resolve_pkg_names curl
+    [ "$status" -eq 0 ]
+    [ "$output" = "curl" ]
+}
+
+@test "Unit: os_pkg detect_os_family returns known family" {
+    # shellcheck source=../lib/os_pkg.sh
+    source ./lib/os_pkg.sh
+    run detect_os_family
+    [ "$status" -eq 0 ]
+    [[ "$output" == "debian" || "$output" == "redhat" || "$output" == "arch" ]]
+}

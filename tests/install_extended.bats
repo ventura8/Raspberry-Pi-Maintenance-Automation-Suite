@@ -12,6 +12,10 @@ setup() {
     # Always ensure clean shared mocks
     ./tests/setup_mocks.sh > /dev/null
     export PATH="$MOCK_DIR:$PATH"
+    export TEST_MODE="true"
+    unset INSTALL_USE_WHIPTAIL || true
+    export INSTALL_FORCE_TEXT_UI="0"
+    export INSTALL_UI_MODE=""
 }
 
 @test "Install: Manage Tasks UI - Return to Menu" {
@@ -103,36 +107,39 @@ EOF
     
     rm -f /tmp/install_temp_fresh.sh
 }
-@test "Install: Download Scripts - API Failure" {
-    # Mock Curl to FAIL on API call
+@test "Install: Download Scripts - VERSION unavailable" {
+    # Source a copy under MOCK_DIR so repo-root VERSION is not visible; curl fails.
+    CUT_LINE=$(grep -n "# --- Entry Point ---" ./install.sh | head -n 1 | cut -d: -f1)
+    head -n "$((CUT_LINE - 1))" ./install.sh > "$MOCK_DIR/install_lib_nover.sh"
+    rm -f "$MOCK_DIR/VERSION"
+
     cat << 'EOF' > "$MOCK_DIR/curl"
 #!/bin/bash
-if [[ "$*" =~ "releases/latest" ]]; then
-    exit 1
-fi
+exit 1
 EOF
     chmod +x "$MOCK_DIR/curl"
-    
+
     mkdir -p "$INSTALL_DIR"
-    run bash -c "export PATH=$MOCK_DIR:$PATH; export INSTALL_DIR=$INSTALL_DIR; source ./install.sh; download_scripts"
+    run bash -c "export PATH=$MOCK_DIR:$PATH; export INSTALL_DIR=$INSTALL_DIR; source \"$MOCK_DIR/install_lib_nover.sh\"; download_scripts"
     [[ "$output" =~ "Scripts updated" ]]
-    # Should NOT have created .version if API failed (or at least handle it gracefully)
+    [[ "$output" =~ "could not read VERSION" ]]
+    [[ ! -f "$INSTALL_DIR/.version" ]]
 }
 
 @test "Install: Entry Point - Non-Interactive Update" {
     # Test the --update flag
     mkdir -p "$INSTALL_DIR"
-    
-    # Use a temporary copy to avoid modifying the original and needing git checkout
-    cp ./install.sh ./install_tmp.sh
+
+    # Temp copy under BATS tmp (never write into bind-mounted repo root).
+    local tmp_install="${BATS_TEST_TMPDIR:-/tmp}/install_tmp.sh"
+    cp ./install.sh "$tmp_install"
     # Mock download_scripts to avoid real network
-    sed -i 's/download_scripts/echo "MOCKED_DOWNLOAD"/' ./install_tmp.sh
-    
-    run bash ./install_tmp.sh --update
-    
-    # Clean up
-    rm -f ./install_tmp.sh
-    
+    sed -i 's/download_scripts/echo "MOCKED_DOWNLOAD"/' "$tmp_install"
+
+    run bash "$tmp_install" --update
+
+    rm -f "$tmp_install"
+
     [[ "$output" =~ "MOCKED_DOWNLOAD" ]]
 }
 

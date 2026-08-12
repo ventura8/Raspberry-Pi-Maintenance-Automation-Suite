@@ -1,26 +1,17 @@
 ______________________________________________________________________
 
-## description: Run and report full quality gate results, including tests, coverage posture, and failure triage.
+## description: "Run coverage/complexity gates and report results. Optional focus: {{FOCUS_AREA}}."
 
-Execute the quality gate for current changes and provide a merge-readiness report.
+# Test & Coverage Gate
 
-Run flow:
+Focus (optional): {{FOCUS_AREA}}
 
-1. Identify changed files and impacted test areas.
-1. Run targeted tests first.
-1. Run full suite.
-1. If requested, run coverage mode and summarize coverage posture.
+Follow `.github/skills/test-and-coverage-gate` and `.agents/skills/test-runner`.
 
-Required report format:
+Prefer:
 
-1. Overall status: PASS or FAIL.
-1. Targeted test results.
-1. Full suite results.
-1. Coverage status against >= 90% expectation.
-1. Failures with root-cause hypotheses.
-1. Next fixes in priority order.
+```bash
+./scripts/build-and-test.sh --coverage-only
+```
 
-Constraints:
-
-- Do not hide failures.
-- Keep output concise but actionable.
+Report overall/per-file coverage, complexity, failures, and whether `assets/coverage.svg` needs commit.

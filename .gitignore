@@ -5,6 +5,12 @@ ssmtp.conf
 *.log
 tmp.*
 
+# Generated gettext binaries (po/*.po + pot are tracked)
+locale/
+*.mo
+*.pot
+!po/pi-maintenance-suite.pot
+
 # Ignore system files
 .DS_Store
 Thumbs.db
@@ -14,9 +20,16 @@ __pycache__/
 *.py[cod]
 *$py.class
 
-# Coverage reports and generated artifacts
-coverage/
-coverage_*/
+# Local Docker/build cache and CI log output
+.cache/
+reports/
+
+# Mail transport artifacts (ssmtp/msmtp local failures)
+dead.letter
+
+# Coverage reports at repo root only (do not match scripts/coverage/ kcov drivers)
+/coverage/
+/coverage_*/
 kcov-merged/
 mocks/
 scripts_test/

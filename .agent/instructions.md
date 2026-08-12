@@ -1,25 +1,45 @@
 # AI Agent Instructions
 
-These instructions define the mandatory workflow for AI agents working on this project.
+Mandatory workflow for agents working on this Bash / BATS / Dockerized suite.
 
-## Workflow: Fix Lints & Tests
+## Fix lints and tests (order)
 
-When addressing issues or making changes, follow this strict order of operations:
+1. Prefer a single pass that addresses lint + tests together when the change set is small.
+1. **Format first**: `./tests/format.sh`
+1. **Lint next**: prefer `./scripts/lint-in-docker.sh` (CI parity). Host fallback:
+   `STRICT_MODE=true ./tests/lint.sh`
+1. **Tests**: prefer `./scripts/build-and-test.sh --full`. Host fallback: `./tests/run_suite.sh`
+1. **Coverage**: overall and per-file ≥ **90%**; complexity ≤ **15**. Update `assets/coverage.svg`
+   when coverage changes.
+1. Never add lint suppressions or lower gates to pass.
 
-1. **Single Pass Efficiency**: Whenever possible, apply fixes for both linting and testing issues in a single pass to minimize iterations.
-1. **Linting First**: Always resolve linting errors (e.g., `flake8`, `mypy`) *before* attempting to fix functional tests. A clean codebase is the foundation.
-1. **Run Tests**: Execute the test suite to verify changes.
-1. **Coverage Verification**:
-   - Generate the coverage badge immediately after running tests.
-   - **Mandatory**: Ensure code coverage is **at least 90%**.
-   - If coverage is below 90%, add necessary tests before considering the task complete.
+## Project realities (not Python)
 
-## Cross-Platform Compatibility
+1. This repo is **Bash-first**. Do not assume flake8/mypy/pytest workflows.
+1. Mocks are shell stubs under `tests/setup_mocks.sh` / `/tmp/mocks`, not Python `unittest.mock`.
+1. Windows agents should use WSL/Git Bash + Docker, or
+   `tools/windows/run_tests_local.ps1 -NoCoverage`.
 
-- **Mocks**: key mocks MUST be compatible with both **Windows** and **Linux** environments.
-  - *Example*: When mocking `os` or `ctypes`, ensure you handle platform-specific attributes (like `os.add_dll_directory` which is Windows-specific) gracefully, usually by using `create=True` in mocks or checking `sys.platform`.
-  - Do not assume a specific OS environment for the test runner.
+## Invariants to protect
 
-## Quick Commands
+1. `install.sh --update` remains non-interactive and cron-safe (no stdin pipe).
+1. Whiptail is default UI; classic text UI is automatic fallback only when whiptail cannot run.
+1. Distro matrix and `lib/os_pkg.sh` stay aligned for apt/dnf/pacman.
+1. **Always update markdown** (`README.md`, `Instructions.md`, `docs/*`, `AGENTS.md`, skills/prompts)
+   in the **same change set** as code/test/CI edits — never leave docs for later.
+1. **Always update translations** when changing `_pi_gettext*` strings: extract → sync → fill all
+   `po/*.po` → `check_catalog_quality.py` in the same change set (see `AGENTS.md`).
 
-- **Run Tests & Generate Badge**: `COVERAGE=1 ./tests/run_suite.sh`
+## Authoritative docs
+
+1. [`AGENTS.md`](../AGENTS.md) — always-on rules + skill index
+1. [`.agents/skills/`](../.agents/skills/) — task playbooks
+1. [`Instructions.md`](../Instructions.md) — technical handbook
+
+## Quick commands
+
+```bash
+./scripts/build-and-test.sh --full
+./tests/run_suite.sh --installer-only
+COVERAGE=1 ./tests/run_suite.sh
+```

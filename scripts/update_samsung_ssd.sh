@@ -12,7 +12,23 @@ SAMSUNG_FIRMWARE_PAGE="https://semiconductor.samsung.com/consumer-storage/suppor
 # Prevent ANSI color codes
 export TERM=dumb
 export NO_COLOR=1
-export PATH=$PATH:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
+
+_RPI_HERE="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+if [ -f "$_RPI_HERE/lib/os_pkg.sh" ]; then
+    # shellcheck source=../lib/os_pkg.sh
+    source "$_RPI_HERE/lib/os_pkg.sh"
+    # shellcheck source=../lib/mail_send.sh
+    source "$_RPI_HERE/lib/mail_send.sh"
+    # shellcheck source=../lib/i18n.sh
+    source "$_RPI_HERE/lib/i18n.sh"
+elif [ -f "$_RPI_HERE/../lib/os_pkg.sh" ]; then
+    # shellcheck source=../lib/os_pkg.sh
+    source "$_RPI_HERE/../lib/os_pkg.sh"
+    # shellcheck source=../lib/mail_send.sh
+    source "$_RPI_HERE/../lib/mail_send.sh"
+    # shellcheck source=../lib/i18n.sh
+    source "$_RPI_HERE/../lib/i18n.sh"
+fi
 
 # Check Architecture
 CURRENT_ARCH=$(uname -m)
@@ -21,39 +37,33 @@ if [ "$TEST_MODE" = "true" ] && [ -n "$MOCK_ARCH" ]; then
 fi
 
 if [ "$CURRENT_ARCH" != "x86_64" ] && [ "$CURRENT_ARCH" != "aarch64" ]; then
-    echo "Error: This script supports 64-bit systems only."
+    _pi_echo "Error: This script supports 64-bit systems only."
     exit 1
 fi
 
 # --- Dependency Management ---
 check_and_install_dependencies() {
-    echo "--- Checking Dependencies ---"
-    local MISSING_DEPS=()
+    _pi_echo "--- Checking Dependencies ---"
+    local MISSING_LOGICAL=()
+    local LOGICAL_DEPS=("fwupd" "nvme-cli" "curl" "cpio" "p7zip" "file" "gzip")
+    local logical
 
-    # Required packages and their commands
-    # Format: package_name:command_to_check
-    local DEPS=("fwupd:fwupdmgr" "nvme-cli:nvme" "curl:curl" "cpio:cpio" "p7zip-full:7z" "file:file" "gzip:gzip")
-
-    for dep in "${DEPS[@]}"; do
-        local pkg="${dep%%:*}"
-        local cmd="${dep##*:}"
-
-        if ! command -v "$cmd" > /dev/null 2>&1; then
-            MISSING_DEPS+=("$pkg")
+    for logical in "${LOGICAL_DEPS[@]}"; do
+        if ! logical_is_installed "$logical"; then
+            MISSING_LOGICAL+=("$logical")
         fi
     done
 
-    if [ ${#MISSING_DEPS[@]} -gt 0 ]; then
-        echo "Installing missing dependencies: ${MISSING_DEPS[*]}"
-        sudo apt-get update > /dev/null 2>&1
-        if sudo apt-get install -y "${MISSING_DEPS[@]}" > /dev/null 2>&1; then
-            echo "Dependencies installed successfully."
+    if [ ${#MISSING_LOGICAL[@]} -gt 0 ]; then
+        echo "Installing missing dependencies: ${MISSING_LOGICAL[*]}"
+        if pkg_install "${MISSING_LOGICAL[@]}"; then
+            _pi_echo "Dependencies installed successfully."
         else
-            echo "Warning: Some dependencies may have failed to install."
+            _pi_echo "Warning: Some dependencies may have failed to install."
             return 1
         fi
     else
-        echo "All dependencies are installed."
+        _pi_echo "All dependencies are installed."
     fi
     echo ""
 }
@@ -63,11 +73,11 @@ find_firmware_url() {
     local MODEL="$1"
     local PAGE_HTML
 
-    echo "Fetching Samsung firmware page..."
+    _pi_echo "Fetching Samsung firmware page..."
     PAGE_HTML=$(curl -sL "$SAMSUNG_FIRMWARE_PAGE" 2> /dev/null)
 
     if [ -z "$PAGE_HTML" ]; then
-        echo "Failed to fetch Samsung firmware page."
+        _pi_echo "Failed to fetch Samsung firmware page."
         return 1
     fi
 
@@ -151,9 +161,9 @@ extract_and_run_fumagician() {
 
     mkdir -p "$MOUNT_DIR" "$EXTRACT_DIR"
 
-    echo "Mounting ISO..."
+    _pi_echo "Mounting ISO..."
     if ! sudo mount -o loop "$ISO_PATH" "$MOUNT_DIR" 2> /dev/null; then
-        echo "Failed to mount ISO."
+        _pi_echo "Failed to mount ISO."
         rm -rf "$WORK_DIR"
         return 1
     fi
@@ -167,13 +177,13 @@ extract_and_run_fumagician() {
     fi
 
     if [ -z "$INITRD_FILE" ]; then
-        echo "Could not find initrd in ISO."
+        _pi_echo "Could not find initrd in ISO."
         sudo umount "$MOUNT_DIR"
         rm -rf "$WORK_DIR"
         return 1
     fi
 
-    echo "Extracting initrd..."
+    _pi_echo "Extracting initrd..."
     cd "$EXTRACT_DIR" || return 1
 
     if file "$INITRD_FILE" | /usr/bin/grep -q "gzip"; then
@@ -182,7 +192,7 @@ extract_and_run_fumagician() {
         if command -v 7z > /dev/null 2>&1; then
             7z x "$INITRD_FILE" -o"$EXTRACT_DIR" > /dev/null 2>&1
         else
-            echo "7z required but not installed."
+            _pi_echo "7z required but not installed."
             sudo umount "$MOUNT_DIR"
             rm -rf "$WORK_DIR"
             return 1
@@ -196,7 +206,7 @@ extract_and_run_fumagician() {
     FUMAGICIAN=$(find "$EXTRACT_DIR" -name "fumagician" -type f 2> /dev/null | head -n1)
 
     if [ -z "$FUMAGICIAN" ]; then
-        echo "Could not find fumagician in initrd."
+        _pi_echo "Could not find fumagician in initrd."
         sudo umount "$MOUNT_DIR"
         rm -rf "$WORK_DIR"
         return 1
@@ -208,7 +218,7 @@ extract_and_run_fumagician() {
     local FUMA_DIR
     FUMA_DIR=$(dirname "$FUMAGICIAN")
 
-    echo "Running firmware update..."
+    _pi_echo "Running firmware update..."
     cd "$FUMA_DIR" || return 1
 
     local UPDATE_RESULT
@@ -232,7 +242,7 @@ update_via_official_iso() {
     local MODEL="$2"
 
     if ! find_firmware_url "$MODEL"; then
-        echo "Manual update: https://semiconductor.samsung.com/consumer-storage/support/tools/"
+        _pi_echo "Manual update: https://semiconductor.samsung.com/consumer-storage/support/tools/"
         return 1
     fi
 
@@ -242,20 +252,23 @@ update_via_official_iso() {
     echo "Latest Firmware:  $FOUND_FW_VERSION"
 
     if [ "$CURRENT_FW" = "$FOUND_FW_VERSION" ]; then
-        echo "Firmware is already up to date."
+        _pi_echo "Firmware is already up to date."
         return 1
     fi
 
-    echo "New firmware available! Downloading..."
-    local ISO_PATH="/tmp/samsung_fw.iso"
+    _pi_echo "New firmware available! Downloading..."
+    local ISO_PATH
+    ISO_PATH=$(mktemp /tmp/samsung_fw.XXXXXX.iso) || return 1
+    chmod 600 "$ISO_PATH"
 
     if ! curl -L -s -o "$ISO_PATH" "$FOUND_ISO_URL"; then
-        echo "Failed to download firmware ISO."
+        _pi_echo "Failed to download firmware ISO."
+        rm -f "$ISO_PATH"
         return 1
     fi
 
     if [ ! -s "$ISO_PATH" ]; then
-        echo "Downloaded file is empty."
+        _pi_echo "Downloaded file is empty."
         rm -f "$ISO_PATH"
         return 1
     fi
@@ -263,11 +276,11 @@ update_via_official_iso() {
     echo "ISO downloaded: $(du -h "$ISO_PATH" | cut -f1)"
 
     if extract_and_run_fumagician "$ISO_PATH"; then
-        echo "Firmware update applied successfully."
+        _pi_echo "Firmware update applied successfully."
         rm -f "$ISO_PATH"
         return 0
     else
-        echo "Firmware update via fumagician failed."
+        _pi_echo "Firmware update via fumagician failed."
         rm -f "$ISO_PATH"
         return 1
     fi
@@ -280,15 +293,15 @@ main() {
     REBOOT_NEEDED=false
 
     {
-        echo "======================================================="
+        _pi_echo "======================================================="
         echo "   SAMSUNG SSD FIRMWARE UPDATE LOG - $(date)"
-        echo "======================================================="
+        _pi_echo "======================================================="
         echo ""
 
         check_and_install_dependencies
 
         if command -v fwupdmgr > /dev/null 2>&1; then
-            echo "--- Checking for Samsung SSDs via fwupd ---"
+            _pi_echo "--- Checking for Samsung SSDs via fwupd ---"
 
             local FWUPD_DEVICES
             if [ "$TEST_MODE" = "true" ] && [ -n "$MOCK_FWUPD_DEVICES" ]; then
@@ -298,14 +311,14 @@ main() {
             fi
 
             if echo "$FWUPD_DEVICES" | /usr/bin/grep -qi "Samsung"; then
-                echo "Samsung SSD detected by fwupd."
+                _pi_echo "Samsung SSD detected by fwupd."
 
-                echo "--- Refreshing Metadata ---"
+                _pi_echo "--- Refreshing Metadata ---"
                 sudo fwupdmgr refresh > /dev/null 2>&1
 
-                echo "--- Checking for Updates ---"
+                _pi_echo "--- Checking for Updates ---"
                 if sudo fwupdmgr get-updates 2> /dev/null | /usr/bin/grep -qi "Samsung"; then
-                    echo "Updates available. Installing..."
+                    _pi_echo "Updates available. Installing..."
 
                     UPDATE_OUTPUT=$(sudo fwupdmgr update -y --no-reboot 2>&1)
                     echo "$UPDATE_OUTPUT"
@@ -315,12 +328,12 @@ main() {
                         REBOOT_NEEDED=true
                     fi
                 else
-                    echo "No updates available via LVFS."
+                    _pi_echo "No updates available via LVFS."
                 fi
             else
-                echo "No Samsung SSDs detected by fwupd."
+                _pi_echo "No Samsung SSDs detected by fwupd."
                 echo ""
-                echo "--- Fallback: Samsung Official ISO Update ---"
+                _pi_echo "--- Fallback: Samsung Official ISO Update ---"
 
                 if command -v nvme > /dev/null 2>&1; then
                     local NVME_LIST_OUTPUT
@@ -340,47 +353,41 @@ main() {
                             REBOOT_NEEDED=true
                         fi
                     else
-                        echo "No Samsung SSDs detected by nvme-cli."
+                        _pi_echo "No Samsung SSDs detected by nvme-cli."
                     fi
                 else
-                    echo "nvme-cli is not installed and could not be installed automatically."
+                    _pi_echo "nvme-cli is not installed and could not be installed automatically."
                 fi
             fi
         else
-            echo "Error: fwupdmgr (fwupd) is not installed."
+            _pi_echo "Error: fwupdmgr (fwupd) is not installed."
         fi
 
         echo ""
         if [ "$REBOOT_NEEDED" = true ]; then
-            echo "--- REBOOT STATUS ---"
-            echo "A firmware update was applied. A reboot is required."
-            echo "The system will reboot shortly after this report is sent."
+            _pi_echo "--- REBOOT STATUS ---"
+            _pi_echo "A firmware update was applied. A reboot is required."
+            _pi_echo "The system will reboot shortly after this report is sent."
         else
-            echo "--- REBOOT STATUS ---"
-            echo "No firmware update was applied or no reboot is required."
+            _pi_echo "--- REBOOT STATUS ---"
+            _pi_echo "No firmware update was applied or no reboot is required."
         fi
 
-        echo "======================================================="
+        _pi_echo "======================================================="
         echo "   Maintenance Finished at $(date)"
-        echo "======================================================="
+        _pi_echo "======================================================="
     } > "$LOG_FILE"
 
     # Display log to stdout for cron capture/debugging
     cat "$LOG_FILE"
 
-    if command -v ssmtp > /dev/null 2>&1; then
-        ssmtp "$RECIPIENT_EMAIL" << EOF
-To: $RECIPIENT_EMAIL
-Subject: $SUBJECT_LINE
-From: "Samsung SSD Maintenance" <$RECIPIENT_EMAIL>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8bit
-
-$(cat "$LOG_FILE")
-EOF
+    if ! declare -F send_mail > /dev/null 2>&1; then
+        echo "ERROR: mail helper (lib/mail_send.sh) is not available" >&2
+        return 1
     fi
-
+    if ! send_mail "$RECIPIENT_EMAIL" "$SUBJECT_LINE" "Samsung SSD Maintenance" "$LOG_FILE"; then
+        echo "WARNING: failed to deliver email notification" >&2
+    fi
     if [ "$REBOOT_NEEDED" = true ]; then
         rm "$LOG_FILE"
         sudo shutdown -r +1 "Samsung SSD Firmware update requires a reboot. Rebooting in 1 minute."

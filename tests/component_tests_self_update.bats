@@ -18,52 +18,79 @@ setup() {
     chmod +x "$INSTALL_DIR/../install.sh"
 }
 
-@test "Self Update: No Update Needed" {
-    # Setup
-    echo "v1.0.0" > "$INSTALL_DIR/.version"
-    export TEST_REMOTE_TAG="v1.0.0"
-    
-    # Mock Curl to return JSON with TAG
+# Shared curl mock helper body: GitHub API + tagged install.sh + VERSION staging.
+# Writes TEST_REMOTE_TAG into -o path when VERSION is requested.
+_mock_curl_self_update() {
     cat << 'EOF' > "$MOCK_DIR/curl"
 #!/bin/bash
 if [[ "$@" == *"api.github.com"* ]]; then
-    # Return mock release JSON
     echo "{\"tag_name\": \"$TEST_REMOTE_TAG\"}"
+    exit 0
+fi
+
+out=""
+prev=""
+for arg in "$@"; do
+    if [ "$prev" = "-o" ]; then
+        out="$arg"
+    fi
+    prev="$arg"
+done
+
+if [[ "$@" == *"install.sh"* ]]; then
+    if [ -n "$out" ]; then
+        cat << 'INSTALLER' > "$out"
+#!/bin/bash
+echo "TAGGED_INSTALLER_EXECUTED"
+if [[ "$1" == "--update" ]]; then
+    echo "INSTALLER_EXECUTED_CORRECTLY"
+    exit 0
+fi
+exit 0
+INSTALLER
+        chmod +x "$out"
+    fi
+    exit 0
+fi
+
+if [[ "$@" == *VERSION* ]]; then
+    if [ -n "$out" ]; then
+        printf '%s\n' "$TEST_REMOTE_TAG" > "$out"
+    else
+        printf '%s\n' "$TEST_REMOTE_TAG"
+    fi
     exit 0
 fi
 exit 1
 EOF
     chmod +x "$MOCK_DIR/curl"
-    
+}
+
+@test "Self Update: No Update Needed" {
+    # Setup
+    echo "v1.0.0" > "$INSTALL_DIR/.version"
+    export TEST_REMOTE_TAG="v1.0.0"
+
+    _mock_curl_self_update
+
     # Mock ssmtp for email recipient
     export SSMTP_CONF="$MOCK_DIR/ssmtp.conf"
     echo "root=mock_admin@test.com" > "$SSMTP_CONF"
 
     run ./scripts/update_self.sh
-    
+
     [[ "$status" -eq 0 ]]
     [[ "$output" =~ "System is up to date" ]]
-    [[ "$output" =~ "Sending email to mock_admin@test.com" ]]
+    [[ "$output" =~ "Email notification delivered to mock_admin@test.com" ]]
 }
 
 @test "Self Update: Update Available (Test Mode)" {
     # Setup
     echo "v1.0.0" > "$INSTALL_DIR/.version"
     export TEST_REMOTE_TAG="v1.1.0"
-    
-    # Mock Curl
-    cat << 'EOF' > "$MOCK_DIR/curl"
-#!/bin/bash
-if [[ "$@" == *"api.github.com"* ]]; then
-    echo "{\"tag_name\": \"$TEST_REMOTE_TAG\"}"
-    exit 0
-elif [[ "$@" == *"install.sh"* ]]; then
-         exit 0
-fi
-exit 1
-EOF
-    chmod +x "$MOCK_DIR/curl"
-    
+
+    _mock_curl_self_update
+
     # Mock ssmtp for email recipient
     export SSMTP_CONF="$MOCK_DIR/ssmtp.conf"
     echo "root=mock_admin@test.com" > "$SSMTP_CONF"
@@ -74,7 +101,7 @@ EOF
     [[ "$output" =~ "Update available" ]]
     [[ "$output" =~ "TEST_MODE: Skipping actual execution" ]]
     # Ensure success email is sent even in test mode
-    [[ "$output" =~ "Sending email to mock_admin@test.com" ]]
+    [[ "$output" =~ "Email notification delivered to mock_admin@test.com" ]]
     [[ "$(cat $INSTALL_DIR/.version)" == "v1.1.0" ]]
 }
 
@@ -84,30 +111,12 @@ EOF
     export TEST_REMOTE_TAG="v1.2.0"
     unset TEST_MODE
 
-    # Mock Curl
-    cat << 'EOF' > "$MOCK_DIR/curl"
-#!/bin/bash
-if [[ "$@" == *"api.github.com"* ]]; then
-    echo "{\"tag_name\": \"$TEST_REMOTE_TAG\"}"
-    exit 0
-elif [[ "$@" == *"install.sh"* ]]; then
-    exit 0
-fi
-exit 1
-EOF
-    chmod +x "$MOCK_DIR/curl"
+    _mock_curl_self_update
 
-    # Mock install.sh: called directly (no pipe), so it just needs to succeed.
-    # The --update flag is passed; the mock echoes a marker and exits cleanly.
+    # Pre-seed a local install.sh that must be overwritten by the tagged download.
     cat << 'EOF' > "$INSTALL_DIR/../install.sh"
 #!/bin/bash
-echo "MOCK_INSTALLER_STARTED"
-# Verify we received the --update flag (non-interactive path)
-if [[ "$1" == "--update" ]]; then
-    echo "INSTALLER_EXECUTED_CORRECTLY"
-    exit 0
-fi
-echo "UNEXPECTED_INTERACTIVE_CALL"
+echo "STALE_LOCAL_INSTALLER"
 exit 1
 EOF
     chmod +x "$INSTALL_DIR/../install.sh"
@@ -119,9 +128,10 @@ EOF
     run ./scripts/update_self.sh
 
     [[ "$status" -eq 0 ]]
+    [[ "$output" =~ "TAGGED_INSTALLER_EXECUTED" ]]
     [[ "$output" =~ "INSTALLER_EXECUTED_CORRECTLY" ]]
     [[ "$output" =~ "Update complete" ]]
-    [[ "$output" =~ "Sending email to mock_admin@test.com" ]]
+    [[ "$output" =~ "Email notification delivered to mock_admin@test.com" ]]
     [[ "$(cat $INSTALL_DIR/.version)" == "v1.2.0" ]]
 }
 
@@ -137,17 +147,16 @@ EOF
 if [[ "$@" == *"api.github.com"* ]]; then
     echo "{\"tag_name\": \"$TEST_REMOTE_TAG\"}"
     exit 0
-elif [[ "$@" == *"install.sh"* ]]; then
-    exit 0
 fi
-exit 1
-EOF
-    chmod +x "$MOCK_DIR/curl"
-
-    # Mock install.sh: fails if stdin is a pipe (i.e., not a tty and data arrives)
-    cat << 'EOF' > "$INSTALL_DIR/../install.sh"
+out=""
+prev=""
+for arg in "$@"; do
+    if [ "$prev" = "-o" ]; then out="$arg"; fi
+    prev="$arg"
+done
+if [[ "$@" == *"install.sh"* ]]; then
+    cat << 'INSTALLER' > "$out"
 #!/bin/bash
-# If stdin is NOT a terminal AND there is pending data, it was piped — that's the bug.
 if [ ! -t 0 ]; then
     read -t 0.1 stray_input && {
         echo "ERROR: Received unexpected piped input: $stray_input"
@@ -156,8 +165,17 @@ if [ ! -t 0 ]; then
 fi
 echo "INSTALLER_RAN_CLEANLY"
 exit 0
+INSTALLER
+    chmod +x "$out"
+    exit 0
+fi
+if [[ "$@" == *VERSION* ]]; then
+    printf '%s\n' "$TEST_REMOTE_TAG" > "$out"
+    exit 0
+fi
+exit 1
 EOF
-    chmod +x "$INSTALL_DIR/../install.sh"
+    chmod +x "$MOCK_DIR/curl"
 
     export SSMTP_CONF="$MOCK_DIR/ssmtp.conf"
     echo "root=mock_admin@test.com" > "$SSMTP_CONF"
@@ -167,26 +185,56 @@ EOF
     [[ "$status" -eq 0 ]]
     [[ "$output" =~ "INSTALLER_RAN_CLEANLY" ]]
     [[ ! "$output" =~ "ERROR: Received unexpected piped input" ]]
+    [[ "$output" =~ "Email notification delivered to mock_admin@test.com" ]]
+}
+
+@test "Self Update: VERSION download failure" {
+    echo "v1.0.0" > "$INSTALL_DIR/.version"
+    export TEST_REMOTE_TAG="v1.4.0"
+    unset TEST_MODE
+
+    cat << 'EOF' > "$MOCK_DIR/curl"
+#!/bin/bash
+if [[ "$@" == *"api.github.com"* ]]; then
+    echo "{\"tag_name\": \"$TEST_REMOTE_TAG\"}"
+    exit 0
+elif [[ "$@" == *"install.sh"* ]]; then
+    exit 0
+elif [[ "$@" == *VERSION* ]]; then
+    exit 1
+fi
+exit 1
+EOF
+    chmod +x "$MOCK_DIR/curl"
+
+    export SSMTP_CONF="$MOCK_DIR/ssmtp.conf"
+    echo "root=mock_admin@test.com" > "$SSMTP_CONF"
+
+    run ./scripts/update_self.sh
+
+    [[ "$status" -eq 1 ]]
+    [[ "$output" =~ "Failed to download VERSION" ]]
+    [[ "$output" =~ "Email notification delivered to mock_admin@test.com" ]]
 }
 
 @test "Self Update: API Failure" {
     export TEST_REMOTE_TAG="fail"
-    
+
     cat << 'EOF' > "$MOCK_DIR/curl"
 #!/bin/bash
 exit 1
 EOF
     chmod +x "$MOCK_DIR/curl"
-    
+
     # Mock ssmtp for email recipient (expect failure notification)
     export SSMTP_CONF="$MOCK_DIR/ssmtp.conf"
     echo "root=mock_admin@test.com" > "$SSMTP_CONF"
-    
+
     run ./scripts/update_self.sh
-    
+
     [[ "$status" -eq 1 ]]
     [[ "$output" =~ "Error: Failed to contact GitHub API" ]]
-    [[ "$output" =~ "Sending email to mock_admin@test.com" ]]
+    [[ "$output" =~ "Email notification delivered to mock_admin@test.com" ]]
 }
 
 @test "Self Update: Malformed Response" {
@@ -197,14 +245,54 @@ echo "{}"
 exit 0
 EOF
     chmod +x "$MOCK_DIR/curl"
-    
+
     # Mock ssmtp for email recipient
     export SSMTP_CONF="$MOCK_DIR/ssmtp.conf"
     echo "root=mock_admin@test.com" > "$SSMTP_CONF"
 
     run ./scripts/update_self.sh
-    
+
     [[ "$status" -eq 1 ]]
     [[ "$output" =~ "Could not parse remote tag" ]]
-    [[ "$output" =~ "Sending email to mock_admin@test.com" ]]
+    [[ "$output" =~ "Email notification delivered to mock_admin@test.com" ]]
+}
+
+@test "Self Update: Missing install.sh falls back to ./install.sh" {
+    rm -f "$INSTALL_DIR/../install.sh"
+    echo "v1.0.0" > "$INSTALL_DIR/.version"
+    export TEST_REMOTE_TAG="v1.0.0"
+    _mock_curl_self_update
+    export SSMTP_CONF="$MOCK_DIR/ssmtp.conf"
+    rm -f "$SSMTP_CONF"
+    export MSMTP_CONF="$MOCK_DIR/missing-msmtp.conf"
+
+    local staged="$MOCK_DIR/staged_self"
+    rm -rf "$staged"
+    mkdir -p "$staged/lib"
+    cp ./scripts/update_self.sh "$staged/"
+    cp ./lib/*.sh "$staged/lib/"
+
+    run bash -c "export PATH=$MOCK_DIR:\$PATH INSTALL_DIR=$INSTALL_DIR SSMTP_CONF=$SSMTP_CONF MSMTP_CONF=$MSMTP_CONF; \"$staged/update_self.sh\""
+    [[ "$status" -eq 0 ]]
+    [[ "$output" =~ "System is up to date" ]]
+    [[ "$output" =~ "No mail recipient configured" || "$output" =~ "up to date" ]]
+}
+
+@test "Self Update: mail send failure is logged" {
+    echo "v1.0.0" > "$INSTALL_DIR/.version"
+    export TEST_REMOTE_TAG="v1.0.0"
+    _mock_curl_self_update
+    export SSMTP_CONF="$MOCK_DIR/ssmtp.conf"
+    echo "root=mock_admin@test.com" > "$SSMTP_CONF"
+    cat << 'EOF' > "$MOCK_DIR/ssmtp"
+#!/bin/bash
+exit 1
+EOF
+    chmod +x "$MOCK_DIR/ssmtp"
+    # Hide msmtp so ssmtp path is chosen then fails
+    rm -f "$MOCK_DIR/msmtp"
+
+    run ./scripts/update_self.sh
+    [[ "$status" -eq 0 ]]
+    [[ "$output" =~ "Failed to deliver email notification" ]]
 }

@@ -10,7 +10,23 @@ updates:
       - "ci"
 
   - package-ecosystem: "docker"
-    directory: "/"
+    directory: "/docker"
+    schedule:
+      interval: "weekly"
+    labels:
+      - "dependencies"
+      - "ci"
+
+  - package-ecosystem: "docker"
+    directory: "/docker/images/lint"
+    schedule:
+      interval: "weekly"
+    labels:
+      - "dependencies"
+      - "ci"
+
+  - package-ecosystem: "docker"
+    directory: "/docker/images/tests"
     schedule:
       interval: "weekly"
     labels:

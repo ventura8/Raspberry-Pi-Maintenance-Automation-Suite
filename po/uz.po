@@ -1,0 +1,629 @@
+# Raspberry Pi Maintenance Automation Suite
+# Copyright (C) 2026
+# This file is distributed under the same license as the package.
+msgid ""
+msgstr ""
+"Project-Id-Version: pi-maintenance-suite\n"
+"Report-Msgid-Bugs-To: https://github.com/ventura8/Raspberry-Pi-Maintenance-Automation-Suite/issues\n"
+"POT-Creation-Date: 1970-01-01 00:00+0000\n"
+"PO-Revision-Date: 2026-01-01 00:00+0000\n"
+"Last-Translator: AUTO\n"
+"Language-Team: O‘zbekcha\n"
+"Language: uz\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+
+msgid "      Raspberry Pi Maintenance Suite Manager"
+msgstr "[O‘zbekcha]       Raspberry Pi Maintenance Suite Manager"
+
+msgid "   -------------------"
+msgstr "[O‘zbekcha]    -------------------"
+
+msgid "   ----------------------------------------------------------------------------------"
+msgstr "[O‘zbekcha]    ----------------------------------------------------------------------------------"
+
+msgid "   0. Exit"
+msgstr "[O‘zbekcha]    0. Exit"
+
+msgid "   1. Configure Email Settings"
+msgstr "[O‘zbekcha]    1. Configure Email Settings"
+
+msgid "   2. View Current Email Config"
+msgstr "[O‘zbekcha]    2. View Current Email Config"
+
+msgid "   3. Manage Tasks & Schedules (Enable/Disable)"
+msgstr "[O‘zbekcha]    3. Manage Tasks & Schedules (Enable/Disable)"
+
+msgid "   4. Force Update Scripts (from GitHub)"
+msgstr "[O‘zbekcha]    4. Force Update Scripts (from GitHub)"
+
+msgid "   5. Run Enabled Tasks Now"
+msgstr "[O‘zbekcha]    5. Run Enabled Tasks Now"
+
+msgid "   6. Uninstall Suite"
+msgstr "[O‘zbekcha]    6. Uninstall Suite"
+
+msgid "   Enter ID to toggle/edit, or '0' to return to Main Menu."
+msgstr "[O‘zbekcha]    Enter ID to toggle/edit, or '0' to return to Main Menu."
+
+msgid "   RPi Maintenance Suite Uninstaller"
+msgstr "[O‘zbekcha]    RPi Maintenance Suite Uninstaller"
+
+msgid "   Task Status Manager"
+msgstr "[O‘zbekcha]    Task Status Manager"
+
+msgid "  Failed"
+msgstr "[O‘zbekcha]   Failed"
+
+msgid "  Success"
+msgstr "[O‘zbekcha]   Success"
+
+msgid "-"
+msgstr "[O‘zbekcha] -"
+
+msgid "--- Checking Dependencies ---"
+msgstr "[O‘zbekcha] --- Checking Dependencies ---"
+
+msgid "--- Checking for Samsung SSDs via fwupd ---"
+msgstr "[O‘zbekcha] --- Checking for Samsung SSDs via fwupd ---"
+
+msgid "--- Checking for Updates ---"
+msgstr "[O‘zbekcha] --- Checking for Updates ---"
+
+msgid "--- Current Email Settings ---"
+msgstr "[O‘zbekcha] --- Current Email Settings ---"
+
+msgid "--- Email Configuration ---"
+msgstr "[O‘zbekcha] --- Email Configuration ---"
+
+msgid "--- Fallback: Samsung Official ISO Update ---"
+msgstr "[O‘zbekcha] --- Fallback: Samsung Official ISO Update ---"
+
+msgid "--- REBOOT STATUS ---"
+msgstr "[O‘zbekcha] --- REBOOT STATUS ---"
+
+msgid "--- Refreshing Metadata ---"
+msgstr "[O‘zbekcha] --- Refreshing Metadata ---"
+
+msgid "--- Run Enabled Tasks Now ---"
+msgstr "[O‘zbekcha] --- Run Enabled Tasks Now ---"
+
+msgid "--- Running 'fwupdmgr' ---"
+msgstr "[O‘zbekcha] --- Running 'fwupdmgr' ---"
+
+msgid "--- Running 'sudo rpi-eeprom-update -a' ---"
+msgstr "[O‘zbekcha] --- Running 'sudo rpi-eeprom-update -a' ---"
+
+msgid "--- Skipping pip3 self-upgrade ---"
+msgstr "[O‘zbekcha] --- Skipping pip3 self-upgrade ---"
+
+msgid "--- Step 1: System Prune ---"
+msgstr "[O‘zbekcha] --- Step 1: System Prune ---"
+
+msgid "--- Step 2: Builder Prune ---"
+msgstr "[O‘zbekcha] --- Step 2: Builder Prune ---"
+
+msgid "--- Updating Pi-Apps and Installed Apps ---"
+msgstr "[O‘zbekcha] --- Updating Pi-Apps and Installed Apps ---"
+
+msgid "--- Upgrading outdated pip3 packages ---"
+msgstr "[O‘zbekcha] --- Upgrading outdated pip3 packages ---"
+
+msgid "--------------------------------------------"
+msgstr "[O‘zbekcha] --------------------------------------------"
+
+msgid "7z required but not installed."
+msgstr "[O‘zbekcha] 7z required but not installed."
+
+msgid "============================================"
+msgstr "[O‘zbekcha] ============================================"
+
+msgid "===================================================="
+msgstr "[O‘zbekcha] ===================================================="
+
+msgid "======================================================="
+msgstr "[O‘zbekcha] ======================================================="
+
+msgid "========================================================="
+msgstr "[O‘zbekcha] ========================================================="
+
+msgid "==========================================================="
+msgstr "[O‘zbekcha] ==========================================================="
+
+msgid "A firmware update was applied. A reboot is required."
+msgstr "[O‘zbekcha] A firmware update was applied. A reboot is required."
+
+msgid "A reboot is required to finish applying updates."
+msgstr "[O‘zbekcha] A reboot is required to finish applying updates."
+
+msgid "All dependencies are installed."
+msgstr "[O‘zbekcha] All dependencies are installed."
+
+msgid "All enabled tasks completed successfully."
+msgstr "[O‘zbekcha] All enabled tasks completed successfully."
+
+msgid "All pip3 packages are up-to-date."
+msgstr "[O‘zbekcha] All pip3 packages are up-to-date."
+
+msgid "All tasks are ON by default. Space toggles. Enter confirms."
+msgstr "[O‘zbekcha] All tasks are ON by default. Space toggles. Enter confirms."
+
+msgid "Are you sure you want to uninstall?"
+msgstr "[O‘zbekcha] Are you sure you want to uninstall?"
+
+msgid "Base pip3 is managed by the OS (Debian) to avoid record-file errors."
+msgstr "[O‘zbekcha] Base pip3 is managed by the OS (Debian) to avoid record-file errors."
+
+msgid "Buildx not detected. Falling back to legacy builder..."
+msgstr "[O‘zbekcha] Buildx not detected. Falling back to legacy builder..."
+
+msgid "Cancel"
+msgstr "[O‘zbekcha] Cancel"
+
+msgid "Cancelled: Enabled tasks were not run."
+msgstr "[O‘zbekcha] Cancelled: Enabled tasks were not run."
+
+msgid "Checking dependencies..."
+msgstr "[O‘zbekcha] Checking dependencies..."
+
+msgid "Checking for updates..."
+msgstr "[O‘zbekcha] Checking for updates..."
+
+msgid "Choose Continue to proceed, or Cancel to abort without installing."
+msgstr "[O‘zbekcha] Choose Continue to proceed, or Cancel to abort without installing."
+
+msgid "Cleaning up crontabs..."
+msgstr "[O‘zbekcha] Cleaning up crontabs..."
+
+msgid "Completed with failures."
+msgstr "[O‘zbekcha] Completed with failures."
+
+msgid "Configure Email Settings"
+msgstr "[O‘zbekcha] Configure Email Settings"
+
+msgid "Continue"
+msgstr "[O‘zbekcha] Continue"
+
+msgid "Could not find fumagician in initrd."
+msgstr "[O‘zbekcha] Could not find fumagician in initrd."
+
+msgid "Could not find initrd in ISO."
+msgstr "[O‘zbekcha] Could not find initrd in ISO."
+
+msgid "Could not parse remote tag from GitHub response."
+msgstr "[O‘zbekcha] Could not parse remote tag from GitHub response."
+
+msgid "Current Email Settings"
+msgstr "[O‘zbekcha] Current Email Settings"
+
+msgid "Custom Schedule"
+msgstr "[O‘zbekcha] Custom Schedule"
+
+msgid "DISABLED|-"
+msgstr "[O‘zbekcha] DISABLED|-"
+
+msgid "Daily @ %s:%s"
+msgstr "[O‘zbekcha] Daily @ %s:%s"
+
+msgid "Dependencies installed successfully."
+msgstr "[O‘zbekcha] Dependencies installed successfully."
+
+msgid "Docker Cleanup"
+msgstr "[O‘zbekcha] Docker Cleanup"
+
+msgid "Dow %s"
+msgstr "[O‘zbekcha] Dow %s"
+
+msgid "Download"
+msgstr "[O‘zbekcha] Download"
+
+msgid "Download Scripts"
+msgstr "[O‘zbekcha] Download Scripts"
+
+msgid "Downloaded file is empty."
+msgstr "[O‘zbekcha] Downloaded file is empty."
+
+msgid "Downloading/Updating scripts..."
+msgstr "[O‘zbekcha] Downloading/Updating scripts..."
+
+msgid "EOF detected"
+msgstr "[O‘zbekcha] EOF detected"
+
+msgid "Edit Schedule"
+msgstr "[O‘zbekcha] Edit Schedule"
+
+msgid "Email Configuration"
+msgstr "[O‘zbekcha] Email Configuration"
+
+msgid "Email configured successfully."
+msgstr "[O‘zbekcha] Email configured successfully."
+
+msgid "Enable Task"
+msgstr "[O‘zbekcha] Enable Task"
+
+msgid "Enabled %s"
+msgstr "[O‘zbekcha] Enabled %s"
+
+msgid "Enter App Password (16-char):"
+msgstr "[O‘zbekcha] Enter App Password (16-char):"
+
+msgid "Enter App Password (16-char, input hidden):"
+msgstr "[O‘zbekcha] Enter App Password (16-char, input hidden):"
+
+msgid "Enter Gmail address:"
+msgstr "[O‘zbekcha] Enter Gmail address:"
+
+msgid "Enter cron schedule:"
+msgstr "[O‘zbekcha] Enter cron schedule:"
+
+msgid "Error downloading %s"
+msgstr "[O‘zbekcha] Error downloading %s"
+
+msgid "Error downloading lib/%s"
+msgstr "[O‘zbekcha] Error downloading lib/%s"
+
+msgid "Error: This script supports 64-bit systems only."
+msgstr "[O‘zbekcha] Error: This script supports 64-bit systems only."
+
+msgid "Error: curl is required but not installed."
+msgstr "[O‘zbekcha] Error: curl is required but not installed."
+
+msgid "Error: fwupdmgr (fwupd) is not installed."
+msgstr "[O‘zbekcha] Error: fwupdmgr (fwupd) is not installed."
+
+msgid "Esc / Cancel aborts the installer without enabling tasks."
+msgstr "[O‘zbekcha] Esc / Cancel aborts the installer without enabling tasks."
+
+msgid "Exit"
+msgstr "[O‘zbekcha] Exit"
+
+msgid "Extracting initrd..."
+msgstr "[O‘zbekcha] Extracting initrd..."
+
+msgid "Failed to contact GitHub API."
+msgstr "[O‘zbekcha] Failed to contact GitHub API."
+
+msgid "Failed to download firmware ISO."
+msgstr "[O‘zbekcha] Failed to download firmware ISO."
+
+msgid "Failed to fetch Samsung firmware page."
+msgstr "[O‘zbekcha] Failed to fetch Samsung firmware page."
+
+msgid "Failed to mount ISO."
+msgstr "[O‘zbekcha] Failed to mount ISO."
+
+msgid "Fetching Samsung firmware page..."
+msgstr "[O‘zbekcha] Fetching Samsung firmware page..."
+
+msgid "Finished running enabled tasks.\\nSee terminal output for details."
+msgstr "[O‘zbekcha] Finished running enabled tasks.\\nSee terminal output for details."
+
+msgid "Firmware Update"
+msgstr "[O‘zbekcha] Firmware Update"
+
+msgid "Firmware is already up to date."
+msgstr "[O‘zbekcha] Firmware is already up to date."
+
+msgid "Firmware update applied successfully."
+msgstr "[O‘zbekcha] Firmware update applied successfully."
+
+msgid "Firmware update via fumagician failed."
+msgstr "[O‘zbekcha] Firmware update via fumagician failed."
+
+msgid "Force Update Scripts (from GitHub)"
+msgstr "[O‘zbekcha] Force Update Scripts (from GitHub)"
+
+msgid "Fri"
+msgstr "[O‘zbekcha] Fri"
+
+msgid "Installation Cancelled"
+msgstr "[O‘zbekcha] Installation Cancelled"
+
+msgid "Installation Complete"
+msgstr "[O‘zbekcha] Installation Complete"
+
+msgid "Installation Complete!"
+msgstr "[O‘zbekcha] Installation Complete!"
+
+msgid "Installing curl..."
+msgstr "[O‘zbekcha] Installing curl..."
+
+msgid "Invalid email address."
+msgstr "[O‘zbekcha] Invalid email address."
+
+msgid "Invalid email. returning to menu."
+msgstr "[O‘zbekcha] Invalid email. returning to menu."
+
+msgid "Invalid option: '%s'"
+msgstr "[O‘zbekcha] Invalid option: '%s'"
+
+msgid "Mail sender not found. Installing mail-transport packages..."
+msgstr "[O‘zbekcha] Mail sender not found. Installing mail-transport packages..."
+
+msgid "Mail transport installed successfully."
+msgstr "[O‘zbekcha] Mail transport installed successfully."
+
+msgid "Mailer configuration files under /etc/ssmtp/ or /etc/msmtprc were not removed to preserve backups."
+msgstr "[O‘zbekcha] Mailer configuration files under /etc/ssmtp/ or /etc/msmtprc were not removed to preserve backups."
+
+msgid "Manage Tasks & Schedules"
+msgstr "[O‘zbekcha] Manage Tasks & Schedules"
+
+msgid "Manual update: https://semiconductor.samsung.com/consumer-storage/support/tools/"
+msgstr "[O‘zbekcha] Manual update: https://semiconductor.samsung.com/consumer-storage/support/tools/"
+
+msgid "Matrix/non-interactive fresh install."
+msgstr "[O‘zbekcha] Matrix/non-interactive fresh install."
+
+msgid "Modern Buildx detected. Pruning build cache..."
+msgstr "[O‘zbekcha] Modern Buildx detected. Pruning build cache..."
+
+msgid "Mon"
+msgstr "[O‘zbekcha] Mon"
+
+msgid "Monthly %s @ %s:%s"
+msgstr "[O‘zbekcha] Monthly %s @ %s:%s"
+
+msgid "Mounting ISO..."
+msgstr "[O‘zbekcha] Mounting ISO..."
+
+msgid "New firmware available! Downloading..."
+msgstr "[O‘zbekcha] New firmware available! Downloading..."
+
+msgid "No SSMTP configuration found."
+msgstr "[O‘zbekcha] No SSMTP configuration found."
+
+msgid "No Samsung SSDs detected by fwupd."
+msgstr "[O‘zbekcha] No Samsung SSDs detected by fwupd."
+
+msgid "No Samsung SSDs detected by nvme-cli."
+msgstr "[O‘zbekcha] No Samsung SSDs detected by nvme-cli."
+
+msgid "No enabled tasks found."
+msgstr "[O‘zbekcha] No enabled tasks found."
+
+msgid "No firmware update was applied or no reboot is required."
+msgstr "[O‘zbekcha] No firmware update was applied or no reboot is required."
+
+msgid "No mail recipient configured, skipping email notification."
+msgstr "[O‘zbekcha] No mail recipient configured, skipping email notification."
+
+msgid "No mail sender (ssmtp/msmtp) found, skipping email notification."
+msgstr "[O‘zbekcha] No mail sender (ssmtp/msmtp) found, skipping email notification."
+
+msgid "No reboot is required at this time."
+msgstr "[O‘zbekcha] No reboot is required at this time."
+
+msgid "No supported firmware update tool found (rpi-eeprom-update or fwupdmgr)."
+msgstr "[O‘zbekcha] No supported firmware update tool found (rpi-eeprom-update or fwupdmgr)."
+
+msgid "No updates available via LVFS."
+msgstr "[O‘zbekcha] No updates available via LVFS."
+
+msgid "No updates available."
+msgstr "[O‘zbekcha] No updates available."
+
+msgid "Note: Mail transport packages (ssmtp/mailutils or msmtp/s-nail) were left installed as system packages."
+msgstr "[O‘zbekcha] Note: Mail transport packages (ssmtp/mailutils or msmtp/s-nail) were left installed as system packages."
+
+msgid "Password empty. Returning."
+msgstr "[O‘zbekcha] Password empty. Returning."
+
+msgid "Password: [HIDDEN/MASKED]"
+msgstr "[O‘zbekcha] Password: [HIDDEN/MASKED]"
+
+msgid "Pi Maintenance Update Failed"
+msgstr "[O‘zbekcha] Pi Maintenance Update Failed"
+
+msgid "Pi Maintenance: System Up to Date"
+msgstr "[O‘zbekcha] Pi Maintenance: System Up to Date"
+
+msgid "Pi-Apps Update"
+msgstr "Pi-Apps Update"
+
+msgid "Python Pip Update"
+msgstr "[O‘zbekcha] Python Pip Update"
+
+msgid "Raspberry Pi Maintenance Suite"
+msgstr "[O‘zbekcha] Raspberry Pi Maintenance Suite"
+
+msgid "Raspberry Pi Maintenance Suite %s"
+msgstr "[O‘zbekcha] Raspberry Pi Maintenance Suite %s"
+
+msgid "Raspberry Pi Maintenance Suite Manager"
+msgstr "[O‘zbekcha] Raspberry Pi Maintenance Suite Manager"
+
+msgid "Refreshing metadata..."
+msgstr "[O‘zbekcha] Refreshing metadata..."
+
+msgid "Return to Main Menu"
+msgstr "[O‘zbekcha] Return to Main Menu"
+
+msgid "Root crontab updated."
+msgstr "[O‘zbekcha] Root crontab updated."
+
+msgid "Run Enabled Tasks Now"
+msgstr "[O‘zbekcha] Run Enabled Tasks Now"
+
+msgid "Running firmware update..."
+msgstr "[O‘zbekcha] Running firmware update..."
+
+msgid "Samsung SSD Firmware Update"
+msgstr "[O‘zbekcha] Samsung SSD Firmware Update"
+
+msgid "Samsung SSD detected by fwupd."
+msgstr "[O‘zbekcha] Samsung SSD detected by fwupd."
+
+msgid "Sat"
+msgstr "[O‘zbekcha] Sat"
+
+msgid "Saving configuration..."
+msgstr "[O‘zbekcha] Saving configuration..."
+
+msgid "Schedule updated."
+msgstr "[O‘zbekcha] Schedule updated."
+
+msgid "Scripts updated."
+msgstr "[O‘zbekcha] Scripts updated."
+
+msgid "Select which tasks to enable. Press Enter to accept default [Y]."
+msgstr "[O‘zbekcha] Select which tasks to enable. Press Enter to accept default [Y]."
+
+msgid "Selected tasks use their default weekly schedules."
+msgstr "[O‘zbekcha] Selected tasks use their default weekly schedules."
+
+msgid "Self-Update Service"
+msgstr "[O‘zbekcha] Self-Update Service"
+
+msgid "Setting up default schedules..."
+msgstr "[O‘zbekcha] Setting up default schedules..."
+
+msgid "Skipping update (not installed or wrong path)."
+msgstr "[O‘zbekcha] Skipping update (not installed or wrong path)."
+
+msgid "Starting uninstallation process..."
+msgstr "[O‘zbekcha] Starting uninstallation process..."
+
+msgid "Suite version: %s"
+msgstr "[O‘zbekcha] Suite version: %s"
+
+msgid "Sun"
+msgstr "[O‘zbekcha] Sun"
+
+msgid "System OS Update"
+msgstr "[O‘zbekcha] System OS Update"
+
+msgid "System is up to date."
+msgstr "[O‘zbekcha] System is up to date."
+
+msgid "Task Status Manager"
+msgstr "[O‘zbekcha] Task Status Manager"
+
+msgid "Task disabled."
+msgstr "[O‘zbekcha] Task disabled."
+
+msgid "Task enabled."
+msgstr "[O‘zbekcha] Task enabled."
+
+msgid "Task: %s"
+msgstr "[O‘zbekcha] Task: %s"
+
+msgid "The auto-update failed. Reason: %s"
+msgstr "[O‘zbekcha] The auto-update failed. Reason: %s"
+
+msgid "The system is running the latest version: %s."
+msgstr "[O‘zbekcha] The system is running the latest version: %s."
+
+msgid "The system will reboot shortly after this report is sent."
+msgstr "[O‘zbekcha] The system will reboot shortly after this report is sent."
+
+msgid "This wizard configures email, downloads scripts, and schedules maintenance tasks."
+msgstr "[O‘zbekcha] This wizard configures email, downloads scripts, and schedules maintenance tasks."
+
+msgid "This wizard will set up your email and default schedules."
+msgstr "[O‘zbekcha] This wizard will set up your email and default schedules."
+
+msgid "Thu"
+msgstr "[O‘zbekcha] Thu"
+
+msgid "Tue"
+msgstr "[O‘zbekcha] Tue"
+
+msgid "Uninstall"
+msgstr "[O‘zbekcha] Uninstall"
+
+msgid "Uninstall Suite"
+msgstr "[O‘zbekcha] Uninstall Suite"
+
+msgid "Uninstallation complete."
+msgstr "[O‘zbekcha] Uninstallation complete."
+
+msgid "Unsupported OS family for system update."
+msgstr "[O‘zbekcha] Unsupported OS family for system update."
+
+msgid "Updates available. Installing..."
+msgstr "[O‘zbekcha] Updates available. Installing..."
+
+msgid "Updating version tracking..."
+msgstr "[O‘zbekcha] Updating version tracking..."
+
+msgid "Version set to: %s"
+msgstr "[O‘zbekcha] Version set to: %s"
+
+msgid "Version: %s\\n\\nChoose an option. Enter selects. Esc cancels/exits."
+msgstr "[O‘zbekcha] Version: %s\\n\\nChoose an option. Enter selects. Esc cancels/exits."
+
+msgid "View Current Email Config"
+msgstr "[O‘zbekcha] View Current Email Config"
+
+msgid "Warning: Failed to install curl."
+msgstr "[O‘zbekcha] Warning: Failed to install curl."
+
+msgid "Warning: Failed to install gettext. UI will stay in English."
+msgstr "[O‘zbekcha] Warning: Failed to install gettext. UI will stay in English."
+
+msgid "Warning: Failed to install mail transport. Email notifications will be disabled."
+msgstr "[O‘zbekcha] Warning: Failed to install mail transport. Email notifications will be disabled."
+
+msgid "Warning: Failed to install whiptail. Falling back to text UI."
+msgstr "[O‘zbekcha] Warning: Failed to install whiptail. Falling back to text UI."
+
+msgid "Warning: One or more enabled tasks may reboot the system and terminate this session."
+msgstr "[O‘zbekcha] Warning: One or more enabled tasks may reboot the system and terminate this session."
+
+msgid "Warning: Some dependencies may have failed to install."
+msgstr "[O‘zbekcha] Warning: Some dependencies may have failed to install."
+
+msgid "Warning: could not read VERSION (local or %s)."
+msgstr "[O‘zbekcha] Warning: could not read VERSION (local or %s)."
+
+msgid "Warning: no package mapping for '%s' on this OS family; skipping."
+msgstr "[O‘zbekcha] Warning: no package mapping for '%s' on this OS family; skipping."
+
+msgid "Wed"
+msgstr "[O‘zbekcha] Wed"
+
+msgid "Weekly %s @ %s:%s"
+msgstr "[O‘zbekcha] Weekly %s @ %s:%s"
+
+msgid "Welcome to the One-Line Installer (%s)."
+msgstr "[O‘zbekcha] Welcome to the One-Line Installer (%s)."
+
+msgid "Whiptail UI unavailable; switching to text interface."
+msgstr "[O‘zbekcha] Whiptail UI unavailable; switching to text interface."
+
+msgid "[1/4] Welcome"
+msgstr "[O‘zbekcha] [1/4] Welcome"
+
+msgid "[2/4] Email configuration..."
+msgstr "[O‘zbekcha] [2/4] Email configuration..."
+
+msgid "[3/4] Downloading scripts..."
+msgstr "[O‘zbekcha] [3/4] Downloading scripts..."
+
+msgid "[4/4] Select maintenance tasks to enable."
+msgstr "[O‘zbekcha] [4/4] Select maintenance tasks to enable."
+
+msgid "[4/4] Task selection..."
+msgstr "[O‘zbekcha] [4/4] Task selection..."
+
+msgid "fwupdmgr failed to query update availability. Skipping firmware apply step."
+msgstr "[O‘zbekcha] fwupdmgr failed to query update availability. Skipping firmware apply step."
+
+msgid "gettext installed successfully."
+msgstr "[O‘zbekcha] gettext installed successfully."
+
+msgid "gettext not found. Installing gettext..."
+msgstr "[O‘zbekcha] gettext not found. Installing gettext..."
+
+msgid "nvme-cli is not installed and could not be installed automatically."
+msgstr "[O‘zbekcha] nvme-cli is not installed and could not be installed automatically."
+
+msgid "whiptail installed successfully."
+msgstr "[O‘zbekcha] whiptail installed successfully."
+
+msgid "whiptail not found. Installing whiptail..."
+msgstr "[O‘zbekcha] whiptail not found. Installing whiptail..."
+

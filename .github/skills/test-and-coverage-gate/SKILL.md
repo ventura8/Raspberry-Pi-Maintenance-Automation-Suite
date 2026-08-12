@@ -1,28 +1,26 @@
 ______________________________________________________________________
 
-## name: test-and-coverage-gate description: "Use when validating repository changes with BATS, coverage generation, and strict quality gate checks before merge."
+## name: test-and-coverage-gate description: Run BATS with coverage and complexity gates; report overall/per-file thresholds and badge status.
 
 # Test and Coverage Gate
 
 ## Goal
 
-Ensure code changes are test-complete and coverage-compliant.
+Prove the suite meets coverage ≥90% and complexity ≤15 (overall and per-file).
 
 ## Procedure
 
-1. Run focused tests for changed behavior first.
-1. Run full suite and capture failures precisely.
-1. If coverage mode is requested, generate and verify reports.
-1. Confirm coverage target remains >= 90%.
+1. Prefer Docker coverage gate: `./scripts/build-and-test.sh --coverage-only`
+1. Host fallback: `COVERAGE=1 ./tests/run_suite.sh`
+1. Confirm `tests/transform_coverage.py` thresholds.
+1. Commit `assets/coverage.svg` when coverage changes.
+1. For installer-only or maintenance-only iteration, use `./tests/run_suite.sh --installer-only` /
+   `--maintenance-only`, then re-run full coverage before merge claims.
 
-## Standard Commands
+## Companion skill
 
-1. `./tests/run_suite.sh`
-1. `COVERAGE=1 ./tests/run_suite.sh`
-1. `powershell -ExecutionPolicy Bypass -File .\\tools\\windows\\run_tests_local.ps1 -NoCoverage` for Windows-hosted local runs.
+See [`.agents/skills/test-runner/SKILL.md`](../../../.agents/skills/test-runner/SKILL.md).
 
 ## Output
 
-1. Pass/fail status by test area.
-1. Any missing test cases for changed logic.
-1. Coverage summary against target.
+Coverage %, complexity, failing files/tests, badge updated yes/no.

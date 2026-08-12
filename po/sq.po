@@ -1,0 +1,629 @@
+# Raspberry Pi Maintenance Automation Suite
+# Copyright (C) 2026
+# This file is distributed under the same license as the package.
+msgid ""
+msgstr ""
+"Project-Id-Version: pi-maintenance-suite\n"
+"Report-Msgid-Bugs-To: https://github.com/ventura8/Raspberry-Pi-Maintenance-Automation-Suite/issues\n"
+"POT-Creation-Date: 1970-01-01 00:00+0000\n"
+"PO-Revision-Date: 2026-01-01 00:00+0000\n"
+"Last-Translator: AUTO\n"
+"Language-Team: Shqip\n"
+"Language: sq\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+
+msgid "      Raspberry Pi Maintenance Suite Manager"
+msgstr "[Shqip]       Raspberry Pi Maintenance Suite Manager"
+
+msgid "   -------------------"
+msgstr "[Shqip]    -------------------"
+
+msgid "   ----------------------------------------------------------------------------------"
+msgstr "[Shqip]    ----------------------------------------------------------------------------------"
+
+msgid "   0. Exit"
+msgstr "[Shqip]    0. Exit"
+
+msgid "   1. Configure Email Settings"
+msgstr "[Shqip]    1. Configure Email Settings"
+
+msgid "   2. View Current Email Config"
+msgstr "[Shqip]    2. View Current Email Config"
+
+msgid "   3. Manage Tasks & Schedules (Enable/Disable)"
+msgstr "[Shqip]    3. Manage Tasks & Schedules (Enable/Disable)"
+
+msgid "   4. Force Update Scripts (from GitHub)"
+msgstr "[Shqip]    4. Force Update Scripts (from GitHub)"
+
+msgid "   5. Run Enabled Tasks Now"
+msgstr "[Shqip]    5. Run Enabled Tasks Now"
+
+msgid "   6. Uninstall Suite"
+msgstr "[Shqip]    6. Uninstall Suite"
+
+msgid "   Enter ID to toggle/edit, or '0' to return to Main Menu."
+msgstr "[Shqip]    Enter ID to toggle/edit, or '0' to return to Main Menu."
+
+msgid "   RPi Maintenance Suite Uninstaller"
+msgstr "[Shqip]    RPi Maintenance Suite Uninstaller"
+
+msgid "   Task Status Manager"
+msgstr "[Shqip]    Task Status Manager"
+
+msgid "  Failed"
+msgstr "[Shqip]   Failed"
+
+msgid "  Success"
+msgstr "[Shqip]   Success"
+
+msgid "-"
+msgstr "[Shqip] -"
+
+msgid "--- Checking Dependencies ---"
+msgstr "[Shqip] --- Checking Dependencies ---"
+
+msgid "--- Checking for Samsung SSDs via fwupd ---"
+msgstr "[Shqip] --- Checking for Samsung SSDs via fwupd ---"
+
+msgid "--- Checking for Updates ---"
+msgstr "[Shqip] --- Checking for Updates ---"
+
+msgid "--- Current Email Settings ---"
+msgstr "[Shqip] --- Current Email Settings ---"
+
+msgid "--- Email Configuration ---"
+msgstr "[Shqip] --- Email Configuration ---"
+
+msgid "--- Fallback: Samsung Official ISO Update ---"
+msgstr "[Shqip] --- Fallback: Samsung Official ISO Update ---"
+
+msgid "--- REBOOT STATUS ---"
+msgstr "[Shqip] --- REBOOT STATUS ---"
+
+msgid "--- Refreshing Metadata ---"
+msgstr "[Shqip] --- Refreshing Metadata ---"
+
+msgid "--- Run Enabled Tasks Now ---"
+msgstr "[Shqip] --- Run Enabled Tasks Now ---"
+
+msgid "--- Running 'fwupdmgr' ---"
+msgstr "[Shqip] --- Running 'fwupdmgr' ---"
+
+msgid "--- Running 'sudo rpi-eeprom-update -a' ---"
+msgstr "[Shqip] --- Running 'sudo rpi-eeprom-update -a' ---"
+
+msgid "--- Skipping pip3 self-upgrade ---"
+msgstr "[Shqip] --- Skipping pip3 self-upgrade ---"
+
+msgid "--- Step 1: System Prune ---"
+msgstr "[Shqip] --- Step 1: System Prune ---"
+
+msgid "--- Step 2: Builder Prune ---"
+msgstr "[Shqip] --- Step 2: Builder Prune ---"
+
+msgid "--- Updating Pi-Apps and Installed Apps ---"
+msgstr "[Shqip] --- Updating Pi-Apps and Installed Apps ---"
+
+msgid "--- Upgrading outdated pip3 packages ---"
+msgstr "[Shqip] --- Upgrading outdated pip3 packages ---"
+
+msgid "--------------------------------------------"
+msgstr "[Shqip] --------------------------------------------"
+
+msgid "7z required but not installed."
+msgstr "[Shqip] 7z required but not installed."
+
+msgid "============================================"
+msgstr "[Shqip] ============================================"
+
+msgid "===================================================="
+msgstr "[Shqip] ===================================================="
+
+msgid "======================================================="
+msgstr "[Shqip] ======================================================="
+
+msgid "========================================================="
+msgstr "[Shqip] ========================================================="
+
+msgid "==========================================================="
+msgstr "[Shqip] ==========================================================="
+
+msgid "A firmware update was applied. A reboot is required."
+msgstr "[Shqip] A firmware update was applied. A reboot is required."
+
+msgid "A reboot is required to finish applying updates."
+msgstr "[Shqip] A reboot is required to finish applying updates."
+
+msgid "All dependencies are installed."
+msgstr "[Shqip] All dependencies are installed."
+
+msgid "All enabled tasks completed successfully."
+msgstr "[Shqip] All enabled tasks completed successfully."
+
+msgid "All pip3 packages are up-to-date."
+msgstr "[Shqip] All pip3 packages are up-to-date."
+
+msgid "All tasks are ON by default. Space toggles. Enter confirms."
+msgstr "[Shqip] All tasks are ON by default. Space toggles. Enter confirms."
+
+msgid "Are you sure you want to uninstall?"
+msgstr "[Shqip] Are you sure you want to uninstall?"
+
+msgid "Base pip3 is managed by the OS (Debian) to avoid record-file errors."
+msgstr "[Shqip] Base pip3 is managed by the OS (Debian) to avoid record-file errors."
+
+msgid "Buildx not detected. Falling back to legacy builder..."
+msgstr "[Shqip] Buildx not detected. Falling back to legacy builder..."
+
+msgid "Cancel"
+msgstr "[Shqip] Cancel"
+
+msgid "Cancelled: Enabled tasks were not run."
+msgstr "[Shqip] Cancelled: Enabled tasks were not run."
+
+msgid "Checking dependencies..."
+msgstr "[Shqip] Checking dependencies..."
+
+msgid "Checking for updates..."
+msgstr "[Shqip] Checking for updates..."
+
+msgid "Choose Continue to proceed, or Cancel to abort without installing."
+msgstr "[Shqip] Choose Continue to proceed, or Cancel to abort without installing."
+
+msgid "Cleaning up crontabs..."
+msgstr "[Shqip] Cleaning up crontabs..."
+
+msgid "Completed with failures."
+msgstr "[Shqip] Completed with failures."
+
+msgid "Configure Email Settings"
+msgstr "[Shqip] Configure Email Settings"
+
+msgid "Continue"
+msgstr "[Shqip] Continue"
+
+msgid "Could not find fumagician in initrd."
+msgstr "[Shqip] Could not find fumagician in initrd."
+
+msgid "Could not find initrd in ISO."
+msgstr "[Shqip] Could not find initrd in ISO."
+
+msgid "Could not parse remote tag from GitHub response."
+msgstr "[Shqip] Could not parse remote tag from GitHub response."
+
+msgid "Current Email Settings"
+msgstr "[Shqip] Current Email Settings"
+
+msgid "Custom Schedule"
+msgstr "[Shqip] Custom Schedule"
+
+msgid "DISABLED|-"
+msgstr "[Shqip] DISABLED|-"
+
+msgid "Daily @ %s:%s"
+msgstr "[Shqip] Daily @ %s:%s"
+
+msgid "Dependencies installed successfully."
+msgstr "[Shqip] Dependencies installed successfully."
+
+msgid "Docker Cleanup"
+msgstr "[Shqip] Docker Cleanup"
+
+msgid "Dow %s"
+msgstr "[Shqip] Dow %s"
+
+msgid "Download"
+msgstr "[Shqip] Download"
+
+msgid "Download Scripts"
+msgstr "[Shqip] Download Scripts"
+
+msgid "Downloaded file is empty."
+msgstr "[Shqip] Downloaded file is empty."
+
+msgid "Downloading/Updating scripts..."
+msgstr "[Shqip] Downloading/Updating scripts..."
+
+msgid "EOF detected"
+msgstr "[Shqip] EOF detected"
+
+msgid "Edit Schedule"
+msgstr "[Shqip] Edit Schedule"
+
+msgid "Email Configuration"
+msgstr "[Shqip] Email Configuration"
+
+msgid "Email configured successfully."
+msgstr "[Shqip] Email configured successfully."
+
+msgid "Enable Task"
+msgstr "[Shqip] Enable Task"
+
+msgid "Enabled %s"
+msgstr "[Shqip] Enabled %s"
+
+msgid "Enter App Password (16-char):"
+msgstr "[Shqip] Enter App Password (16-char):"
+
+msgid "Enter App Password (16-char, input hidden):"
+msgstr "[Shqip] Enter App Password (16-char, input hidden):"
+
+msgid "Enter Gmail address:"
+msgstr "[Shqip] Enter Gmail address:"
+
+msgid "Enter cron schedule:"
+msgstr "[Shqip] Enter cron schedule:"
+
+msgid "Error downloading %s"
+msgstr "[Shqip] Error downloading %s"
+
+msgid "Error downloading lib/%s"
+msgstr "[Shqip] Error downloading lib/%s"
+
+msgid "Error: This script supports 64-bit systems only."
+msgstr "[Shqip] Error: This script supports 64-bit systems only."
+
+msgid "Error: curl is required but not installed."
+msgstr "[Shqip] Error: curl is required but not installed."
+
+msgid "Error: fwupdmgr (fwupd) is not installed."
+msgstr "[Shqip] Error: fwupdmgr (fwupd) is not installed."
+
+msgid "Esc / Cancel aborts the installer without enabling tasks."
+msgstr "[Shqip] Esc / Cancel aborts the installer without enabling tasks."
+
+msgid "Exit"
+msgstr "[Shqip] Exit"
+
+msgid "Extracting initrd..."
+msgstr "[Shqip] Extracting initrd..."
+
+msgid "Failed to contact GitHub API."
+msgstr "[Shqip] Failed to contact GitHub API."
+
+msgid "Failed to download firmware ISO."
+msgstr "[Shqip] Failed to download firmware ISO."
+
+msgid "Failed to fetch Samsung firmware page."
+msgstr "[Shqip] Failed to fetch Samsung firmware page."
+
+msgid "Failed to mount ISO."
+msgstr "[Shqip] Failed to mount ISO."
+
+msgid "Fetching Samsung firmware page..."
+msgstr "[Shqip] Fetching Samsung firmware page..."
+
+msgid "Finished running enabled tasks.\\nSee terminal output for details."
+msgstr "[Shqip] Finished running enabled tasks.\\nSee terminal output for details."
+
+msgid "Firmware Update"
+msgstr "[Shqip] Firmware Update"
+
+msgid "Firmware is already up to date."
+msgstr "[Shqip] Firmware is already up to date."
+
+msgid "Firmware update applied successfully."
+msgstr "[Shqip] Firmware update applied successfully."
+
+msgid "Firmware update via fumagician failed."
+msgstr "[Shqip] Firmware update via fumagician failed."
+
+msgid "Force Update Scripts (from GitHub)"
+msgstr "[Shqip] Force Update Scripts (from GitHub)"
+
+msgid "Fri"
+msgstr "[Shqip] Fri"
+
+msgid "Installation Cancelled"
+msgstr "[Shqip] Installation Cancelled"
+
+msgid "Installation Complete"
+msgstr "[Shqip] Installation Complete"
+
+msgid "Installation Complete!"
+msgstr "[Shqip] Installation Complete!"
+
+msgid "Installing curl..."
+msgstr "[Shqip] Installing curl..."
+
+msgid "Invalid email address."
+msgstr "[Shqip] Invalid email address."
+
+msgid "Invalid email. returning to menu."
+msgstr "[Shqip] Invalid email. returning to menu."
+
+msgid "Invalid option: '%s'"
+msgstr "[Shqip] Invalid option: '%s'"
+
+msgid "Mail sender not found. Installing mail-transport packages..."
+msgstr "[Shqip] Mail sender not found. Installing mail-transport packages..."
+
+msgid "Mail transport installed successfully."
+msgstr "[Shqip] Mail transport installed successfully."
+
+msgid "Mailer configuration files under /etc/ssmtp/ or /etc/msmtprc were not removed to preserve backups."
+msgstr "[Shqip] Mailer configuration files under /etc/ssmtp/ or /etc/msmtprc were not removed to preserve backups."
+
+msgid "Manage Tasks & Schedules"
+msgstr "[Shqip] Manage Tasks & Schedules"
+
+msgid "Manual update: https://semiconductor.samsung.com/consumer-storage/support/tools/"
+msgstr "[Shqip] Manual update: https://semiconductor.samsung.com/consumer-storage/support/tools/"
+
+msgid "Matrix/non-interactive fresh install."
+msgstr "[Shqip] Matrix/non-interactive fresh install."
+
+msgid "Modern Buildx detected. Pruning build cache..."
+msgstr "[Shqip] Modern Buildx detected. Pruning build cache..."
+
+msgid "Mon"
+msgstr "[Shqip] Mon"
+
+msgid "Monthly %s @ %s:%s"
+msgstr "[Shqip] Monthly %s @ %s:%s"
+
+msgid "Mounting ISO..."
+msgstr "[Shqip] Mounting ISO..."
+
+msgid "New firmware available! Downloading..."
+msgstr "[Shqip] New firmware available! Downloading..."
+
+msgid "No SSMTP configuration found."
+msgstr "[Shqip] No SSMTP configuration found."
+
+msgid "No Samsung SSDs detected by fwupd."
+msgstr "[Shqip] No Samsung SSDs detected by fwupd."
+
+msgid "No Samsung SSDs detected by nvme-cli."
+msgstr "[Shqip] No Samsung SSDs detected by nvme-cli."
+
+msgid "No enabled tasks found."
+msgstr "[Shqip] No enabled tasks found."
+
+msgid "No firmware update was applied or no reboot is required."
+msgstr "[Shqip] No firmware update was applied or no reboot is required."
+
+msgid "No mail recipient configured, skipping email notification."
+msgstr "[Shqip] No mail recipient configured, skipping email notification."
+
+msgid "No mail sender (ssmtp/msmtp) found, skipping email notification."
+msgstr "[Shqip] No mail sender (ssmtp/msmtp) found, skipping email notification."
+
+msgid "No reboot is required at this time."
+msgstr "[Shqip] No reboot is required at this time."
+
+msgid "No supported firmware update tool found (rpi-eeprom-update or fwupdmgr)."
+msgstr "[Shqip] No supported firmware update tool found (rpi-eeprom-update or fwupdmgr)."
+
+msgid "No updates available via LVFS."
+msgstr "[Shqip] No updates available via LVFS."
+
+msgid "No updates available."
+msgstr "[Shqip] No updates available."
+
+msgid "Note: Mail transport packages (ssmtp/mailutils or msmtp/s-nail) were left installed as system packages."
+msgstr "[Shqip] Note: Mail transport packages (ssmtp/mailutils or msmtp/s-nail) were left installed as system packages."
+
+msgid "Password empty. Returning."
+msgstr "[Shqip] Password empty. Returning."
+
+msgid "Password: [HIDDEN/MASKED]"
+msgstr "[Shqip] Password: [HIDDEN/MASKED]"
+
+msgid "Pi Maintenance Update Failed"
+msgstr "[Shqip] Pi Maintenance Update Failed"
+
+msgid "Pi Maintenance: System Up to Date"
+msgstr "[Shqip] Pi Maintenance: System Up to Date"
+
+msgid "Pi-Apps Update"
+msgstr "Pi-Apps Update"
+
+msgid "Python Pip Update"
+msgstr "[Shqip] Python Pip Update"
+
+msgid "Raspberry Pi Maintenance Suite"
+msgstr "[Shqip] Raspberry Pi Maintenance Suite"
+
+msgid "Raspberry Pi Maintenance Suite %s"
+msgstr "[Shqip] Raspberry Pi Maintenance Suite %s"
+
+msgid "Raspberry Pi Maintenance Suite Manager"
+msgstr "[Shqip] Raspberry Pi Maintenance Suite Manager"
+
+msgid "Refreshing metadata..."
+msgstr "[Shqip] Refreshing metadata..."
+
+msgid "Return to Main Menu"
+msgstr "[Shqip] Return to Main Menu"
+
+msgid "Root crontab updated."
+msgstr "[Shqip] Root crontab updated."
+
+msgid "Run Enabled Tasks Now"
+msgstr "[Shqip] Run Enabled Tasks Now"
+
+msgid "Running firmware update..."
+msgstr "[Shqip] Running firmware update..."
+
+msgid "Samsung SSD Firmware Update"
+msgstr "[Shqip] Samsung SSD Firmware Update"
+
+msgid "Samsung SSD detected by fwupd."
+msgstr "[Shqip] Samsung SSD detected by fwupd."
+
+msgid "Sat"
+msgstr "[Shqip] Sat"
+
+msgid "Saving configuration..."
+msgstr "[Shqip] Saving configuration..."
+
+msgid "Schedule updated."
+msgstr "[Shqip] Schedule updated."
+
+msgid "Scripts updated."
+msgstr "[Shqip] Scripts updated."
+
+msgid "Select which tasks to enable. Press Enter to accept default [Y]."
+msgstr "[Shqip] Select which tasks to enable. Press Enter to accept default [Y]."
+
+msgid "Selected tasks use their default weekly schedules."
+msgstr "[Shqip] Selected tasks use their default weekly schedules."
+
+msgid "Self-Update Service"
+msgstr "[Shqip] Self-Update Service"
+
+msgid "Setting up default schedules..."
+msgstr "[Shqip] Setting up default schedules..."
+
+msgid "Skipping update (not installed or wrong path)."
+msgstr "[Shqip] Skipping update (not installed or wrong path)."
+
+msgid "Starting uninstallation process..."
+msgstr "[Shqip] Starting uninstallation process..."
+
+msgid "Suite version: %s"
+msgstr "[Shqip] Suite version: %s"
+
+msgid "Sun"
+msgstr "[Shqip] Sun"
+
+msgid "System OS Update"
+msgstr "[Shqip] System OS Update"
+
+msgid "System is up to date."
+msgstr "[Shqip] System is up to date."
+
+msgid "Task Status Manager"
+msgstr "[Shqip] Task Status Manager"
+
+msgid "Task disabled."
+msgstr "[Shqip] Task disabled."
+
+msgid "Task enabled."
+msgstr "[Shqip] Task enabled."
+
+msgid "Task: %s"
+msgstr "[Shqip] Task: %s"
+
+msgid "The auto-update failed. Reason: %s"
+msgstr "[Shqip] The auto-update failed. Reason: %s"
+
+msgid "The system is running the latest version: %s."
+msgstr "[Shqip] The system is running the latest version: %s."
+
+msgid "The system will reboot shortly after this report is sent."
+msgstr "[Shqip] The system will reboot shortly after this report is sent."
+
+msgid "This wizard configures email, downloads scripts, and schedules maintenance tasks."
+msgstr "[Shqip] This wizard configures email, downloads scripts, and schedules maintenance tasks."
+
+msgid "This wizard will set up your email and default schedules."
+msgstr "[Shqip] This wizard will set up your email and default schedules."
+
+msgid "Thu"
+msgstr "[Shqip] Thu"
+
+msgid "Tue"
+msgstr "[Shqip] Tue"
+
+msgid "Uninstall"
+msgstr "[Shqip] Uninstall"
+
+msgid "Uninstall Suite"
+msgstr "[Shqip] Uninstall Suite"
+
+msgid "Uninstallation complete."
+msgstr "[Shqip] Uninstallation complete."
+
+msgid "Unsupported OS family for system update."
+msgstr "[Shqip] Unsupported OS family for system update."
+
+msgid "Updates available. Installing..."
+msgstr "[Shqip] Updates available. Installing..."
+
+msgid "Updating version tracking..."
+msgstr "[Shqip] Updating version tracking..."
+
+msgid "Version set to: %s"
+msgstr "[Shqip] Version set to: %s"
+
+msgid "Version: %s\\n\\nChoose an option. Enter selects. Esc cancels/exits."
+msgstr "[Shqip] Version: %s\\n\\nChoose an option. Enter selects. Esc cancels/exits."
+
+msgid "View Current Email Config"
+msgstr "[Shqip] View Current Email Config"
+
+msgid "Warning: Failed to install curl."
+msgstr "[Shqip] Warning: Failed to install curl."
+
+msgid "Warning: Failed to install gettext. UI will stay in English."
+msgstr "[Shqip] Warning: Failed to install gettext. UI will stay in English."
+
+msgid "Warning: Failed to install mail transport. Email notifications will be disabled."
+msgstr "[Shqip] Warning: Failed to install mail transport. Email notifications will be disabled."
+
+msgid "Warning: Failed to install whiptail. Falling back to text UI."
+msgstr "[Shqip] Warning: Failed to install whiptail. Falling back to text UI."
+
+msgid "Warning: One or more enabled tasks may reboot the system and terminate this session."
+msgstr "[Shqip] Warning: One or more enabled tasks may reboot the system and terminate this session."
+
+msgid "Warning: Some dependencies may have failed to install."
+msgstr "[Shqip] Warning: Some dependencies may have failed to install."
+
+msgid "Warning: could not read VERSION (local or %s)."
+msgstr "[Shqip] Warning: could not read VERSION (local or %s)."
+
+msgid "Warning: no package mapping for '%s' on this OS family; skipping."
+msgstr "[Shqip] Warning: no package mapping for '%s' on this OS family; skipping."
+
+msgid "Wed"
+msgstr "[Shqip] Wed"
+
+msgid "Weekly %s @ %s:%s"
+msgstr "[Shqip] Weekly %s @ %s:%s"
+
+msgid "Welcome to the One-Line Installer (%s)."
+msgstr "[Shqip] Welcome to the One-Line Installer (%s)."
+
+msgid "Whiptail UI unavailable; switching to text interface."
+msgstr "[Shqip] Whiptail UI unavailable; switching to text interface."
+
+msgid "[1/4] Welcome"
+msgstr "[Shqip] [1/4] Welcome"
+
+msgid "[2/4] Email configuration..."
+msgstr "[Shqip] [2/4] Email configuration..."
+
+msgid "[3/4] Downloading scripts..."
+msgstr "[Shqip] [3/4] Downloading scripts..."
+
+msgid "[4/4] Select maintenance tasks to enable."
+msgstr "[Shqip] [4/4] Select maintenance tasks to enable."
+
+msgid "[4/4] Task selection..."
+msgstr "[Shqip] [4/4] Task selection..."
+
+msgid "fwupdmgr failed to query update availability. Skipping firmware apply step."
+msgstr "[Shqip] fwupdmgr failed to query update availability. Skipping firmware apply step."
+
+msgid "gettext installed successfully."
+msgstr "[Shqip] gettext installed successfully."
+
+msgid "gettext not found. Installing gettext..."
+msgstr "[Shqip] gettext not found. Installing gettext..."
+
+msgid "nvme-cli is not installed and could not be installed automatically."
+msgstr "[Shqip] nvme-cli is not installed and could not be installed automatically."
+
+msgid "whiptail installed successfully."
+msgstr "[Shqip] whiptail installed successfully."
+
+msgid "whiptail not found. Installing whiptail..."
+msgstr "[Shqip] whiptail not found. Installing whiptail..."
+

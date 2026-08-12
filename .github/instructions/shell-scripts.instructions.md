@@ -1,25 +1,19 @@
 ______________________________________________________________________
 
-## applyTo: "\*\*/\*.sh" description: "Use when editing Bash scripts in this repo; enforces safe shell patterns, lint compliance, and project behavior invariants."
+## applyTo: "\*\*/\*.sh" description: "Bash coding rules for installers, maintenance scripts, and lib helpers."
 
 # Shell Script Instructions
 
-## Style and Safety
-
-1. Use Bash-compatible syntax and preserve executable shebangs.
-1. Quote variable expansions unless intentional word splitting is required.
-1. Use explicit exit handling with meaningful error messages.
-1. Keep script logic readable; extract helpers when blocks grow too large.
-
-## Project Invariants
-
-1. Do not break non-Pi execution paths for generic Linux systems.
-1. Keep `install.sh --update` non-interactive and cron-safe.
-1. Preserve update/reporting behavior unless requirement says otherwise.
-1. Avoid introducing dependencies unless necessary and test-covered.
-
-## Lint and Format
-
-1. Changes must pass shellcheck, shfmt, and bash syntax checks.
-1. Do not add shellcheck disable directives.
-1. Keep line length at or below 140 characters for shell files.
+1. Prefer explicit, testable Bash; quote expansions; fail closed on unexpected states.
+1. Line length ≤ 140. No `# shellcheck disable` / lint suppressions.
+1. Do not add interactive prompts to cron/automated paths — especially `install.sh --update`.
+1. Use `lib/os_pkg.sh` for multi-family package installs (`apt` / `dnf` / `pacman`).
+1. Use `lib/mail_send.sh` for notification sends when available.
+1. Use `lib/i18n.sh` for user-facing strings (`_pi_gettext` / `_pi_gettextf` / `_pi_ngettext` /
+   `_pi_pgettext`). When changing marked strings, update `po/pi-maintenance-suite.pot` and every
+   `po/*.po` in the same change set; run `scripts/i18n/check_catalog_quality.py`.
+1. Preserve Pi vs non-Pi behavior: skip Pi-only tasks on non-Pi; keep firmware updates available.
+1. Samsung path: LVFS stable first; never enable testing channels.
+1. Self-update must invoke `bash install.sh --update` without stdin piping.
+1. Installer UI: whiptail default; text UI automatic fallback only when whiptail cannot run.
+1. Keep public function names stable when tests source `install.sh`.

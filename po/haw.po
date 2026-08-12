@@ -1,0 +1,629 @@
+# Raspberry Pi Maintenance Automation Suite
+# Copyright (C) 2026
+# This file is distributed under the same license as the package.
+msgid ""
+msgstr ""
+"Project-Id-Version: pi-maintenance-suite\n"
+"Report-Msgid-Bugs-To: https://github.com/ventura8/Raspberry-Pi-Maintenance-Automation-Suite/issues\n"
+"POT-Creation-Date: 1970-01-01 00:00+0000\n"
+"PO-Revision-Date: 2026-01-01 00:00+0000\n"
+"Last-Translator: AUTO\n"
+"Language-Team: ʻŌlelo Hawaiʻi\n"
+"Language: haw\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+
+msgid "      Raspberry Pi Maintenance Suite Manager"
+msgstr "[ʻŌlelo Hawaiʻi]       Raspberry Pi Maintenance Suite Manager"
+
+msgid "   -------------------"
+msgstr "[ʻŌlelo Hawaiʻi]    -------------------"
+
+msgid "   ----------------------------------------------------------------------------------"
+msgstr "[ʻŌlelo Hawaiʻi]    ----------------------------------------------------------------------------------"
+
+msgid "   0. Exit"
+msgstr "[ʻŌlelo Hawaiʻi]    0. Exit"
+
+msgid "   1. Configure Email Settings"
+msgstr "[ʻŌlelo Hawaiʻi]    1. Configure Email Settings"
+
+msgid "   2. View Current Email Config"
+msgstr "[ʻŌlelo Hawaiʻi]    2. View Current Email Config"
+
+msgid "   3. Manage Tasks & Schedules (Enable/Disable)"
+msgstr "[ʻŌlelo Hawaiʻi]    3. Manage Tasks & Schedules (Enable/Disable)"
+
+msgid "   4. Force Update Scripts (from GitHub)"
+msgstr "[ʻŌlelo Hawaiʻi]    4. Force Update Scripts (from GitHub)"
+
+msgid "   5. Run Enabled Tasks Now"
+msgstr "[ʻŌlelo Hawaiʻi]    5. Run Enabled Tasks Now"
+
+msgid "   6. Uninstall Suite"
+msgstr "[ʻŌlelo Hawaiʻi]    6. Uninstall Suite"
+
+msgid "   Enter ID to toggle/edit, or '0' to return to Main Menu."
+msgstr "[ʻŌlelo Hawaiʻi]    Enter ID to toggle/edit, or '0' to return to Main Menu."
+
+msgid "   RPi Maintenance Suite Uninstaller"
+msgstr "[ʻŌlelo Hawaiʻi]    RPi Maintenance Suite Uninstaller"
+
+msgid "   Task Status Manager"
+msgstr "[ʻŌlelo Hawaiʻi]    Task Status Manager"
+
+msgid "  Failed"
+msgstr "[ʻŌlelo Hawaiʻi]   Failed"
+
+msgid "  Success"
+msgstr "[ʻŌlelo Hawaiʻi]   Success"
+
+msgid "-"
+msgstr "[ʻŌlelo Hawaiʻi] -"
+
+msgid "--- Checking Dependencies ---"
+msgstr "[ʻŌlelo Hawaiʻi] --- Checking Dependencies ---"
+
+msgid "--- Checking for Samsung SSDs via fwupd ---"
+msgstr "[ʻŌlelo Hawaiʻi] --- Checking for Samsung SSDs via fwupd ---"
+
+msgid "--- Checking for Updates ---"
+msgstr "[ʻŌlelo Hawaiʻi] --- Checking for Updates ---"
+
+msgid "--- Current Email Settings ---"
+msgstr "[ʻŌlelo Hawaiʻi] --- Current Email Settings ---"
+
+msgid "--- Email Configuration ---"
+msgstr "[ʻŌlelo Hawaiʻi] --- Email Configuration ---"
+
+msgid "--- Fallback: Samsung Official ISO Update ---"
+msgstr "[ʻŌlelo Hawaiʻi] --- Fallback: Samsung Official ISO Update ---"
+
+msgid "--- REBOOT STATUS ---"
+msgstr "[ʻŌlelo Hawaiʻi] --- REBOOT STATUS ---"
+
+msgid "--- Refreshing Metadata ---"
+msgstr "[ʻŌlelo Hawaiʻi] --- Refreshing Metadata ---"
+
+msgid "--- Run Enabled Tasks Now ---"
+msgstr "[ʻŌlelo Hawaiʻi] --- Run Enabled Tasks Now ---"
+
+msgid "--- Running 'fwupdmgr' ---"
+msgstr "[ʻŌlelo Hawaiʻi] --- Running 'fwupdmgr' ---"
+
+msgid "--- Running 'sudo rpi-eeprom-update -a' ---"
+msgstr "[ʻŌlelo Hawaiʻi] --- Running 'sudo rpi-eeprom-update -a' ---"
+
+msgid "--- Skipping pip3 self-upgrade ---"
+msgstr "[ʻŌlelo Hawaiʻi] --- Skipping pip3 self-upgrade ---"
+
+msgid "--- Step 1: System Prune ---"
+msgstr "[ʻŌlelo Hawaiʻi] --- Step 1: System Prune ---"
+
+msgid "--- Step 2: Builder Prune ---"
+msgstr "[ʻŌlelo Hawaiʻi] --- Step 2: Builder Prune ---"
+
+msgid "--- Updating Pi-Apps and Installed Apps ---"
+msgstr "[ʻŌlelo Hawaiʻi] --- Updating Pi-Apps and Installed Apps ---"
+
+msgid "--- Upgrading outdated pip3 packages ---"
+msgstr "[ʻŌlelo Hawaiʻi] --- Upgrading outdated pip3 packages ---"
+
+msgid "--------------------------------------------"
+msgstr "[ʻŌlelo Hawaiʻi] --------------------------------------------"
+
+msgid "7z required but not installed."
+msgstr "[ʻŌlelo Hawaiʻi] 7z required but not installed."
+
+msgid "============================================"
+msgstr "[ʻŌlelo Hawaiʻi] ============================================"
+
+msgid "===================================================="
+msgstr "[ʻŌlelo Hawaiʻi] ===================================================="
+
+msgid "======================================================="
+msgstr "[ʻŌlelo Hawaiʻi] ======================================================="
+
+msgid "========================================================="
+msgstr "[ʻŌlelo Hawaiʻi] ========================================================="
+
+msgid "==========================================================="
+msgstr "[ʻŌlelo Hawaiʻi] ==========================================================="
+
+msgid "A firmware update was applied. A reboot is required."
+msgstr "[ʻŌlelo Hawaiʻi] A firmware update was applied. A reboot is required."
+
+msgid "A reboot is required to finish applying updates."
+msgstr "[ʻŌlelo Hawaiʻi] A reboot is required to finish applying updates."
+
+msgid "All dependencies are installed."
+msgstr "[ʻŌlelo Hawaiʻi] All dependencies are installed."
+
+msgid "All enabled tasks completed successfully."
+msgstr "[ʻŌlelo Hawaiʻi] All enabled tasks completed successfully."
+
+msgid "All pip3 packages are up-to-date."
+msgstr "[ʻŌlelo Hawaiʻi] All pip3 packages are up-to-date."
+
+msgid "All tasks are ON by default. Space toggles. Enter confirms."
+msgstr "[ʻŌlelo Hawaiʻi] All tasks are ON by default. Space toggles. Enter confirms."
+
+msgid "Are you sure you want to uninstall?"
+msgstr "[ʻŌlelo Hawaiʻi] Are you sure you want to uninstall?"
+
+msgid "Base pip3 is managed by the OS (Debian) to avoid record-file errors."
+msgstr "[ʻŌlelo Hawaiʻi] Base pip3 is managed by the OS (Debian) to avoid record-file errors."
+
+msgid "Buildx not detected. Falling back to legacy builder..."
+msgstr "[ʻŌlelo Hawaiʻi] Buildx not detected. Falling back to legacy builder..."
+
+msgid "Cancel"
+msgstr "[ʻŌlelo Hawaiʻi] Cancel"
+
+msgid "Cancelled: Enabled tasks were not run."
+msgstr "[ʻŌlelo Hawaiʻi] Cancelled: Enabled tasks were not run."
+
+msgid "Checking dependencies..."
+msgstr "[ʻŌlelo Hawaiʻi] Checking dependencies..."
+
+msgid "Checking for updates..."
+msgstr "[ʻŌlelo Hawaiʻi] Checking for updates..."
+
+msgid "Choose Continue to proceed, or Cancel to abort without installing."
+msgstr "[ʻŌlelo Hawaiʻi] Choose Continue to proceed, or Cancel to abort without installing."
+
+msgid "Cleaning up crontabs..."
+msgstr "[ʻŌlelo Hawaiʻi] Cleaning up crontabs..."
+
+msgid "Completed with failures."
+msgstr "[ʻŌlelo Hawaiʻi] Completed with failures."
+
+msgid "Configure Email Settings"
+msgstr "[ʻŌlelo Hawaiʻi] Configure Email Settings"
+
+msgid "Continue"
+msgstr "[ʻŌlelo Hawaiʻi] Continue"
+
+msgid "Could not find fumagician in initrd."
+msgstr "[ʻŌlelo Hawaiʻi] Could not find fumagician in initrd."
+
+msgid "Could not find initrd in ISO."
+msgstr "[ʻŌlelo Hawaiʻi] Could not find initrd in ISO."
+
+msgid "Could not parse remote tag from GitHub response."
+msgstr "[ʻŌlelo Hawaiʻi] Could not parse remote tag from GitHub response."
+
+msgid "Current Email Settings"
+msgstr "[ʻŌlelo Hawaiʻi] Current Email Settings"
+
+msgid "Custom Schedule"
+msgstr "[ʻŌlelo Hawaiʻi] Custom Schedule"
+
+msgid "DISABLED|-"
+msgstr "[ʻŌlelo Hawaiʻi] DISABLED|-"
+
+msgid "Daily @ %s:%s"
+msgstr "[ʻŌlelo Hawaiʻi] Daily @ %s:%s"
+
+msgid "Dependencies installed successfully."
+msgstr "[ʻŌlelo Hawaiʻi] Dependencies installed successfully."
+
+msgid "Docker Cleanup"
+msgstr "[ʻŌlelo Hawaiʻi] Docker Cleanup"
+
+msgid "Dow %s"
+msgstr "[ʻŌlelo Hawaiʻi] Dow %s"
+
+msgid "Download"
+msgstr "[ʻŌlelo Hawaiʻi] Download"
+
+msgid "Download Scripts"
+msgstr "[ʻŌlelo Hawaiʻi] Download Scripts"
+
+msgid "Downloaded file is empty."
+msgstr "[ʻŌlelo Hawaiʻi] Downloaded file is empty."
+
+msgid "Downloading/Updating scripts..."
+msgstr "[ʻŌlelo Hawaiʻi] Downloading/Updating scripts..."
+
+msgid "EOF detected"
+msgstr "[ʻŌlelo Hawaiʻi] EOF detected"
+
+msgid "Edit Schedule"
+msgstr "[ʻŌlelo Hawaiʻi] Edit Schedule"
+
+msgid "Email Configuration"
+msgstr "[ʻŌlelo Hawaiʻi] Email Configuration"
+
+msgid "Email configured successfully."
+msgstr "[ʻŌlelo Hawaiʻi] Email configured successfully."
+
+msgid "Enable Task"
+msgstr "[ʻŌlelo Hawaiʻi] Enable Task"
+
+msgid "Enabled %s"
+msgstr "[ʻŌlelo Hawaiʻi] Enabled %s"
+
+msgid "Enter App Password (16-char):"
+msgstr "[ʻŌlelo Hawaiʻi] Enter App Password (16-char):"
+
+msgid "Enter App Password (16-char, input hidden):"
+msgstr "[ʻŌlelo Hawaiʻi] Enter App Password (16-char, input hidden):"
+
+msgid "Enter Gmail address:"
+msgstr "[ʻŌlelo Hawaiʻi] Enter Gmail address:"
+
+msgid "Enter cron schedule:"
+msgstr "[ʻŌlelo Hawaiʻi] Enter cron schedule:"
+
+msgid "Error downloading %s"
+msgstr "[ʻŌlelo Hawaiʻi] Error downloading %s"
+
+msgid "Error downloading lib/%s"
+msgstr "[ʻŌlelo Hawaiʻi] Error downloading lib/%s"
+
+msgid "Error: This script supports 64-bit systems only."
+msgstr "[ʻŌlelo Hawaiʻi] Error: This script supports 64-bit systems only."
+
+msgid "Error: curl is required but not installed."
+msgstr "[ʻŌlelo Hawaiʻi] Error: curl is required but not installed."
+
+msgid "Error: fwupdmgr (fwupd) is not installed."
+msgstr "[ʻŌlelo Hawaiʻi] Error: fwupdmgr (fwupd) is not installed."
+
+msgid "Esc / Cancel aborts the installer without enabling tasks."
+msgstr "[ʻŌlelo Hawaiʻi] Esc / Cancel aborts the installer without enabling tasks."
+
+msgid "Exit"
+msgstr "[ʻŌlelo Hawaiʻi] Exit"
+
+msgid "Extracting initrd..."
+msgstr "[ʻŌlelo Hawaiʻi] Extracting initrd..."
+
+msgid "Failed to contact GitHub API."
+msgstr "[ʻŌlelo Hawaiʻi] Failed to contact GitHub API."
+
+msgid "Failed to download firmware ISO."
+msgstr "[ʻŌlelo Hawaiʻi] Failed to download firmware ISO."
+
+msgid "Failed to fetch Samsung firmware page."
+msgstr "[ʻŌlelo Hawaiʻi] Failed to fetch Samsung firmware page."
+
+msgid "Failed to mount ISO."
+msgstr "[ʻŌlelo Hawaiʻi] Failed to mount ISO."
+
+msgid "Fetching Samsung firmware page..."
+msgstr "[ʻŌlelo Hawaiʻi] Fetching Samsung firmware page..."
+
+msgid "Finished running enabled tasks.\\nSee terminal output for details."
+msgstr "[ʻŌlelo Hawaiʻi] Finished running enabled tasks.\\nSee terminal output for details."
+
+msgid "Firmware Update"
+msgstr "[ʻŌlelo Hawaiʻi] Firmware Update"
+
+msgid "Firmware is already up to date."
+msgstr "[ʻŌlelo Hawaiʻi] Firmware is already up to date."
+
+msgid "Firmware update applied successfully."
+msgstr "[ʻŌlelo Hawaiʻi] Firmware update applied successfully."
+
+msgid "Firmware update via fumagician failed."
+msgstr "[ʻŌlelo Hawaiʻi] Firmware update via fumagician failed."
+
+msgid "Force Update Scripts (from GitHub)"
+msgstr "[ʻŌlelo Hawaiʻi] Force Update Scripts (from GitHub)"
+
+msgid "Fri"
+msgstr "[ʻŌlelo Hawaiʻi] Fri"
+
+msgid "Installation Cancelled"
+msgstr "[ʻŌlelo Hawaiʻi] Installation Cancelled"
+
+msgid "Installation Complete"
+msgstr "[ʻŌlelo Hawaiʻi] Installation Complete"
+
+msgid "Installation Complete!"
+msgstr "[ʻŌlelo Hawaiʻi] Installation Complete!"
+
+msgid "Installing curl..."
+msgstr "[ʻŌlelo Hawaiʻi] Installing curl..."
+
+msgid "Invalid email address."
+msgstr "[ʻŌlelo Hawaiʻi] Invalid email address."
+
+msgid "Invalid email. returning to menu."
+msgstr "[ʻŌlelo Hawaiʻi] Invalid email. returning to menu."
+
+msgid "Invalid option: '%s'"
+msgstr "[ʻŌlelo Hawaiʻi] Invalid option: '%s'"
+
+msgid "Mail sender not found. Installing mail-transport packages..."
+msgstr "[ʻŌlelo Hawaiʻi] Mail sender not found. Installing mail-transport packages..."
+
+msgid "Mail transport installed successfully."
+msgstr "[ʻŌlelo Hawaiʻi] Mail transport installed successfully."
+
+msgid "Mailer configuration files under /etc/ssmtp/ or /etc/msmtprc were not removed to preserve backups."
+msgstr "[ʻŌlelo Hawaiʻi] Mailer configuration files under /etc/ssmtp/ or /etc/msmtprc were not removed to preserve backups."
+
+msgid "Manage Tasks & Schedules"
+msgstr "[ʻŌlelo Hawaiʻi] Manage Tasks & Schedules"
+
+msgid "Manual update: https://semiconductor.samsung.com/consumer-storage/support/tools/"
+msgstr "[ʻŌlelo Hawaiʻi] Manual update: https://semiconductor.samsung.com/consumer-storage/support/tools/"
+
+msgid "Matrix/non-interactive fresh install."
+msgstr "[ʻŌlelo Hawaiʻi] Matrix/non-interactive fresh install."
+
+msgid "Modern Buildx detected. Pruning build cache..."
+msgstr "[ʻŌlelo Hawaiʻi] Modern Buildx detected. Pruning build cache..."
+
+msgid "Mon"
+msgstr "[ʻŌlelo Hawaiʻi] Mon"
+
+msgid "Monthly %s @ %s:%s"
+msgstr "[ʻŌlelo Hawaiʻi] Monthly %s @ %s:%s"
+
+msgid "Mounting ISO..."
+msgstr "[ʻŌlelo Hawaiʻi] Mounting ISO..."
+
+msgid "New firmware available! Downloading..."
+msgstr "[ʻŌlelo Hawaiʻi] New firmware available! Downloading..."
+
+msgid "No SSMTP configuration found."
+msgstr "[ʻŌlelo Hawaiʻi] No SSMTP configuration found."
+
+msgid "No Samsung SSDs detected by fwupd."
+msgstr "[ʻŌlelo Hawaiʻi] No Samsung SSDs detected by fwupd."
+
+msgid "No Samsung SSDs detected by nvme-cli."
+msgstr "[ʻŌlelo Hawaiʻi] No Samsung SSDs detected by nvme-cli."
+
+msgid "No enabled tasks found."
+msgstr "[ʻŌlelo Hawaiʻi] No enabled tasks found."
+
+msgid "No firmware update was applied or no reboot is required."
+msgstr "[ʻŌlelo Hawaiʻi] No firmware update was applied or no reboot is required."
+
+msgid "No mail recipient configured, skipping email notification."
+msgstr "[ʻŌlelo Hawaiʻi] No mail recipient configured, skipping email notification."
+
+msgid "No mail sender (ssmtp/msmtp) found, skipping email notification."
+msgstr "[ʻŌlelo Hawaiʻi] No mail sender (ssmtp/msmtp) found, skipping email notification."
+
+msgid "No reboot is required at this time."
+msgstr "[ʻŌlelo Hawaiʻi] No reboot is required at this time."
+
+msgid "No supported firmware update tool found (rpi-eeprom-update or fwupdmgr)."
+msgstr "[ʻŌlelo Hawaiʻi] No supported firmware update tool found (rpi-eeprom-update or fwupdmgr)."
+
+msgid "No updates available via LVFS."
+msgstr "[ʻŌlelo Hawaiʻi] No updates available via LVFS."
+
+msgid "No updates available."
+msgstr "[ʻŌlelo Hawaiʻi] No updates available."
+
+msgid "Note: Mail transport packages (ssmtp/mailutils or msmtp/s-nail) were left installed as system packages."
+msgstr "[ʻŌlelo Hawaiʻi] Note: Mail transport packages (ssmtp/mailutils or msmtp/s-nail) were left installed as system packages."
+
+msgid "Password empty. Returning."
+msgstr "[ʻŌlelo Hawaiʻi] Password empty. Returning."
+
+msgid "Password: [HIDDEN/MASKED]"
+msgstr "[ʻŌlelo Hawaiʻi] Password: [HIDDEN/MASKED]"
+
+msgid "Pi Maintenance Update Failed"
+msgstr "[ʻŌlelo Hawaiʻi] Pi Maintenance Update Failed"
+
+msgid "Pi Maintenance: System Up to Date"
+msgstr "[ʻŌlelo Hawaiʻi] Pi Maintenance: System Up to Date"
+
+msgid "Pi-Apps Update"
+msgstr "Pi-Apps Update"
+
+msgid "Python Pip Update"
+msgstr "[ʻŌlelo Hawaiʻi] Python Pip Update"
+
+msgid "Raspberry Pi Maintenance Suite"
+msgstr "[ʻŌlelo Hawaiʻi] Raspberry Pi Maintenance Suite"
+
+msgid "Raspberry Pi Maintenance Suite %s"
+msgstr "[ʻŌlelo Hawaiʻi] Raspberry Pi Maintenance Suite %s"
+
+msgid "Raspberry Pi Maintenance Suite Manager"
+msgstr "[ʻŌlelo Hawaiʻi] Raspberry Pi Maintenance Suite Manager"
+
+msgid "Refreshing metadata..."
+msgstr "[ʻŌlelo Hawaiʻi] Refreshing metadata..."
+
+msgid "Return to Main Menu"
+msgstr "[ʻŌlelo Hawaiʻi] Return to Main Menu"
+
+msgid "Root crontab updated."
+msgstr "[ʻŌlelo Hawaiʻi] Root crontab updated."
+
+msgid "Run Enabled Tasks Now"
+msgstr "[ʻŌlelo Hawaiʻi] Run Enabled Tasks Now"
+
+msgid "Running firmware update..."
+msgstr "[ʻŌlelo Hawaiʻi] Running firmware update..."
+
+msgid "Samsung SSD Firmware Update"
+msgstr "[ʻŌlelo Hawaiʻi] Samsung SSD Firmware Update"
+
+msgid "Samsung SSD detected by fwupd."
+msgstr "[ʻŌlelo Hawaiʻi] Samsung SSD detected by fwupd."
+
+msgid "Sat"
+msgstr "[ʻŌlelo Hawaiʻi] Sat"
+
+msgid "Saving configuration..."
+msgstr "[ʻŌlelo Hawaiʻi] Saving configuration..."
+
+msgid "Schedule updated."
+msgstr "[ʻŌlelo Hawaiʻi] Schedule updated."
+
+msgid "Scripts updated."
+msgstr "[ʻŌlelo Hawaiʻi] Scripts updated."
+
+msgid "Select which tasks to enable. Press Enter to accept default [Y]."
+msgstr "[ʻŌlelo Hawaiʻi] Select which tasks to enable. Press Enter to accept default [Y]."
+
+msgid "Selected tasks use their default weekly schedules."
+msgstr "[ʻŌlelo Hawaiʻi] Selected tasks use their default weekly schedules."
+
+msgid "Self-Update Service"
+msgstr "[ʻŌlelo Hawaiʻi] Self-Update Service"
+
+msgid "Setting up default schedules..."
+msgstr "[ʻŌlelo Hawaiʻi] Setting up default schedules..."
+
+msgid "Skipping update (not installed or wrong path)."
+msgstr "[ʻŌlelo Hawaiʻi] Skipping update (not installed or wrong path)."
+
+msgid "Starting uninstallation process..."
+msgstr "[ʻŌlelo Hawaiʻi] Starting uninstallation process..."
+
+msgid "Suite version: %s"
+msgstr "[ʻŌlelo Hawaiʻi] Suite version: %s"
+
+msgid "Sun"
+msgstr "[ʻŌlelo Hawaiʻi] Sun"
+
+msgid "System OS Update"
+msgstr "[ʻŌlelo Hawaiʻi] System OS Update"
+
+msgid "System is up to date."
+msgstr "[ʻŌlelo Hawaiʻi] System is up to date."
+
+msgid "Task Status Manager"
+msgstr "[ʻŌlelo Hawaiʻi] Task Status Manager"
+
+msgid "Task disabled."
+msgstr "[ʻŌlelo Hawaiʻi] Task disabled."
+
+msgid "Task enabled."
+msgstr "[ʻŌlelo Hawaiʻi] Task enabled."
+
+msgid "Task: %s"
+msgstr "[ʻŌlelo Hawaiʻi] Task: %s"
+
+msgid "The auto-update failed. Reason: %s"
+msgstr "[ʻŌlelo Hawaiʻi] The auto-update failed. Reason: %s"
+
+msgid "The system is running the latest version: %s."
+msgstr "[ʻŌlelo Hawaiʻi] The system is running the latest version: %s."
+
+msgid "The system will reboot shortly after this report is sent."
+msgstr "[ʻŌlelo Hawaiʻi] The system will reboot shortly after this report is sent."
+
+msgid "This wizard configures email, downloads scripts, and schedules maintenance tasks."
+msgstr "[ʻŌlelo Hawaiʻi] This wizard configures email, downloads scripts, and schedules maintenance tasks."
+
+msgid "This wizard will set up your email and default schedules."
+msgstr "[ʻŌlelo Hawaiʻi] This wizard will set up your email and default schedules."
+
+msgid "Thu"
+msgstr "[ʻŌlelo Hawaiʻi] Thu"
+
+msgid "Tue"
+msgstr "[ʻŌlelo Hawaiʻi] Tue"
+
+msgid "Uninstall"
+msgstr "[ʻŌlelo Hawaiʻi] Uninstall"
+
+msgid "Uninstall Suite"
+msgstr "[ʻŌlelo Hawaiʻi] Uninstall Suite"
+
+msgid "Uninstallation complete."
+msgstr "[ʻŌlelo Hawaiʻi] Uninstallation complete."
+
+msgid "Unsupported OS family for system update."
+msgstr "[ʻŌlelo Hawaiʻi] Unsupported OS family for system update."
+
+msgid "Updates available. Installing..."
+msgstr "[ʻŌlelo Hawaiʻi] Updates available. Installing..."
+
+msgid "Updating version tracking..."
+msgstr "[ʻŌlelo Hawaiʻi] Updating version tracking..."
+
+msgid "Version set to: %s"
+msgstr "[ʻŌlelo Hawaiʻi] Version set to: %s"
+
+msgid "Version: %s\\n\\nChoose an option. Enter selects. Esc cancels/exits."
+msgstr "[ʻŌlelo Hawaiʻi] Version: %s\\n\\nChoose an option. Enter selects. Esc cancels/exits."
+
+msgid "View Current Email Config"
+msgstr "[ʻŌlelo Hawaiʻi] View Current Email Config"
+
+msgid "Warning: Failed to install curl."
+msgstr "[ʻŌlelo Hawaiʻi] Warning: Failed to install curl."
+
+msgid "Warning: Failed to install gettext. UI will stay in English."
+msgstr "[ʻŌlelo Hawaiʻi] Warning: Failed to install gettext. UI will stay in English."
+
+msgid "Warning: Failed to install mail transport. Email notifications will be disabled."
+msgstr "[ʻŌlelo Hawaiʻi] Warning: Failed to install mail transport. Email notifications will be disabled."
+
+msgid "Warning: Failed to install whiptail. Falling back to text UI."
+msgstr "[ʻŌlelo Hawaiʻi] Warning: Failed to install whiptail. Falling back to text UI."
+
+msgid "Warning: One or more enabled tasks may reboot the system and terminate this session."
+msgstr "[ʻŌlelo Hawaiʻi] Warning: One or more enabled tasks may reboot the system and terminate this session."
+
+msgid "Warning: Some dependencies may have failed to install."
+msgstr "[ʻŌlelo Hawaiʻi] Warning: Some dependencies may have failed to install."
+
+msgid "Warning: could not read VERSION (local or %s)."
+msgstr "[ʻŌlelo Hawaiʻi] Warning: could not read VERSION (local or %s)."
+
+msgid "Warning: no package mapping for '%s' on this OS family; skipping."
+msgstr "[ʻŌlelo Hawaiʻi] Warning: no package mapping for '%s' on this OS family; skipping."
+
+msgid "Wed"
+msgstr "[ʻŌlelo Hawaiʻi] Wed"
+
+msgid "Weekly %s @ %s:%s"
+msgstr "[ʻŌlelo Hawaiʻi] Weekly %s @ %s:%s"
+
+msgid "Welcome to the One-Line Installer (%s)."
+msgstr "[ʻŌlelo Hawaiʻi] Welcome to the One-Line Installer (%s)."
+
+msgid "Whiptail UI unavailable; switching to text interface."
+msgstr "[ʻŌlelo Hawaiʻi] Whiptail UI unavailable; switching to text interface."
+
+msgid "[1/4] Welcome"
+msgstr "[ʻŌlelo Hawaiʻi] [1/4] Welcome"
+
+msgid "[2/4] Email configuration..."
+msgstr "[ʻŌlelo Hawaiʻi] [2/4] Email configuration..."
+
+msgid "[3/4] Downloading scripts..."
+msgstr "[ʻŌlelo Hawaiʻi] [3/4] Downloading scripts..."
+
+msgid "[4/4] Select maintenance tasks to enable."
+msgstr "[ʻŌlelo Hawaiʻi] [4/4] Select maintenance tasks to enable."
+
+msgid "[4/4] Task selection..."
+msgstr "[ʻŌlelo Hawaiʻi] [4/4] Task selection..."
+
+msgid "fwupdmgr failed to query update availability. Skipping firmware apply step."
+msgstr "[ʻŌlelo Hawaiʻi] fwupdmgr failed to query update availability. Skipping firmware apply step."
+
+msgid "gettext installed successfully."
+msgstr "[ʻŌlelo Hawaiʻi] gettext installed successfully."
+
+msgid "gettext not found. Installing gettext..."
+msgstr "[ʻŌlelo Hawaiʻi] gettext not found. Installing gettext..."
+
+msgid "nvme-cli is not installed and could not be installed automatically."
+msgstr "[ʻŌlelo Hawaiʻi] nvme-cli is not installed and could not be installed automatically."
+
+msgid "whiptail installed successfully."
+msgstr "[ʻŌlelo Hawaiʻi] whiptail installed successfully."
+
+msgid "whiptail not found. Installing whiptail..."
+msgstr "[ʻŌlelo Hawaiʻi] whiptail not found. Installing whiptail..."
+

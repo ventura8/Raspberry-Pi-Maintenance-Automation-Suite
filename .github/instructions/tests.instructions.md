@@ -1,23 +1,14 @@
 ______________________________________________________________________
 
-## applyTo: "tests/\*\*/\*.{bats,sh}" description: "Use when modifying BATS tests or test harness scripts; enforces deterministic tests, mock hygiene, and coverage discipline."
+## applyTo: "tests/\*\*/\*.{bats,sh,py}" description: "BATS/mocks/coverage test conventions for this suite."
 
-# Test Instructions
+# Tests Instructions
 
-## Test Design
-
-1. Keep tests deterministic and independent.
-1. Prefer validating observable behavior over implementation details.
-1. Ensure each new behavior change has matching tests.
-
-## Mocks and Fixtures
-
-1. Reuse existing mock setup patterns from `tests/setup_mocks.sh`.
-1. Preserve compatibility for Linux CI and Windows-hosted local runs.
-1. Keep mock behavior minimal but realistic for branch conditions.
-
-## Coverage and Validation
-
-1. Maintain project expectation of >= 90% coverage.
-1. Run targeted tests first, then the full suite.
-1. Keep test output clear enough to diagnose regressions quickly.
+1. Keep tests deterministic; isolate `INSTALL_DIR`, `SSMTP_CONF`, `REVALIASES`, `MOCK_DIR`, `TEST_MODE`.
+1. Prefer shared mocks from `tests/setup_mocks.sh`; mock external tools, not product logic.
+1. Cover whiptail success **and** text-fallback paths for installer changes.
+1. Self-update tests must assert no stdin pipe into `install.sh --update`.
+1. `REAL_DEPS=1` e2e may use real packages; still mock hardware/destructive commands.
+1. Coverage ≥ 90% overall and per-file; complexity ≤ 15 overall and per-file.
+1. Update drivers / `transform_coverage.py` inputs when adding newly covered scripts.
+1. Avoid relying on host-installed `fwupdmgr`/`7z` leaking past mocks.

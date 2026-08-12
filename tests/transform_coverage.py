@@ -5,6 +5,143 @@ import argparse
 import subprocess
 
 
+def normalize_coverage_filename(filename):
+    """Map absolute/relative kcov paths onto repo-relative product paths."""
+    if not filename:
+        return filename
+    normalized = filename.replace("\\", "/")
+    while normalized.startswith("./"):
+        normalized = normalized[2:]
+
+    if normalized.endswith("/install.sh") or normalized == "install.sh":
+        return "install.sh"
+    if normalized.endswith("/uninstall.sh") or normalized == "uninstall.sh":
+        return "uninstall.sh"
+
+    for marker in ("/scripts/",):
+        idx = normalized.rfind(marker)
+        if idx != -1:
+            return normalized[idx + 1 :]
+
+    # Repo lib/*.sh only — do not treat /usr/lib or /var/lib as product paths.
+    lib_idx = normalized.rfind("/lib/")
+    if lib_idx != -1:
+        before = normalized[:lib_idx]
+        after = normalized[lib_idx + len("/lib/") :]
+        system_lib = before.endswith(("/usr", "/var", "/usr/local", "/lib64")) or before in (
+            "/usr",
+            "/var",
+            "/usr/local",
+            "/lib64",
+        )
+        if after.endswith(".sh") and "/" not in after and not system_lib:
+            return f"lib/{after}"
+
+    if normalized.startswith("scripts/") or normalized.startswith("lib/"):
+        return normalized
+
+    # Bare script basenames from some kcov reports
+    if normalized.endswith(".sh") and normalized not in ("install.sh", "uninstall.sh"):
+        candidate = f"scripts/{normalized}"
+        if os.path.exists(candidate):
+            return candidate
+
+    return os.path.basename(normalized) if normalized.startswith("/") else normalized
+
+
+def should_exclude_from_coverage_gate(filename):
+    """Coverage harness helpers are traced as entrypoints but are not product code."""
+    normalized = normalize_coverage_filename(filename)
+    return normalized.startswith("scripts/coverage/")
+
+
+def load_kcov_exclude_regions(filename):
+    """Return line numbers excluded by KCOV_EXCL_START/STOP markers in source."""
+    if not filename or not os.path.exists(filename):
+        return set()
+    excluded = set()
+    in_region = False
+    try:
+        with open(filename, "r", encoding="utf-8", errors="replace") as handle:
+            for idx, line in enumerate(handle, start=1):
+                if "KCOV_EXCL_START" in line:
+                    in_region = True
+                    excluded.add(idx)
+                    continue
+                if "KCOV_EXCL_STOP" in line:
+                    excluded.add(idx)
+                    in_region = False
+                    continue
+                if in_region:
+                    excluded.add(idx)
+    except OSError:
+        return set()
+    return excluded
+
+
+def merge_coverage_classes(classes):
+    """Merge duplicate class entries (absolute vs relative paths) by max line hits."""
+    merged = {}
+    for cls in classes:
+        filename = normalize_coverage_filename(cls.get("filename", ""))
+        if not filename or should_exclude_from_coverage_gate(filename):
+            continue
+
+        lines_el = cls.find("lines")
+        if lines_el is None:
+            continue
+
+        if filename not in merged:
+            new_cls = ET.Element("class")
+            new_cls.set("filename", filename)
+            new_cls.set("name", filename)
+            new_cls.set("branch-rate", cls.get("branch-rate", "0"))
+            new_cls.set("complexity", cls.get("complexity", "0"))
+            new_lines = ET.SubElement(new_cls, "lines")
+            merged[filename] = (new_cls, new_lines, {}, load_kcov_exclude_regions(filename))
+
+        _new_cls, new_lines, line_map, excluded = merged[filename]
+        for line in lines_el.findall("line"):
+            number = line.get("number")
+            if number is None:
+                continue
+            try:
+                number_int = int(number)
+            except ValueError:
+                continue
+            if number_int in excluded:
+                continue
+            hits = int(line.get("hits", "0") or 0)
+            if number not in line_map:
+                new_line = ET.SubElement(new_lines, "line")
+                new_line.set("number", number)
+                new_line.set("hits", str(hits))
+                if "branch" in line.attrib:
+                    new_line.set("branch", line.get("branch"))
+                line_map[number] = new_line
+            else:
+                prev = int(line_map[number].get("hits", "0") or 0)
+                if hits > prev:
+                    line_map[number].set("hits", str(hits))
+
+    result = []
+    total_valid = 0
+    total_covered = 0
+    for filename, (new_cls, new_lines, line_map, _excluded) in sorted(merged.items()):
+        valid = len(line_map)
+        covered = sum(1 for line in line_map.values() if int(line.get("hits", "0") or 0) > 0)
+        total_valid += valid
+        total_covered += covered
+        rate = (covered / valid) if valid else 0.0
+        new_cls.set("line-rate", f"{rate:.4f}")
+        new_cls.set("lines-valid", str(valid))
+        new_cls.set("lines-covered", str(covered))
+        result.append(new_cls)
+
+    overall_rate = (total_covered / total_valid) if total_valid else 0.0
+    return result, overall_rate, total_covered, total_valid
+
+
 def compute_lizard_complexity_map(filenames):
     existing = [name for name in filenames if name and os.path.exists(name)]
     if not existing:
@@ -135,11 +272,7 @@ def transform_coverage(
     try:
         tree = ET.parse(xml_file)
         root = tree.getroot()
-        
-        root_line_rate = root.get("line-rate", "0")
         root_complexity = root.get("complexity", "0")
-        generate_badge(root_line_rate)
-
     except ET.ParseError as e:
         print(f"Error parsing XML: {e}")
         sys.exit(1)
@@ -149,11 +282,18 @@ def transform_coverage(
         print("No <packages> element found")
         sys.exit(1)
 
-    all_classes = []
+    raw_classes = []
     for pkg in packages_el.findall('package'):
         classes_el = pkg.find('classes')
         if classes_el is not None:
-            all_classes.extend(classes_el.findall('class'))
+            raw_classes.extend(classes_el.findall('class'))
+
+    all_classes, overall_rate, total_covered, total_valid = merge_coverage_classes(raw_classes)
+    root_line_rate = f"{overall_rate:.4f}"
+    root.set("line-rate", root_line_rate)
+    root.set("lines-covered", str(total_covered))
+    root.set("lines-valid", str(total_valid))
+    generate_badge(root_line_rate)
 
     packages_el.clear()
 
@@ -192,7 +332,11 @@ def transform_coverage(
         new_classes.append(cls)
 
     tree.write(xml_file, encoding='UTF-8', xml_declaration=True)
-    print(f"Successfully transformed {xml_file}: Split {len(all_classes)} classes into separate packages.")
+    print(
+        f"Successfully transformed {xml_file}: "
+        f"merged {len(raw_classes)} classes into {len(all_classes)} product packages "
+        f"({total_covered}/{total_valid} lines, {overall_rate * 100:.2f}%)."
+    )
     
     generate_markdown_summary(all_classes, root_line_rate, root_complexity)
 

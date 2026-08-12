@@ -1,29 +1,29 @@
 ______________________________________________________________________
 
-## name: ci-lint-hardening description: "Use when updating lint tooling, workflow checks, or CI reliability policies for shell, YAML, Dockerfile, and markdown validation."
+## name: ci-lint-hardening description: Harden CI lint tooling, Docker lint image, workflows, and matrix wiring without weakening gates.
 
 # CI Lint Hardening
 
 ## Goal
 
-Keep CI strict, reproducible, and suppression-free.
+Improve lint/CI reliability while keeping strict no-suppression policy.
 
 ## Procedure
 
-1. Align workflow checks with `tests/lint.sh` strict mode.
-1. Ensure required tools are installed in CI lint job.
-1. Validate actionlint, yamllint, shellcheck, shfmt, hadolint, and mdformat flow.
-1. Confirm line-length policy: 140 for shell/YAML/Docker only.
-1. Confirm markdown linting remains mandatory without markdown max-line checks.
+1. Prefer changes that keep host `tests/lint.sh` and Docker `scripts/lint-in-docker.sh` aligned.
+1. Update `docker/images/lint/**` when tool versions or packages change.
+1. Keep `.github/workflows/ci.yml` quoting-safe and action-pinned.
+1. Run `actionlint` / `yamllint` / `hadolint` via existing gates.
+1. Do not skip steps or lower thresholds to greenwash CI.
 
-## Guardrails
+## Companion skills
 
-1. No rule disable/ignore additions.
-1. Keep workflow shell quoting robust.
-1. Keep action versions on stable final releases.
+- [`.agents/skills/code-linter/SKILL.md`](../../../.agents/skills/code-linter/SKILL.md)
+- [`.agents/skills/pipeline-runner/SKILL.md`](../../../.agents/skills/pipeline-runner/SKILL.md)
 
-## Output
+## Validation
 
-1. Updated workflow/config files.
-1. Exact commands used for local parity checks.
-1. Any residual risks or environment caveats.
+```bash
+./scripts/lint-in-docker.sh
+./scripts/build-and-test.sh --lints-only
+```

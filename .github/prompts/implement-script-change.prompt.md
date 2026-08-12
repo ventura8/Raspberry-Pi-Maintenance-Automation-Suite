@@ -1,30 +1,17 @@
 ______________________________________________________________________
 
-## description: Implement or refactor Bash behavior in install.sh or scripts/ with matching tests and strict lint compliance.
+## description: "Implement a Bash behavior change with tests. Replace {{REQUEST_DETAILS}} with the change request."
 
-Implement the following behavior change in this repository.
+# Implement: {{REQUEST_DETAILS}}
 
-Change request:
+Follow `.github/skills/implement-script-change` and relevant `.agents/skills/*`.
 
-- {{CHANGE_REQUEST}}
+Requirements:
 
-Implementation requirements:
+1. Minimal scoped diff
+1. Preserve cron-safe `install.sh --update`
+1. Update BATS/mocks
+1. No lint suppressions
+1. Validate with format + lint + suite (prefer `./scripts/build-and-test.sh --full`)
 
-1. Modify only the minimal required files.
-1. Preserve existing Pi and non-Pi compatibility expectations.
-1. Keep non-interactive and cron-safe paths intact.
-1. Add or update BATS tests for new behavior.
-1. Avoid lint suppressions, disable directives, or ignore rules.
-
-Before finalizing:
-
-1. Run shell formatting checks.
-1. Run strict lint checks.
-1. Run relevant tests, then full test suite.
-
-Return:
-
-- Files changed
-- Behavioral summary
-- Test and lint results
-- Residual risks
+Deliver: summary of code/test/docs/agent updates and commands run.

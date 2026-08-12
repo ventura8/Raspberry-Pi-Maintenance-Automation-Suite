@@ -1,0 +1,629 @@
+# Raspberry Pi Maintenance Automation Suite
+# Copyright (C) 2026
+# This file is distributed under the same license as the package.
+msgid ""
+msgstr ""
+"Project-Id-Version: pi-maintenance-suite\n"
+"Report-Msgid-Bugs-To: https://github.com/ventura8/Raspberry-Pi-Maintenance-Automation-Suite/issues\n"
+"POT-Creation-Date: 1970-01-01 00:00+0000\n"
+"PO-Revision-Date: 2026-01-01 00:00+0000\n"
+"Last-Translator: AUTO\n"
+"Language-Team: Lietuvių\n"
+"Language: lt\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+
+msgid "      Raspberry Pi Maintenance Suite Manager"
+msgstr "[Lietuvių]       Raspberry Pi Maintenance Suite Manager"
+
+msgid "   -------------------"
+msgstr "[Lietuvių]    -------------------"
+
+msgid "   ----------------------------------------------------------------------------------"
+msgstr "[Lietuvių]    ----------------------------------------------------------------------------------"
+
+msgid "   0. Exit"
+msgstr "[Lietuvių]    0. Exit"
+
+msgid "   1. Configure Email Settings"
+msgstr "[Lietuvių]    1. Configure Email Settings"
+
+msgid "   2. View Current Email Config"
+msgstr "[Lietuvių]    2. View Current Email Config"
+
+msgid "   3. Manage Tasks & Schedules (Enable/Disable)"
+msgstr "[Lietuvių]    3. Manage Tasks & Schedules (Enable/Disable)"
+
+msgid "   4. Force Update Scripts (from GitHub)"
+msgstr "[Lietuvių]    4. Force Update Scripts (from GitHub)"
+
+msgid "   5. Run Enabled Tasks Now"
+msgstr "[Lietuvių]    5. Run Enabled Tasks Now"
+
+msgid "   6. Uninstall Suite"
+msgstr "[Lietuvių]    6. Uninstall Suite"
+
+msgid "   Enter ID to toggle/edit, or '0' to return to Main Menu."
+msgstr "[Lietuvių]    Enter ID to toggle/edit, or '0' to return to Main Menu."
+
+msgid "   RPi Maintenance Suite Uninstaller"
+msgstr "[Lietuvių]    RPi Maintenance Suite Uninstaller"
+
+msgid "   Task Status Manager"
+msgstr "[Lietuvių]    Task Status Manager"
+
+msgid "  Failed"
+msgstr "[Lietuvių]   Failed"
+
+msgid "  Success"
+msgstr "[Lietuvių]   Success"
+
+msgid "-"
+msgstr "[Lietuvių] -"
+
+msgid "--- Checking Dependencies ---"
+msgstr "[Lietuvių] --- Checking Dependencies ---"
+
+msgid "--- Checking for Samsung SSDs via fwupd ---"
+msgstr "[Lietuvių] --- Checking for Samsung SSDs via fwupd ---"
+
+msgid "--- Checking for Updates ---"
+msgstr "[Lietuvių] --- Checking for Updates ---"
+
+msgid "--- Current Email Settings ---"
+msgstr "[Lietuvių] --- Current Email Settings ---"
+
+msgid "--- Email Configuration ---"
+msgstr "[Lietuvių] --- Email Configuration ---"
+
+msgid "--- Fallback: Samsung Official ISO Update ---"
+msgstr "[Lietuvių] --- Fallback: Samsung Official ISO Update ---"
+
+msgid "--- REBOOT STATUS ---"
+msgstr "[Lietuvių] --- REBOOT STATUS ---"
+
+msgid "--- Refreshing Metadata ---"
+msgstr "[Lietuvių] --- Refreshing Metadata ---"
+
+msgid "--- Run Enabled Tasks Now ---"
+msgstr "[Lietuvių] --- Run Enabled Tasks Now ---"
+
+msgid "--- Running 'fwupdmgr' ---"
+msgstr "[Lietuvių] --- Running 'fwupdmgr' ---"
+
+msgid "--- Running 'sudo rpi-eeprom-update -a' ---"
+msgstr "[Lietuvių] --- Running 'sudo rpi-eeprom-update -a' ---"
+
+msgid "--- Skipping pip3 self-upgrade ---"
+msgstr "[Lietuvių] --- Skipping pip3 self-upgrade ---"
+
+msgid "--- Step 1: System Prune ---"
+msgstr "[Lietuvių] --- Step 1: System Prune ---"
+
+msgid "--- Step 2: Builder Prune ---"
+msgstr "[Lietuvių] --- Step 2: Builder Prune ---"
+
+msgid "--- Updating Pi-Apps and Installed Apps ---"
+msgstr "[Lietuvių] --- Updating Pi-Apps and Installed Apps ---"
+
+msgid "--- Upgrading outdated pip3 packages ---"
+msgstr "[Lietuvių] --- Upgrading outdated pip3 packages ---"
+
+msgid "--------------------------------------------"
+msgstr "[Lietuvių] --------------------------------------------"
+
+msgid "7z required but not installed."
+msgstr "[Lietuvių] 7z required but not installed."
+
+msgid "============================================"
+msgstr "[Lietuvių] ============================================"
+
+msgid "===================================================="
+msgstr "[Lietuvių] ===================================================="
+
+msgid "======================================================="
+msgstr "[Lietuvių] ======================================================="
+
+msgid "========================================================="
+msgstr "[Lietuvių] ========================================================="
+
+msgid "==========================================================="
+msgstr "[Lietuvių] ==========================================================="
+
+msgid "A firmware update was applied. A reboot is required."
+msgstr "[Lietuvių] A firmware update was applied. A reboot is required."
+
+msgid "A reboot is required to finish applying updates."
+msgstr "[Lietuvių] A reboot is required to finish applying updates."
+
+msgid "All dependencies are installed."
+msgstr "[Lietuvių] All dependencies are installed."
+
+msgid "All enabled tasks completed successfully."
+msgstr "[Lietuvių] All enabled tasks completed successfully."
+
+msgid "All pip3 packages are up-to-date."
+msgstr "[Lietuvių] All pip3 packages are up-to-date."
+
+msgid "All tasks are ON by default. Space toggles. Enter confirms."
+msgstr "[Lietuvių] All tasks are ON by default. Space toggles. Enter confirms."
+
+msgid "Are you sure you want to uninstall?"
+msgstr "[Lietuvių] Are you sure you want to uninstall?"
+
+msgid "Base pip3 is managed by the OS (Debian) to avoid record-file errors."
+msgstr "[Lietuvių] Base pip3 is managed by the OS (Debian) to avoid record-file errors."
+
+msgid "Buildx not detected. Falling back to legacy builder..."
+msgstr "[Lietuvių] Buildx not detected. Falling back to legacy builder..."
+
+msgid "Cancel"
+msgstr "[Lietuvių] Cancel"
+
+msgid "Cancelled: Enabled tasks were not run."
+msgstr "[Lietuvių] Cancelled: Enabled tasks were not run."
+
+msgid "Checking dependencies..."
+msgstr "[Lietuvių] Checking dependencies..."
+
+msgid "Checking for updates..."
+msgstr "[Lietuvių] Checking for updates..."
+
+msgid "Choose Continue to proceed, or Cancel to abort without installing."
+msgstr "[Lietuvių] Choose Continue to proceed, or Cancel to abort without installing."
+
+msgid "Cleaning up crontabs..."
+msgstr "[Lietuvių] Cleaning up crontabs..."
+
+msgid "Completed with failures."
+msgstr "[Lietuvių] Completed with failures."
+
+msgid "Configure Email Settings"
+msgstr "[Lietuvių] Configure Email Settings"
+
+msgid "Continue"
+msgstr "[Lietuvių] Continue"
+
+msgid "Could not find fumagician in initrd."
+msgstr "[Lietuvių] Could not find fumagician in initrd."
+
+msgid "Could not find initrd in ISO."
+msgstr "[Lietuvių] Could not find initrd in ISO."
+
+msgid "Could not parse remote tag from GitHub response."
+msgstr "[Lietuvių] Could not parse remote tag from GitHub response."
+
+msgid "Current Email Settings"
+msgstr "[Lietuvių] Current Email Settings"
+
+msgid "Custom Schedule"
+msgstr "[Lietuvių] Custom Schedule"
+
+msgid "DISABLED|-"
+msgstr "[Lietuvių] DISABLED|-"
+
+msgid "Daily @ %s:%s"
+msgstr "[Lietuvių] Daily @ %s:%s"
+
+msgid "Dependencies installed successfully."
+msgstr "[Lietuvių] Dependencies installed successfully."
+
+msgid "Docker Cleanup"
+msgstr "[Lietuvių] Docker Cleanup"
+
+msgid "Dow %s"
+msgstr "[Lietuvių] Dow %s"
+
+msgid "Download"
+msgstr "[Lietuvių] Download"
+
+msgid "Download Scripts"
+msgstr "[Lietuvių] Download Scripts"
+
+msgid "Downloaded file is empty."
+msgstr "[Lietuvių] Downloaded file is empty."
+
+msgid "Downloading/Updating scripts..."
+msgstr "[Lietuvių] Downloading/Updating scripts..."
+
+msgid "EOF detected"
+msgstr "[Lietuvių] EOF detected"
+
+msgid "Edit Schedule"
+msgstr "[Lietuvių] Edit Schedule"
+
+msgid "Email Configuration"
+msgstr "[Lietuvių] Email Configuration"
+
+msgid "Email configured successfully."
+msgstr "[Lietuvių] Email configured successfully."
+
+msgid "Enable Task"
+msgstr "[Lietuvių] Enable Task"
+
+msgid "Enabled %s"
+msgstr "[Lietuvių] Enabled %s"
+
+msgid "Enter App Password (16-char):"
+msgstr "[Lietuvių] Enter App Password (16-char):"
+
+msgid "Enter App Password (16-char, input hidden):"
+msgstr "[Lietuvių] Enter App Password (16-char, input hidden):"
+
+msgid "Enter Gmail address:"
+msgstr "[Lietuvių] Enter Gmail address:"
+
+msgid "Enter cron schedule:"
+msgstr "[Lietuvių] Enter cron schedule:"
+
+msgid "Error downloading %s"
+msgstr "[Lietuvių] Error downloading %s"
+
+msgid "Error downloading lib/%s"
+msgstr "[Lietuvių] Error downloading lib/%s"
+
+msgid "Error: This script supports 64-bit systems only."
+msgstr "[Lietuvių] Error: This script supports 64-bit systems only."
+
+msgid "Error: curl is required but not installed."
+msgstr "[Lietuvių] Error: curl is required but not installed."
+
+msgid "Error: fwupdmgr (fwupd) is not installed."
+msgstr "[Lietuvių] Error: fwupdmgr (fwupd) is not installed."
+
+msgid "Esc / Cancel aborts the installer without enabling tasks."
+msgstr "[Lietuvių] Esc / Cancel aborts the installer without enabling tasks."
+
+msgid "Exit"
+msgstr "[Lietuvių] Exit"
+
+msgid "Extracting initrd..."
+msgstr "[Lietuvių] Extracting initrd..."
+
+msgid "Failed to contact GitHub API."
+msgstr "[Lietuvių] Failed to contact GitHub API."
+
+msgid "Failed to download firmware ISO."
+msgstr "[Lietuvių] Failed to download firmware ISO."
+
+msgid "Failed to fetch Samsung firmware page."
+msgstr "[Lietuvių] Failed to fetch Samsung firmware page."
+
+msgid "Failed to mount ISO."
+msgstr "[Lietuvių] Failed to mount ISO."
+
+msgid "Fetching Samsung firmware page..."
+msgstr "[Lietuvių] Fetching Samsung firmware page..."
+
+msgid "Finished running enabled tasks.\\nSee terminal output for details."
+msgstr "[Lietuvių] Finished running enabled tasks.\\nSee terminal output for details."
+
+msgid "Firmware Update"
+msgstr "[Lietuvių] Firmware Update"
+
+msgid "Firmware is already up to date."
+msgstr "[Lietuvių] Firmware is already up to date."
+
+msgid "Firmware update applied successfully."
+msgstr "[Lietuvių] Firmware update applied successfully."
+
+msgid "Firmware update via fumagician failed."
+msgstr "[Lietuvių] Firmware update via fumagician failed."
+
+msgid "Force Update Scripts (from GitHub)"
+msgstr "[Lietuvių] Force Update Scripts (from GitHub)"
+
+msgid "Fri"
+msgstr "[Lietuvių] Fri"
+
+msgid "Installation Cancelled"
+msgstr "[Lietuvių] Installation Cancelled"
+
+msgid "Installation Complete"
+msgstr "[Lietuvių] Installation Complete"
+
+msgid "Installation Complete!"
+msgstr "[Lietuvių] Installation Complete!"
+
+msgid "Installing curl..."
+msgstr "[Lietuvių] Installing curl..."
+
+msgid "Invalid email address."
+msgstr "[Lietuvių] Invalid email address."
+
+msgid "Invalid email. returning to menu."
+msgstr "[Lietuvių] Invalid email. returning to menu."
+
+msgid "Invalid option: '%s'"
+msgstr "[Lietuvių] Invalid option: '%s'"
+
+msgid "Mail sender not found. Installing mail-transport packages..."
+msgstr "[Lietuvių] Mail sender not found. Installing mail-transport packages..."
+
+msgid "Mail transport installed successfully."
+msgstr "[Lietuvių] Mail transport installed successfully."
+
+msgid "Mailer configuration files under /etc/ssmtp/ or /etc/msmtprc were not removed to preserve backups."
+msgstr "[Lietuvių] Mailer configuration files under /etc/ssmtp/ or /etc/msmtprc were not removed to preserve backups."
+
+msgid "Manage Tasks & Schedules"
+msgstr "[Lietuvių] Manage Tasks & Schedules"
+
+msgid "Manual update: https://semiconductor.samsung.com/consumer-storage/support/tools/"
+msgstr "[Lietuvių] Manual update: https://semiconductor.samsung.com/consumer-storage/support/tools/"
+
+msgid "Matrix/non-interactive fresh install."
+msgstr "[Lietuvių] Matrix/non-interactive fresh install."
+
+msgid "Modern Buildx detected. Pruning build cache..."
+msgstr "[Lietuvių] Modern Buildx detected. Pruning build cache..."
+
+msgid "Mon"
+msgstr "[Lietuvių] Mon"
+
+msgid "Monthly %s @ %s:%s"
+msgstr "[Lietuvių] Monthly %s @ %s:%s"
+
+msgid "Mounting ISO..."
+msgstr "[Lietuvių] Mounting ISO..."
+
+msgid "New firmware available! Downloading..."
+msgstr "[Lietuvių] New firmware available! Downloading..."
+
+msgid "No SSMTP configuration found."
+msgstr "[Lietuvių] No SSMTP configuration found."
+
+msgid "No Samsung SSDs detected by fwupd."
+msgstr "[Lietuvių] No Samsung SSDs detected by fwupd."
+
+msgid "No Samsung SSDs detected by nvme-cli."
+msgstr "[Lietuvių] No Samsung SSDs detected by nvme-cli."
+
+msgid "No enabled tasks found."
+msgstr "[Lietuvių] No enabled tasks found."
+
+msgid "No firmware update was applied or no reboot is required."
+msgstr "[Lietuvių] No firmware update was applied or no reboot is required."
+
+msgid "No mail recipient configured, skipping email notification."
+msgstr "[Lietuvių] No mail recipient configured, skipping email notification."
+
+msgid "No mail sender (ssmtp/msmtp) found, skipping email notification."
+msgstr "[Lietuvių] No mail sender (ssmtp/msmtp) found, skipping email notification."
+
+msgid "No reboot is required at this time."
+msgstr "[Lietuvių] No reboot is required at this time."
+
+msgid "No supported firmware update tool found (rpi-eeprom-update or fwupdmgr)."
+msgstr "[Lietuvių] No supported firmware update tool found (rpi-eeprom-update or fwupdmgr)."
+
+msgid "No updates available via LVFS."
+msgstr "[Lietuvių] No updates available via LVFS."
+
+msgid "No updates available."
+msgstr "[Lietuvių] No updates available."
+
+msgid "Note: Mail transport packages (ssmtp/mailutils or msmtp/s-nail) were left installed as system packages."
+msgstr "[Lietuvių] Note: Mail transport packages (ssmtp/mailutils or msmtp/s-nail) were left installed as system packages."
+
+msgid "Password empty. Returning."
+msgstr "[Lietuvių] Password empty. Returning."
+
+msgid "Password: [HIDDEN/MASKED]"
+msgstr "[Lietuvių] Password: [HIDDEN/MASKED]"
+
+msgid "Pi Maintenance Update Failed"
+msgstr "[Lietuvių] Pi Maintenance Update Failed"
+
+msgid "Pi Maintenance: System Up to Date"
+msgstr "[Lietuvių] Pi Maintenance: System Up to Date"
+
+msgid "Pi-Apps Update"
+msgstr "Pi-Apps Update"
+
+msgid "Python Pip Update"
+msgstr "[Lietuvių] Python Pip Update"
+
+msgid "Raspberry Pi Maintenance Suite"
+msgstr "[Lietuvių] Raspberry Pi Maintenance Suite"
+
+msgid "Raspberry Pi Maintenance Suite %s"
+msgstr "[Lietuvių] Raspberry Pi Maintenance Suite %s"
+
+msgid "Raspberry Pi Maintenance Suite Manager"
+msgstr "[Lietuvių] Raspberry Pi Maintenance Suite Manager"
+
+msgid "Refreshing metadata..."
+msgstr "[Lietuvių] Refreshing metadata..."
+
+msgid "Return to Main Menu"
+msgstr "[Lietuvių] Return to Main Menu"
+
+msgid "Root crontab updated."
+msgstr "[Lietuvių] Root crontab updated."
+
+msgid "Run Enabled Tasks Now"
+msgstr "[Lietuvių] Run Enabled Tasks Now"
+
+msgid "Running firmware update..."
+msgstr "[Lietuvių] Running firmware update..."
+
+msgid "Samsung SSD Firmware Update"
+msgstr "[Lietuvių] Samsung SSD Firmware Update"
+
+msgid "Samsung SSD detected by fwupd."
+msgstr "[Lietuvių] Samsung SSD detected by fwupd."
+
+msgid "Sat"
+msgstr "[Lietuvių] Sat"
+
+msgid "Saving configuration..."
+msgstr "[Lietuvių] Saving configuration..."
+
+msgid "Schedule updated."
+msgstr "[Lietuvių] Schedule updated."
+
+msgid "Scripts updated."
+msgstr "[Lietuvių] Scripts updated."
+
+msgid "Select which tasks to enable. Press Enter to accept default [Y]."
+msgstr "[Lietuvių] Select which tasks to enable. Press Enter to accept default [Y]."
+
+msgid "Selected tasks use their default weekly schedules."
+msgstr "[Lietuvių] Selected tasks use their default weekly schedules."
+
+msgid "Self-Update Service"
+msgstr "[Lietuvių] Self-Update Service"
+
+msgid "Setting up default schedules..."
+msgstr "[Lietuvių] Setting up default schedules..."
+
+msgid "Skipping update (not installed or wrong path)."
+msgstr "[Lietuvių] Skipping update (not installed or wrong path)."
+
+msgid "Starting uninstallation process..."
+msgstr "[Lietuvių] Starting uninstallation process..."
+
+msgid "Suite version: %s"
+msgstr "[Lietuvių] Suite version: %s"
+
+msgid "Sun"
+msgstr "[Lietuvių] Sun"
+
+msgid "System OS Update"
+msgstr "[Lietuvių] System OS Update"
+
+msgid "System is up to date."
+msgstr "[Lietuvių] System is up to date."
+
+msgid "Task Status Manager"
+msgstr "[Lietuvių] Task Status Manager"
+
+msgid "Task disabled."
+msgstr "[Lietuvių] Task disabled."
+
+msgid "Task enabled."
+msgstr "[Lietuvių] Task enabled."
+
+msgid "Task: %s"
+msgstr "[Lietuvių] Task: %s"
+
+msgid "The auto-update failed. Reason: %s"
+msgstr "[Lietuvių] The auto-update failed. Reason: %s"
+
+msgid "The system is running the latest version: %s."
+msgstr "[Lietuvių] The system is running the latest version: %s."
+
+msgid "The system will reboot shortly after this report is sent."
+msgstr "[Lietuvių] The system will reboot shortly after this report is sent."
+
+msgid "This wizard configures email, downloads scripts, and schedules maintenance tasks."
+msgstr "[Lietuvių] This wizard configures email, downloads scripts, and schedules maintenance tasks."
+
+msgid "This wizard will set up your email and default schedules."
+msgstr "[Lietuvių] This wizard will set up your email and default schedules."
+
+msgid "Thu"
+msgstr "[Lietuvių] Thu"
+
+msgid "Tue"
+msgstr "[Lietuvių] Tue"
+
+msgid "Uninstall"
+msgstr "[Lietuvių] Uninstall"
+
+msgid "Uninstall Suite"
+msgstr "[Lietuvių] Uninstall Suite"
+
+msgid "Uninstallation complete."
+msgstr "[Lietuvių] Uninstallation complete."
+
+msgid "Unsupported OS family for system update."
+msgstr "[Lietuvių] Unsupported OS family for system update."
+
+msgid "Updates available. Installing..."
+msgstr "[Lietuvių] Updates available. Installing..."
+
+msgid "Updating version tracking..."
+msgstr "[Lietuvių] Updating version tracking..."
+
+msgid "Version set to: %s"
+msgstr "[Lietuvių] Version set to: %s"
+
+msgid "Version: %s\\n\\nChoose an option. Enter selects. Esc cancels/exits."
+msgstr "[Lietuvių] Version: %s\\n\\nChoose an option. Enter selects. Esc cancels/exits."
+
+msgid "View Current Email Config"
+msgstr "[Lietuvių] View Current Email Config"
+
+msgid "Warning: Failed to install curl."
+msgstr "[Lietuvių] Warning: Failed to install curl."
+
+msgid "Warning: Failed to install gettext. UI will stay in English."
+msgstr "[Lietuvių] Warning: Failed to install gettext. UI will stay in English."
+
+msgid "Warning: Failed to install mail transport. Email notifications will be disabled."
+msgstr "[Lietuvių] Warning: Failed to install mail transport. Email notifications will be disabled."
+
+msgid "Warning: Failed to install whiptail. Falling back to text UI."
+msgstr "[Lietuvių] Warning: Failed to install whiptail. Falling back to text UI."
+
+msgid "Warning: One or more enabled tasks may reboot the system and terminate this session."
+msgstr "[Lietuvių] Warning: One or more enabled tasks may reboot the system and terminate this session."
+
+msgid "Warning: Some dependencies may have failed to install."
+msgstr "[Lietuvių] Warning: Some dependencies may have failed to install."
+
+msgid "Warning: could not read VERSION (local or %s)."
+msgstr "[Lietuvių] Warning: could not read VERSION (local or %s)."
+
+msgid "Warning: no package mapping for '%s' on this OS family; skipping."
+msgstr "[Lietuvių] Warning: no package mapping for '%s' on this OS family; skipping."
+
+msgid "Wed"
+msgstr "[Lietuvių] Wed"
+
+msgid "Weekly %s @ %s:%s"
+msgstr "[Lietuvių] Weekly %s @ %s:%s"
+
+msgid "Welcome to the One-Line Installer (%s)."
+msgstr "[Lietuvių] Welcome to the One-Line Installer (%s)."
+
+msgid "Whiptail UI unavailable; switching to text interface."
+msgstr "[Lietuvių] Whiptail UI unavailable; switching to text interface."
+
+msgid "[1/4] Welcome"
+msgstr "[Lietuvių] [1/4] Welcome"
+
+msgid "[2/4] Email configuration..."
+msgstr "[Lietuvių] [2/4] Email configuration..."
+
+msgid "[3/4] Downloading scripts..."
+msgstr "[Lietuvių] [3/4] Downloading scripts..."
+
+msgid "[4/4] Select maintenance tasks to enable."
+msgstr "[Lietuvių] [4/4] Select maintenance tasks to enable."
+
+msgid "[4/4] Task selection..."
+msgstr "[Lietuvių] [4/4] Task selection..."
+
+msgid "fwupdmgr failed to query update availability. Skipping firmware apply step."
+msgstr "[Lietuvių] fwupdmgr failed to query update availability. Skipping firmware apply step."
+
+msgid "gettext installed successfully."
+msgstr "[Lietuvių] gettext installed successfully."
+
+msgid "gettext not found. Installing gettext..."
+msgstr "[Lietuvių] gettext not found. Installing gettext..."
+
+msgid "nvme-cli is not installed and could not be installed automatically."
+msgstr "[Lietuvių] nvme-cli is not installed and could not be installed automatically."
+
+msgid "whiptail installed successfully."
+msgstr "[Lietuvių] whiptail installed successfully."
+
+msgid "whiptail not found. Installing whiptail..."
+msgstr "[Lietuvių] whiptail not found. Installing whiptail..."
+

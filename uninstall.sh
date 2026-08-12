@@ -2,42 +2,98 @@
 # Description: One-line uninstaller for the Raspberry Pi Maintenance Suite.
 # Removes all scheduled cron jobs and deletes the installation directory.
 
+_RPI_UNINSTALL_ROOT="${PI_UNINSTALL_ROOT_OVERRIDE:-$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)}"
+
+if [ "${PI_I18N_FORCE_INLINE_STUBS:-0}" != "1" ] && [ -f "$_RPI_UNINSTALL_ROOT/lib/i18n_soft.sh" ]; then
+    # shellcheck source=lib/i18n_soft.sh
+    source "$_RPI_UNINSTALL_ROOT/lib/i18n_soft.sh"
+elif [ "${PI_I18N_FORCE_INLINE_STUBS:-0}" != "1" ] && [ -f "${INSTALL_DIR:-$HOME/pi-scripts}/lib/i18n_soft.sh" ]; then
+    # shellcheck source=lib/i18n_soft.sh
+    source "${INSTALL_DIR:-$HOME/pi-scripts}/lib/i18n_soft.sh"
+elif ! declare -F _pi_gettext > /dev/null 2>&1; then
+    _pi_gettext() { printf '%s' "$1"; }
+    _pi_gettextf() {
+        local format="$1" argument prefix suffix
+        shift
+        for argument in "$@"; do
+            case "$format" in
+                *%s*)
+                    prefix=${format%%\%s*}
+                    suffix=${format#*%s}
+                    format="${prefix}${argument}${suffix}"
+                    ;;
+            esac
+        done
+        printf '%s' "$format"
+    }
+    _pi_echo() { printf '%s\n' "$1"; }
+    _pi_echof() {
+        local format
+        format=$(_pi_gettextf "$@")
+        printf '%s\n' "$format"
+    }
+fi
+
+if [ "${PI_I18N_FORCE_INLINE_STUBS:-0}" != "1" ] && [ -f "${INSTALL_DIR:-$HOME/pi-scripts}/lib/i18n.sh" ]; then
+    # shellcheck source=lib/i18n.sh
+    source "${INSTALL_DIR:-$HOME/pi-scripts}/lib/i18n.sh"
+elif [ "${PI_I18N_FORCE_INLINE_STUBS:-0}" != "1" ] && [ -f "$_RPI_UNINSTALL_ROOT/lib/i18n.sh" ]; then
+    # shellcheck source=lib/i18n.sh
+    source "$_RPI_UNINSTALL_ROOT/lib/i18n.sh"
+fi
+
 main() {
     INSTALL_DIR="${INSTALL_DIR:-$HOME/pi-scripts}"
 
-    echo "============================================"
-    echo "   RPi Maintenance Suite Uninstaller"
-    echo "============================================"
+    _pi_echo "============================================"
+    _pi_echo "   RPi Maintenance Suite Uninstaller"
+    _pi_echo "============================================"
 
     # 1. Remove Crontab entries
-    echo "Cleaning up crontabs..."
+    _pi_echo "Cleaning up crontabs..."
 
-    sudo crontab -l 2> /dev/null | tr -d '\r' > /tmp/root_cron.bak || true
-    if [ -s /tmp/root_cron.bak ]; then
-        grep -v "update_pi_os.sh" < /tmp/root_cron.bak |
+    local root_cron_bak root_cron_new
+    root_cron_bak=$(mktemp /tmp/root_cron.XXXXXX) || return 1
+    root_cron_new=$(mktemp /tmp/root_cron.XXXXXX) || {
+        rm -f "$root_cron_bak"
+        return 1
+    }
+    chmod 600 "$root_cron_bak" "$root_cron_new"
+
+    sudo crontab -l 2> /dev/null | tr -d '\r' > "$root_cron_bak" || true
+    if [ -s "$root_cron_bak" ]; then
+        grep -v "update_pi_os.sh" < "$root_cron_bak" |
             grep -v "update_pip.sh" |
             grep -v "update_pi_firmware.sh" |
             grep -v "docker_cleanup.sh" |
             grep -v "update_samsung_ssd.sh" |
             grep -v "update_self.sh" |
             grep -v "^MAILTO=" \
-                > /tmp/root_cron.new
+                > "$root_cron_new"
 
         # Check if the new crontab is different from the old one
-        if ! diff -q /tmp/root_cron.bak /tmp/root_cron.new > /dev/null; then
-            sudo crontab /tmp/root_cron.new
-            echo "Root crontab updated."
+        if ! cmp -s "$root_cron_bak" "$root_cron_new" 2> /dev/null; then
+            sudo crontab "$root_cron_new"
+            _pi_echo "Root crontab updated."
         fi
-        rm -f /tmp/root_cron.bak /tmp/root_cron.new
     fi
+    rm -f "$root_cron_bak" "$root_cron_new"
 
     # Remove from User Crontab
-    crontab -l 2> /dev/null | tr -d '\r' > /tmp/user_cron.bak || true
-    if [ -s /tmp/user_cron.bak ]; then
-        grep -v 'update_pi_apps.sh' < /tmp/user_cron.bak | grep -v "^MAILTO=" > /tmp/user_cron.new
-        crontab /tmp/user_cron.new
-        rm -f /tmp/user_cron.bak /tmp/user_cron.new
+    local user_cron_bak user_cron_new
+    user_cron_bak=$(mktemp /tmp/user_cron.XXXXXX) || return 1
+    user_cron_new=$(mktemp /tmp/user_cron.XXXXXX) || {
+        rm -f "$user_cron_bak"
+        return 1
+    }
+    chmod 600 "$user_cron_bak" "$user_cron_new"
+
+    crontab -l 2> /dev/null | tr -d '\r' > "$user_cron_bak" || true
+    if [ -s "$user_cron_bak" ]; then
+        grep -v 'update_pi_apps.sh' < "$user_cron_bak" | grep -v "^MAILTO=" > "$user_cron_new"
+        crontab "$user_cron_new"
     fi
+    rm -f "$user_cron_bak" "$user_cron_new"
 
     # 2. Remove Files
     # Try to detect INSTALL_DIR from crontab if it doesn't exist
@@ -64,11 +120,11 @@ main() {
         echo "Installation directory $INSTALL_DIR not found. Skipping removal."
     fi
 
-    echo "--------------------------------------------"
-    echo "Uninstallation complete."
-    echo "Note: SSMTP and mailutils were left installed as they are system packages."
-    echo "Configuration files at /etc/ssmtp/ were not removed to preserve backups."
-    echo "============================================"
+    _pi_echo "--------------------------------------------"
+    _pi_echo "Uninstallation complete."
+    _pi_echo "Note: Mail transport packages (ssmtp/mailutils or msmtp/s-nail) were left installed as system packages."
+    _pi_echo "Mailer configuration files under /etc/ssmtp/ or /etc/msmtprc were not removed to preserve backups."
+    _pi_echo "============================================"
 }
 
 run_interactive() {

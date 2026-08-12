@@ -9,6 +9,9 @@ setup() {
 
     ./tests/setup_mocks.sh > /dev/null
     export PATH="$MOCK_DIR:$PATH"
+    export TEST_MODE="true"
+    unset INSTALL_USE_WHIPTAIL || true
+    export INSTALL_FORCE_TEXT_UI="0"
 }
 
 @test "Install: Hardware Detection - Non-Pi Mode" {

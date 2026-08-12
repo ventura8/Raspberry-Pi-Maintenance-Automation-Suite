@@ -6,10 +6,12 @@
 
 # **Raspberry Pi Maintenance & Automation Suite**
 
-A collection of Bash scripts for **Raspberry Pi OS, Xubuntu, and Debian-based systems** to automate system updates, application management, firmware maintenance, and Docker maintenance with automated email reporting via Gmail.
+A collection of Bash scripts for **Debian Trixie, Ubuntu 26.04, Fedora, Rocky Linux, Arch, and Raspberry Pi OS** to automate system updates, application management, firmware maintenance, and Docker maintenance with automated email reporting via Gmail.
 
 > [!IMPORTANT]\
-> This project requires `ssmtp` to be installed and configured with a Google App Password to send email reports. Standard Gmail passwords will not work due to Google's security policies.
+> This project requires a mail transport configured with a Google App Password to send email reports
+> (`ssmtp`/`mailutils` on Debian/Ubuntu/Raspberry Pi OS; `msmtp` fallback on Fedora, Rocky, and Arch).
+> Standard Gmail passwords will not work due to Google's security policies.
 
 ## **🚀 Quick Install (One-Liner)**
 
@@ -23,25 +25,28 @@ wget -qO- https://raw.githubusercontent.com/ventura8/Raspberry-Pi-Maintenance-Au
 ## **📸 Screenshots**
 
 | OS Update | Firmware Update | Docker Cleanup | Pip Update | Pi-Apps Update |
-| :---- | :---- | :---- | :---- | :---- |
+| :--------------------------------------------- | :--------------------------------------------------------- | :------------------------------------------------------- | :----------------------------------------------- | :------------------------------------------------------- |
 | ![OS Update Email](assets/os_update_email.png) | ![Firmware Update Email](assets/firmware_update_email.png) | ![Docker Cleanup Email](assets/docker_cleanup_email.png) | ![Pip Update Email](assets/pip_update_email.png) | ![Pi-Apps Update Email](assets/pi_apps_update_email.png) |
 
 ## **✨ Features**
 
-- **Interactive Manager UI:** Run the installer anytime to view status, toggle tasks, or change schedules via a menu.
-- **Customizable Scheduling**: Interactively choose which tasks to run and when (keep defaults or set custom cron times).
+- **Interactive Manager UI:** Default UI is **whiptail** (checklist/menu dialogs). The classic text menu is used automatically when whiptail cannot run. Run the installer anytime to view status, toggle tasks, or change schedules. UI strings are localized via GNU gettext (99 Whisper-aligned languages; session locale; English fallback before catalogs are installed).
+- **Customizable Scheduling**: Interactively choose which tasks to run and when (keep defaults or set custom cron times). Space toggles checklist items; Enter confirms; Esc cancels.
 - **Re-Run Capable**: Run the installer again at any time to update scripts, reconfigure email, or change your schedule.
-- **Automated Email Reporting**: Receive detailed logs of every maintenance task directly in your inbox via SSMTP.
+- **Automated Email Reporting**: Receive detailed logs of every maintenance task via `ssmtp`/`mailutils`,
+  or `msmtp` when ssmtp is unavailable (Fedora/Rocky/Arch).
 - **Intelligent Reboot Detection**: Automatically detects when OS or Firmware updates require a system restart and schedules it safely.
 - **Full Distribution Updates**: Uses `full-upgrade` to intelligently handle kernel and firmware dependency changes for maximum stability.
 - **Modern Python Support**: Bypasses PEP 668 "Externally Managed Environment" restrictions safely for global package updates.
 - **Docker Resource Optimization**: Automatically detects and uses `buildx` if available for modern cache pruning; otherwise falls back to legacy builder cleanup.
 - **Zero-Touch Maintenance**: Uses non-interactive flags across all scripts to ensure updates never hang waiting for user input.
-- **Cross-Platform Support**: Automatically adapts to Raspberry Pi OS or generic Debian/Ubuntu systems, supporting firmware updates via `fwupd` on standard Linux hardware.
+- **Cross-Platform Support**: Works on Debian/Ubuntu (`apt`), Fedora/Rocky (`dnf`), and Arch (`pacman`). Firmware updates use `rpi-eeprom-update` on Pi hardware and `fwupd` elsewhere.
 - **Samsung SSD Firmware Updates**: Automatically detects Samsung NVMe SSDs and updates firmware using LVFS or Samsung's official firmware images.
-- **Automatic Dependency Installation**: Critical update scripts automatically check for and install missing system dependencies (like `rpi-eeprom-update`, `fwupd`, `nvme-cli`, and `ssmtp`) to ensure zero-touch maintenance across different environments.
-- **Self-Healing Updates**: The suite tracks its own version (via GitHub release tag) and automatically updates all local scripts when a new release is published.
-- **Automated Configuration**: The installer handles dependency installation, SSMTP configuration, and user aliasing (revaliases) automatically.
+- **Automatic Dependency Installation**: Critical update scripts automatically check for and install missing system dependencies (like `rpi-eeprom-update`, `fwupd`, `nvme-cli`, and mail transport) to ensure zero-touch maintenance across different environments. The installer also installs `whiptail` for the default setup wizard UI (with automatic text fallback if install fails) and `gettext` for translated UI.
+- **Self-Healing Updates**: The suite tracks its own version from the repo `VERSION` file (copied to `.version` on install) and automatically updates all local scripts when a new GitHub release tag is published.
+- **Automated Configuration**: The installer handles dependency installation (including `curl`,
+  `ssmtp`/`mailutils` or `msmtp` fallback, and `whiptail`), mail configuration, and user aliasing
+  (revaliases) automatically.
 
 ## **📄 Script Descriptions**
 
@@ -49,7 +54,7 @@ wget -qO- https://raw.githubusercontent.com/ventura8/Raspberry-Pi-Maintenance-Au
 
 Automates the standard Raspberry Pi OS maintenance workflow. It refreshes the package list, upgrades all installed software, and removes obsolete dependencies. It uses `full-upgrade` to handle kernel dependencies and automatically detects if a reboot is required.
 
-- **Commands:** `apt-get update`, `apt-get full-upgrade`, `apt-get autoremove`.
+- **Commands:** native package manager upgrade (`apt-get full-upgrade` / `dnf upgrade` / `pacman -Syu`).
 
 ### **2. Pi Firmware Update (`update_pi_firmware.sh`)**
 
@@ -92,7 +97,7 @@ Automatically checks for and applies firmware updates for Samsung NVMe SSDs. It 
 
 ### **7. Self-Update Service (`update_self.sh`)**
 
-Checks the GitHub repository for a new release. If the latest release tag differs from the locally stored version, it downloads the matching `install.sh` and runs it non-interactively via `--update` to refresh all scripts. Sends a success or failure email on completion.
+Checks the GitHub repository for a new release. If the latest release tag differs from the locally stored version (from repo `VERSION`), it downloads the matching `install.sh` and `VERSION`, then runs the installer non-interactively via `--update` to refresh all scripts. Sends a success or failure email on completion.
 
 - **Commands:** `curl` (GitHub Releases API), `install.sh --update`.
 
@@ -126,7 +131,7 @@ Before running the installer, you need to generate a Google App Password:
 
 ### **One-Line Installer**
 
-The installer handles dependency installation (`ssmtp`, `mailutils`), email configuration, script setup, and crontab scheduling. Run the following command and follow the prompts:
+The installer handles dependency installation (`curl`, `ssmtp`, `mailutils`, `whiptail`), email configuration, script setup, and crontab scheduling. Run the following command and follow the prompts:
 
 1. Run the installer:
 
@@ -134,7 +139,12 @@ The installer handles dependency installation (`ssmtp`, `mailutils`), email conf
 curl -sSL https://raw.githubusercontent.com/ventura8/Raspberry-Pi-Maintenance-Automation-Suite/main/install.sh | bash
 ```
 
-1. Follow the on-screen prompts to enter your **Gmail Address** and **App Password**.
+1. Follow the on-screen wizard (whiptail by default):
+   - The suite **version** (from `VERSION`) is shown immediately in the welcome / manager header.
+   - **Continue / Cancel** on welcome (and **Download / Cancel** before scripts are written).
+   - **Space** toggles checklist items, **Enter** confirms, **Esc** cancels.
+   - Enter your **Gmail Address** and **App Password**.
+   - If whiptail is unavailable, the installer automatically falls back to the classic text prompts.
 
 *The script will automatically configure `/etc/ssmtp/ssmtp.conf` and `/etc/ssmtp/revaliases` to ensure emails are sent correctly and securely.*
 
@@ -142,7 +152,7 @@ curl -sSL https://raw.githubusercontent.com/ventura8/Raspberry-Pi-Maintenance-Au
 
 1. The Manager Menu
 
-Once installed, running the command above launches the main interface:
+Once installed, running the command above launches the main interface (whiptail menu by default; text menu if whiptail cannot run):
 
 ```bash
    Raspberry Pi Maintenance Suite Manager
@@ -222,6 +232,9 @@ sudo nano /etc/ssmtp/ssmtp.conf
 Run these local validation commands in order before opening a PR:
 
 ```bash
+./scripts/build-and-test.sh --full
+
+# Host fallback (optional):
 ./tests/format.sh
 STRICT_MODE=true ./tests/lint.sh
 ./tests/run_suite.sh
@@ -248,7 +261,7 @@ This repository includes workspace-level Copilot customization for implementatio
 
 For release-ready GitHub description text, see:
 
-- `docs/release/v1.0.3-github-description.md`
+- `docs/releases/v1.1.0.md` (prepare with the `prepare-release` skill)
 
 Use the following configuration, replacing the placeholders with your actual details:
 
