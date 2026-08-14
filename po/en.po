@@ -1,0 +1,629 @@
+# Raspberry Pi Maintenance Automation Suite
+# Copyright (C) 2026
+# This file is distributed under the same license as the package.
+msgid ""
+msgstr ""
+"Project-Id-Version: pi-maintenance-suite\n"
+"Report-Msgid-Bugs-To: https://github.com/ventura8/Raspberry-Pi-Maintenance-Automation-Suite/issues\n"
+"POT-Creation-Date: 1970-01-01 00:00+0000\n"
+"PO-Revision-Date: 2026-01-01 00:00+0000\n"
+"Last-Translator: AUTO\n"
+"Language-Team: English\n"
+"Language: en\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+
+msgid "      Raspberry Pi Maintenance Suite Manager"
+msgstr "      Raspberry Pi Maintenance Suite Manager"
+
+msgid "   -------------------"
+msgstr "   -------------------"
+
+msgid "   ----------------------------------------------------------------------------------"
+msgstr "   ----------------------------------------------------------------------------------"
+
+msgid "   0. Exit"
+msgstr "   0. Exit"
+
+msgid "   1. Configure Email Settings"
+msgstr "   1. Configure Email Settings"
+
+msgid "   2. View Current Email Config"
+msgstr "   2. View Current Email Config"
+
+msgid "   3. Manage Tasks & Schedules (Enable/Disable)"
+msgstr "   3. Manage Tasks & Schedules (Enable/Disable)"
+
+msgid "   4. Force Update Scripts (from GitHub)"
+msgstr "   4. Force Update Scripts (from GitHub)"
+
+msgid "   5. Run Enabled Tasks Now"
+msgstr "   5. Run Enabled Tasks Now"
+
+msgid "   6. Uninstall Suite"
+msgstr "   6. Uninstall Suite"
+
+msgid "   Enter ID to toggle/edit, or '0' to return to Main Menu."
+msgstr "   Enter ID to toggle/edit, or '0' to return to Main Menu."
+
+msgid "   RPi Maintenance Suite Uninstaller"
+msgstr "   RPi Maintenance Suite Uninstaller"
+
+msgid "   Task Status Manager"
+msgstr "   Task Status Manager"
+
+msgid "  Failed"
+msgstr "  Failed"
+
+msgid "  Success"
+msgstr "  Success"
+
+msgid "-"
+msgstr "-"
+
+msgid "--- Checking Dependencies ---"
+msgstr "--- Checking Dependencies ---"
+
+msgid "--- Checking for Samsung SSDs via fwupd ---"
+msgstr "--- Checking for Samsung SSDs via fwupd ---"
+
+msgid "--- Checking for Updates ---"
+msgstr "--- Checking for Updates ---"
+
+msgid "--- Current Email Settings ---"
+msgstr "--- Current Email Settings ---"
+
+msgid "--- Email Configuration ---"
+msgstr "--- Email Configuration ---"
+
+msgid "--- Fallback: Samsung Official ISO Update ---"
+msgstr "--- Fallback: Samsung Official ISO Update ---"
+
+msgid "--- REBOOT STATUS ---"
+msgstr "--- REBOOT STATUS ---"
+
+msgid "--- Refreshing Metadata ---"
+msgstr "--- Refreshing Metadata ---"
+
+msgid "--- Run Enabled Tasks Now ---"
+msgstr "--- Run Enabled Tasks Now ---"
+
+msgid "--- Running 'fwupdmgr' ---"
+msgstr "--- Running 'fwupdmgr' ---"
+
+msgid "--- Running 'sudo rpi-eeprom-update -a' ---"
+msgstr "--- Running 'sudo rpi-eeprom-update -a' ---"
+
+msgid "--- Skipping pip3 self-upgrade ---"
+msgstr "--- Skipping pip3 self-upgrade ---"
+
+msgid "--- Step 1: System Prune ---"
+msgstr "--- Step 1: System Prune ---"
+
+msgid "--- Step 2: Builder Prune ---"
+msgstr "--- Step 2: Builder Prune ---"
+
+msgid "--- Updating Pi-Apps and Installed Apps ---"
+msgstr "--- Updating Pi-Apps and Installed Apps ---"
+
+msgid "--- Upgrading outdated pip3 packages ---"
+msgstr "--- Upgrading outdated pip3 packages ---"
+
+msgid "--------------------------------------------"
+msgstr "--------------------------------------------"
+
+msgid "7z required but not installed."
+msgstr "7z required but not installed."
+
+msgid "============================================"
+msgstr "============================================"
+
+msgid "===================================================="
+msgstr "===================================================="
+
+msgid "======================================================="
+msgstr "======================================================="
+
+msgid "========================================================="
+msgstr "========================================================="
+
+msgid "==========================================================="
+msgstr "==========================================================="
+
+msgid "A firmware update was applied. A reboot is required."
+msgstr "A firmware update was applied. A reboot is required."
+
+msgid "A reboot is required to finish applying updates."
+msgstr "A reboot is required to finish applying updates."
+
+msgid "All dependencies are installed."
+msgstr "All dependencies are installed."
+
+msgid "All enabled tasks completed successfully."
+msgstr "All enabled tasks completed successfully."
+
+msgid "All pip3 packages are up-to-date."
+msgstr "All pip3 packages are up-to-date."
+
+msgid "All tasks are ON by default. Space toggles. Enter confirms."
+msgstr "All tasks are ON by default. Space toggles. Enter confirms."
+
+msgid "Are you sure you want to uninstall?"
+msgstr "Are you sure you want to uninstall?"
+
+msgid "Base pip3 is managed by the OS (Debian) to avoid record-file errors."
+msgstr "Base pip3 is managed by the OS (Debian) to avoid record-file errors."
+
+msgid "Buildx not detected. Falling back to legacy builder..."
+msgstr "Buildx not detected. Falling back to legacy builder..."
+
+msgid "Cancel"
+msgstr "Cancel"
+
+msgid "Cancelled: Enabled tasks were not run."
+msgstr "Cancelled: Enabled tasks were not run."
+
+msgid "Checking dependencies..."
+msgstr "Checking dependencies..."
+
+msgid "Checking for updates..."
+msgstr "Checking for updates..."
+
+msgid "Choose Continue to proceed, or Cancel to abort without installing."
+msgstr "Choose Continue to proceed, or Cancel to abort without installing."
+
+msgid "Cleaning up crontabs..."
+msgstr "Cleaning up crontabs..."
+
+msgid "Completed with failures."
+msgstr "Completed with failures."
+
+msgid "Configure Email Settings"
+msgstr "Configure Email Settings"
+
+msgid "Continue"
+msgstr "Continue"
+
+msgid "Could not find fumagician in initrd."
+msgstr "Could not find fumagician in initrd."
+
+msgid "Could not find initrd in ISO."
+msgstr "Could not find initrd in ISO."
+
+msgid "Could not parse remote tag from GitHub response."
+msgstr "Could not parse remote tag from GitHub response."
+
+msgid "Current Email Settings"
+msgstr "Current Email Settings"
+
+msgid "Custom Schedule"
+msgstr "Custom Schedule"
+
+msgid "DISABLED|-"
+msgstr "DISABLED|-"
+
+msgid "Daily @ %s:%s"
+msgstr "Daily @ %s:%s"
+
+msgid "Dependencies installed successfully."
+msgstr "Dependencies installed successfully."
+
+msgid "Docker Cleanup"
+msgstr "Docker Cleanup"
+
+msgid "Dow %s"
+msgstr "Dow %s"
+
+msgid "Download"
+msgstr "Download"
+
+msgid "Download Scripts"
+msgstr "Download Scripts"
+
+msgid "Downloaded file is empty."
+msgstr "Downloaded file is empty."
+
+msgid "Downloading/Updating scripts..."
+msgstr "Downloading/Updating scripts..."
+
+msgid "EOF detected"
+msgstr "EOF detected"
+
+msgid "Edit Schedule"
+msgstr "Edit Schedule"
+
+msgid "Email Configuration"
+msgstr "Email Configuration"
+
+msgid "Email configured successfully."
+msgstr "Email configured successfully."
+
+msgid "Enable Task"
+msgstr "Enable Task"
+
+msgid "Enabled %s"
+msgstr "Enabled %s"
+
+msgid "Enter App Password (16-char):"
+msgstr "Enter App Password (16-char):"
+
+msgid "Enter App Password (16-char, input hidden):"
+msgstr "Enter App Password (16-char, input hidden):"
+
+msgid "Enter Gmail address:"
+msgstr "Enter Gmail address:"
+
+msgid "Enter cron schedule:"
+msgstr "Enter cron schedule:"
+
+msgid "Error downloading %s"
+msgstr "Error downloading %s"
+
+msgid "Error downloading lib/%s"
+msgstr "Error downloading lib/%s"
+
+msgid "Error: This script supports 64-bit systems only."
+msgstr "Error: This script supports 64-bit systems only."
+
+msgid "Error: curl is required but not installed."
+msgstr "Error: curl is required but not installed."
+
+msgid "Error: fwupdmgr (fwupd) is not installed."
+msgstr "Error: fwupdmgr (fwupd) is not installed."
+
+msgid "Esc / Cancel aborts the installer without enabling tasks."
+msgstr "Esc / Cancel aborts the installer without enabling tasks."
+
+msgid "Exit"
+msgstr "Exit"
+
+msgid "Extracting initrd..."
+msgstr "Extracting initrd..."
+
+msgid "Failed to contact GitHub API."
+msgstr "Failed to contact GitHub API."
+
+msgid "Failed to download firmware ISO."
+msgstr "Failed to download firmware ISO."
+
+msgid "Failed to fetch Samsung firmware page."
+msgstr "Failed to fetch Samsung firmware page."
+
+msgid "Failed to mount ISO."
+msgstr "Failed to mount ISO."
+
+msgid "Fetching Samsung firmware page..."
+msgstr "Fetching Samsung firmware page..."
+
+msgid "Finished running enabled tasks.\\nSee terminal output for details."
+msgstr "Finished running enabled tasks.\\nSee terminal output for details."
+
+msgid "Firmware Update"
+msgstr "Firmware Update"
+
+msgid "Firmware is already up to date."
+msgstr "Firmware is already up to date."
+
+msgid "Firmware update applied successfully."
+msgstr "Firmware update applied successfully."
+
+msgid "Firmware update via fumagician failed."
+msgstr "Firmware update via fumagician failed."
+
+msgid "Force Update Scripts (from GitHub)"
+msgstr "Force Update Scripts (from GitHub)"
+
+msgid "Fri"
+msgstr "Fri"
+
+msgid "Installation Cancelled"
+msgstr "Installation Cancelled"
+
+msgid "Installation Complete"
+msgstr "Installation Complete"
+
+msgid "Installation Complete!"
+msgstr "Installation Complete!"
+
+msgid "Installing curl..."
+msgstr "Installing curl..."
+
+msgid "Invalid email address."
+msgstr "Invalid email address."
+
+msgid "Invalid email. returning to menu."
+msgstr "Invalid email. returning to menu."
+
+msgid "Invalid option: '%s'"
+msgstr "Invalid option: '%s'"
+
+msgid "Mail sender not found. Installing mail-transport packages..."
+msgstr "Mail sender not found. Installing mail-transport packages..."
+
+msgid "Mail transport installed successfully."
+msgstr "Mail transport installed successfully."
+
+msgid "Mailer configuration files under /etc/ssmtp/ or /etc/msmtprc were not removed to preserve backups."
+msgstr "Mailer configuration files under /etc/ssmtp/ or /etc/msmtprc were not removed to preserve backups."
+
+msgid "Manage Tasks & Schedules"
+msgstr "Manage Tasks & Schedules"
+
+msgid "Manual update: https://semiconductor.samsung.com/consumer-storage/support/tools/"
+msgstr "Manual update: https://semiconductor.samsung.com/consumer-storage/support/tools/"
+
+msgid "Matrix/non-interactive fresh install."
+msgstr "Matrix/non-interactive fresh install."
+
+msgid "Modern Buildx detected. Pruning build cache..."
+msgstr "Modern Buildx detected. Pruning build cache..."
+
+msgid "Mon"
+msgstr "Mon"
+
+msgid "Monthly %s @ %s:%s"
+msgstr "Monthly %s @ %s:%s"
+
+msgid "Mounting ISO..."
+msgstr "Mounting ISO..."
+
+msgid "New firmware available! Downloading..."
+msgstr "New firmware available! Downloading..."
+
+msgid "No SSMTP configuration found."
+msgstr "No SSMTP configuration found."
+
+msgid "No Samsung SSDs detected by fwupd."
+msgstr "No Samsung SSDs detected by fwupd."
+
+msgid "No Samsung SSDs detected by nvme-cli."
+msgstr "No Samsung SSDs detected by nvme-cli."
+
+msgid "No enabled tasks found."
+msgstr "No enabled tasks found."
+
+msgid "No firmware update was applied or no reboot is required."
+msgstr "No firmware update was applied or no reboot is required."
+
+msgid "No mail recipient configured, skipping email notification."
+msgstr "No mail recipient configured, skipping email notification."
+
+msgid "No mail sender (ssmtp/msmtp) found, skipping email notification."
+msgstr "No mail sender (ssmtp/msmtp) found, skipping email notification."
+
+msgid "No reboot is required at this time."
+msgstr "No reboot is required at this time."
+
+msgid "No supported firmware update tool found (rpi-eeprom-update or fwupdmgr)."
+msgstr "No supported firmware update tool found (rpi-eeprom-update or fwupdmgr)."
+
+msgid "No updates available via LVFS."
+msgstr "No updates available via LVFS."
+
+msgid "No updates available."
+msgstr "No updates available."
+
+msgid "Note: Mail transport packages (ssmtp/mailutils or msmtp/s-nail) were left installed as system packages."
+msgstr "Note: Mail transport packages (ssmtp/mailutils or msmtp/s-nail) were left installed as system packages."
+
+msgid "Password empty. Returning."
+msgstr "Password empty. Returning."
+
+msgid "Password: [HIDDEN/MASKED]"
+msgstr "Password: [HIDDEN/MASKED]"
+
+msgid "Pi Maintenance Update Failed"
+msgstr "Pi Maintenance Update Failed"
+
+msgid "Pi Maintenance: System Up to Date"
+msgstr "Pi Maintenance: System Up to Date"
+
+msgid "Pi-Apps Update"
+msgstr "Pi-Apps Update"
+
+msgid "Python Pip Update"
+msgstr "Python Pip Update"
+
+msgid "Raspberry Pi Maintenance Suite"
+msgstr "Raspberry Pi Maintenance Suite"
+
+msgid "Raspberry Pi Maintenance Suite %s"
+msgstr "Raspberry Pi Maintenance Suite %s"
+
+msgid "Raspberry Pi Maintenance Suite Manager"
+msgstr "Raspberry Pi Maintenance Suite Manager"
+
+msgid "Refreshing metadata..."
+msgstr "Refreshing metadata..."
+
+msgid "Return to Main Menu"
+msgstr "Return to Main Menu"
+
+msgid "Root crontab updated."
+msgstr "Root crontab updated."
+
+msgid "Run Enabled Tasks Now"
+msgstr "Run Enabled Tasks Now"
+
+msgid "Running firmware update..."
+msgstr "Running firmware update..."
+
+msgid "Samsung SSD Firmware Update"
+msgstr "Samsung SSD Firmware Update"
+
+msgid "Samsung SSD detected by fwupd."
+msgstr "Samsung SSD detected by fwupd."
+
+msgid "Sat"
+msgstr "Sat"
+
+msgid "Saving configuration..."
+msgstr "Saving configuration..."
+
+msgid "Schedule updated."
+msgstr "Schedule updated."
+
+msgid "Scripts updated."
+msgstr "Scripts updated."
+
+msgid "Select which tasks to enable. Press Enter to accept default [Y]."
+msgstr "Select which tasks to enable. Press Enter to accept default [Y]."
+
+msgid "Selected tasks use their default weekly schedules."
+msgstr "Selected tasks use their default weekly schedules."
+
+msgid "Self-Update Service"
+msgstr "Self-Update Service"
+
+msgid "Setting up default schedules..."
+msgstr "Setting up default schedules..."
+
+msgid "Skipping update (not installed or wrong path)."
+msgstr "Skipping update (not installed or wrong path)."
+
+msgid "Starting uninstallation process..."
+msgstr "Starting uninstallation process..."
+
+msgid "Suite version: %s"
+msgstr "Suite version: %s"
+
+msgid "Sun"
+msgstr "Sun"
+
+msgid "System OS Update"
+msgstr "System OS Update"
+
+msgid "System is up to date."
+msgstr "System is up to date."
+
+msgid "Task Status Manager"
+msgstr "Task Status Manager"
+
+msgid "Task disabled."
+msgstr "Task disabled."
+
+msgid "Task enabled."
+msgstr "Task enabled."
+
+msgid "Task: %s"
+msgstr "Task: %s"
+
+msgid "The auto-update failed. Reason: %s"
+msgstr "The auto-update failed. Reason: %s"
+
+msgid "The system is running the latest version: %s."
+msgstr "The system is running the latest version: %s."
+
+msgid "The system will reboot shortly after this report is sent."
+msgstr "The system will reboot shortly after this report is sent."
+
+msgid "This wizard configures email, downloads scripts, and schedules maintenance tasks."
+msgstr "This wizard configures email, downloads scripts, and schedules maintenance tasks."
+
+msgid "This wizard will set up your email and default schedules."
+msgstr "This wizard will set up your email and default schedules."
+
+msgid "Thu"
+msgstr "Thu"
+
+msgid "Tue"
+msgstr "Tue"
+
+msgid "Uninstall"
+msgstr "Uninstall"
+
+msgid "Uninstall Suite"
+msgstr "Uninstall Suite"
+
+msgid "Uninstallation complete."
+msgstr "Uninstallation complete."
+
+msgid "Unsupported OS family for system update."
+msgstr "Unsupported OS family for system update."
+
+msgid "Updates available. Installing..."
+msgstr "Updates available. Installing..."
+
+msgid "Updating version tracking..."
+msgstr "Updating version tracking..."
+
+msgid "Version set to: %s"
+msgstr "Version set to: %s"
+
+msgid "Version: %s\\n\\nChoose an option. Enter selects. Esc cancels/exits."
+msgstr "Version: %s\\n\\nChoose an option. Enter selects. Esc cancels/exits."
+
+msgid "View Current Email Config"
+msgstr "View Current Email Config"
+
+msgid "Warning: Failed to install curl."
+msgstr "Warning: Failed to install curl."
+
+msgid "Warning: Failed to install gettext. UI will stay in English."
+msgstr "Warning: Failed to install gettext. UI will stay in English."
+
+msgid "Warning: Failed to install mail transport. Email notifications will be disabled."
+msgstr "Warning: Failed to install mail transport. Email notifications will be disabled."
+
+msgid "Warning: Failed to install whiptail. Falling back to text UI."
+msgstr "Warning: Failed to install whiptail. Falling back to text UI."
+
+msgid "Warning: One or more enabled tasks may reboot the system and terminate this session."
+msgstr "Warning: One or more enabled tasks may reboot the system and terminate this session."
+
+msgid "Warning: Some dependencies may have failed to install."
+msgstr "Warning: Some dependencies may have failed to install."
+
+msgid "Warning: could not read VERSION (local or %s)."
+msgstr "Warning: could not read VERSION (local or %s)."
+
+msgid "Warning: no package mapping for '%s' on this OS family; skipping."
+msgstr "Warning: no package mapping for '%s' on this OS family; skipping."
+
+msgid "Wed"
+msgstr "Wed"
+
+msgid "Weekly %s @ %s:%s"
+msgstr "Weekly %s @ %s:%s"
+
+msgid "Welcome to the One-Line Installer (%s)."
+msgstr "Welcome to the One-Line Installer (%s)."
+
+msgid "Whiptail UI unavailable; switching to text interface."
+msgstr "Whiptail UI unavailable; switching to text interface."
+
+msgid "[1/4] Welcome"
+msgstr "[1/4] Welcome"
+
+msgid "[2/4] Email configuration..."
+msgstr "[2/4] Email configuration..."
+
+msgid "[3/4] Downloading scripts..."
+msgstr "[3/4] Downloading scripts..."
+
+msgid "[4/4] Select maintenance tasks to enable."
+msgstr "[4/4] Select maintenance tasks to enable."
+
+msgid "[4/4] Task selection..."
+msgstr "[4/4] Task selection..."
+
+msgid "fwupdmgr failed to query update availability. Skipping firmware apply step."
+msgstr "fwupdmgr failed to query update availability. Skipping firmware apply step."
+
+msgid "gettext installed successfully."
+msgstr "gettext installed successfully."
+
+msgid "gettext not found. Installing gettext..."
+msgstr "gettext not found. Installing gettext..."
+
+msgid "nvme-cli is not installed and could not be installed automatically."
+msgstr "nvme-cli is not installed and could not be installed automatically."
+
+msgid "whiptail installed successfully."
+msgstr "whiptail installed successfully."
+
+msgid "whiptail not found. Installing whiptail..."
+msgstr "whiptail not found. Installing whiptail..."
+

@@ -1,42 +1,38 @@
 # Prompt Pack
 
-Slash-command style prompt templates for recurring workflows in this repository.
+Slash-style prompt templates for recurring workflows. Prefer pairing each prompt with the matching
+skill under `.github/skills/` or `.agents/skills/`.
 
-## Included Prompts
+## Always-on rules
 
-1. `triage-issue-and-scope.prompt.md`
+Read [`AGENTS.md`](../../AGENTS.md) first for project invariants.
 
-   - Matches skill: `triage-issue-and-scope`
-   - Use for: scoping bugs/features and defining acceptance criteria.
+## Included prompts
 
-1. `implement-script-change.prompt.md`
+| Prompt | Skill |
+| -------------------------------------- | ---------------------------------------------------------------------- |
+| `triage-issue-and-scope.prompt.md` | `.github/skills/triage-issue-and-scope` |
+| `implement-script-change.prompt.md` | `.github/skills/implement-script-change` |
+| `test-and-coverage-gate.prompt.md` | `.github/skills/test-and-coverage-gate` + `.agents/skills/test-runner` |
+| `ci-lint-hardening.prompt.md` | `.github/skills/ci-lint-hardening` + `.agents/skills/code-linter` |
+| `release-readiness.prompt.md` | `.github/skills/release-readiness` |
+| `prepare-release.prompt.md` | `.agents/skills/prepare-release` |
+| `docs-sync-and-policy-check.prompt.md` | `.github/skills/docs-sync-and-policy-check` |
+| `installer-tester.prompt.md` | `.agents/skills/installer-tester` |
+| `distro-matrix-tester.prompt.md` | `.agents/skills/distro-matrix-tester` |
 
-   - Matches skill: `implement-script-change`
-   - Use for: implementing Bash behavior changes with tests.
+## Agents
 
-1. `test-and-coverage-gate.prompt.md`
-
-   - Matches skill: `test-and-coverage-gate`
-   - Use for: structured validation and quality gate reporting.
-
-1. `ci-lint-hardening.prompt.md`
-
-   - Matches skill: `ci-lint-hardening`
-   - Use for: CI lint policy and workflow hardening tasks.
-
-1. `release-readiness.prompt.md`
-
-   - Matches skill: `release-readiness`
-   - Use for: pre-release or pre-merge readiness checks.
-
-1. `docs-sync-and-policy-check.prompt.md`
-
-   - Matches skill: `docs-sync-and-policy-check`
-   - Use for: documentation synchronization and policy verification.
+| Agent | Use |
+| ---------------------------------------- | ---------------------- |
+| `.github/agents/implementation.agent.md` | General implementation |
+| `.github/agents/installer-ui.agent.md` | Installer/whiptail UI |
+| `.github/agents/ci-matrix.agent.md` | Docker matrix / CI |
+| `.github/agents/strict-review.agent.md` | Read-only review |
 
 ## Usage
 
-1. Open Chat in VS Code.
-1. Use the prompt template from `.github/prompts/` as your starting command text.
-1. Replace placeholder tokens like `{{REQUEST_DETAILS}}` with concrete input.
-1. Execute and iterate as needed.
+1. Open Chat (VS Code / Copilot / Cursor).
+1. Start from a prompt under `.github/prompts/`.
+1. Replace placeholders like `{{REQUEST_DETAILS}}`.
+1. Follow linked skills; validate with `./scripts/build-and-test.sh --full` when possible.

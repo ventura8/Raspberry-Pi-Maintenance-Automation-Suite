@@ -9,6 +9,9 @@ setup() {
     # Setup Mocks
     ./tests/setup_mocks.sh > /dev/null
     export PATH="$MOCK_DIR:$PATH"
+    export TEST_MODE="true"
+    unset INSTALL_USE_WHIPTAIL || true
+    export INSTALL_FORCE_TEXT_UI="0"
     
     # install.sh checks /proc or uses MOCK_IS_PI if TEST_MODE is true
     # We will use MOCK_IS_PI to avoid mocking grep which breaks BATS

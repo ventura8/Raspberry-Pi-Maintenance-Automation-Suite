@@ -1,37 +1,50 @@
 # Copilot Instructions
 
-## Project Context
+## Project context
 
-This project automates maintenance operations for Raspberry Pi and Linux systems using Bash scripts, with BATS-based tests and Dockerized CI.
+Bash maintenance automation for Raspberry Pi and compatible Linux systems (Debian/Ubuntu/Fedora/Rocky/Arch),
+with BATS tests and Dockerized CI (`./scripts/build-and-test.sh --full`).
 
-## Engineering Expectations
+Authoritative rules: [`AGENTS.md`](../AGENTS.md). Task playbooks: [`.agents/skills/`](../.agents/skills/).
+
+## Engineering expectations
 
 1. Prefer simple, explicit Bash over clever one-liners.
-1. Keep script behavior deterministic and testable under mocks.
-1. Maintain compatibility with both Raspberry Pi and non-Pi Linux paths where intended.
-1. Keep email/reporting and reboot signaling behavior stable unless explicitly changing requirements.
+1. Keep behavior deterministic under `tests/setup_mocks.sh`.
+1. Maintain Pi and non-Pi paths (skip Pi-only tasks on non-Pi; keep firmware updates).
+1. Keep email/reporting and reboot signaling stable unless explicitly changing them.
+1. Use `lib/os_pkg.sh` for portable package installs; `lib/mail_send.sh` for mail where applicable.
+1. Use `lib/i18n.sh` for user-facing strings (`_pi_gettext` / `_pi_gettextf`); keep catalogs complete.
 
-## Quality Gates
+## Quality gates
 
-1. No lint/formatter suppressions, no disable directives, and no broad ignores.
-1. Enforce formatting and lint policies via existing tooling in `tests/lint.sh` and `tests/format.sh`.
-1. Respect line-length standards:
+1. No lint/formatter suppressions or broad ignores.
+1. Line length ≤ 140 for shell, YAML, Dockerfiles (Markdown unrestricted).
+1. Coverage ≥ 90% overall and per-file; complexity ≤ 15 overall and per-file.
+1. Meet complexity via refactor, never by deleting useful comments.
+1. Prefer Docker gates over host-only validation when Docker is available.
 
-- 140 max for shell, YAML, and Dockerfiles.
-- No markdown max-line enforcement.
+## Installer / CI specifics
 
-4. Complexity gates must be satisfied by improving control flow and structure, never by deleting useful comments.
+1. Whiptail default UI; text UI automatic fallback when whiptail cannot run.
+1. `install.sh --update` is non-interactive and must remain cron-safe for `update_self.sh`.
+1. Suite version SSOT is root `VERSION`; GitHub tags and `$INSTALL_DIR/.version` must match it.
+1. Distro matrix: `debian:trixie`, `ubuntu:26.04`, `fedora:44`, `rocky:9`, `archlinux:latest`.
 
-## Testing and CI
+## Documentation discipline
 
-1. Update or add BATS tests with any behavior changes.
-1. Keep CI workflow steps shell-safe and quote variables in command invocations.
-1. Ensure changes pass strict lint and project suite before finalizing.
+**Always** update markdown in the **same change set** as code, tests, or CI edits that change
+behavior, commands, paths, UI, distros, or contributor workflow. Incomplete without docs.
 
-## Documentation Discipline
+**Always** update translations when changing marked gettext strings: refresh
+`po/pi-maintenance-suite.pot` and **every** `po/*.po` in `po/SUPPORTED_LANGUAGES` in the same
+change set (no empty/fuzzy/English-copied non-`en` msgstr). See `AGENTS.md` → UI Localization.
 
 When behavior or standards change, update:
 
-1. `README.md` for user-facing expectations.
-1. `Instructions.md` for project AI/developer guidance.
-1. `docs/development_standards.md` for policy-level requirements.
+1. `README.md`
+1. `Instructions.md`
+1. `docs/*` as needed
+1. `AGENTS.md` and affected `.agents/skills/**` / `.github/**` agent configs
+1. `.agent/instructions.md` when the mandatory agent workflow changes
+1. `docs/releases/vX.Y.Z.md` when preparing a versioned release

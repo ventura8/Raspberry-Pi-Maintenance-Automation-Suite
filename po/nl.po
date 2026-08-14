@@ -1,0 +1,629 @@
+# Raspberry Pi Maintenance Automation Suite
+# Copyright (C) 2026
+# This file is distributed under the same license as the package.
+msgid ""
+msgstr ""
+"Project-Id-Version: pi-maintenance-suite\n"
+"Report-Msgid-Bugs-To: https://github.com/ventura8/Raspberry-Pi-Maintenance-Automation-Suite/issues\n"
+"POT-Creation-Date: 1970-01-01 00:00+0000\n"
+"PO-Revision-Date: 2026-01-01 00:00+0000\n"
+"Last-Translator: AUTO\n"
+"Language-Team: Nederlands\n"
+"Language: nl\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+
+msgid "      Raspberry Pi Maintenance Suite Manager"
+msgstr "[Nederlands]       Raspberry Pi Maintenance Suite Manager"
+
+msgid "   -------------------"
+msgstr "[Nederlands]    -------------------"
+
+msgid "   ----------------------------------------------------------------------------------"
+msgstr "[Nederlands]    ----------------------------------------------------------------------------------"
+
+msgid "   0. Exit"
+msgstr "[Nederlands]    0. Exit"
+
+msgid "   1. Configure Email Settings"
+msgstr "[Nederlands]    1. Configure Email Settings"
+
+msgid "   2. View Current Email Config"
+msgstr "[Nederlands]    2. View Current Email Config"
+
+msgid "   3. Manage Tasks & Schedules (Enable/Disable)"
+msgstr "[Nederlands]    3. Manage Tasks & Schedules (Enable/Disable)"
+
+msgid "   4. Force Update Scripts (from GitHub)"
+msgstr "[Nederlands]    4. Force Update Scripts (from GitHub)"
+
+msgid "   5. Run Enabled Tasks Now"
+msgstr "[Nederlands]    5. Run Enabled Tasks Now"
+
+msgid "   6. Uninstall Suite"
+msgstr "[Nederlands]    6. Uninstall Suite"
+
+msgid "   Enter ID to toggle/edit, or '0' to return to Main Menu."
+msgstr "[Nederlands]    Enter ID to toggle/edit, or '0' to return to Main Menu."
+
+msgid "   RPi Maintenance Suite Uninstaller"
+msgstr "[Nederlands]    RPi Maintenance Suite Uninstaller"
+
+msgid "   Task Status Manager"
+msgstr "[Nederlands]    Task Status Manager"
+
+msgid "  Failed"
+msgstr "[Nederlands]   Failed"
+
+msgid "  Success"
+msgstr "[Nederlands]   Success"
+
+msgid "-"
+msgstr "[Nederlands] -"
+
+msgid "--- Checking Dependencies ---"
+msgstr "[Nederlands] --- Checking Dependencies ---"
+
+msgid "--- Checking for Samsung SSDs via fwupd ---"
+msgstr "[Nederlands] --- Checking for Samsung SSDs via fwupd ---"
+
+msgid "--- Checking for Updates ---"
+msgstr "[Nederlands] --- Checking for Updates ---"
+
+msgid "--- Current Email Settings ---"
+msgstr "[Nederlands] --- Current Email Settings ---"
+
+msgid "--- Email Configuration ---"
+msgstr "[Nederlands] --- Email Configuration ---"
+
+msgid "--- Fallback: Samsung Official ISO Update ---"
+msgstr "[Nederlands] --- Fallback: Samsung Official ISO Update ---"
+
+msgid "--- REBOOT STATUS ---"
+msgstr "[Nederlands] --- REBOOT STATUS ---"
+
+msgid "--- Refreshing Metadata ---"
+msgstr "[Nederlands] --- Refreshing Metadata ---"
+
+msgid "--- Run Enabled Tasks Now ---"
+msgstr "[Nederlands] --- Run Enabled Tasks Now ---"
+
+msgid "--- Running 'fwupdmgr' ---"
+msgstr "[Nederlands] --- Running 'fwupdmgr' ---"
+
+msgid "--- Running 'sudo rpi-eeprom-update -a' ---"
+msgstr "[Nederlands] --- Running 'sudo rpi-eeprom-update -a' ---"
+
+msgid "--- Skipping pip3 self-upgrade ---"
+msgstr "[Nederlands] --- Skipping pip3 self-upgrade ---"
+
+msgid "--- Step 1: System Prune ---"
+msgstr "[Nederlands] --- Step 1: System Prune ---"
+
+msgid "--- Step 2: Builder Prune ---"
+msgstr "[Nederlands] --- Step 2: Builder Prune ---"
+
+msgid "--- Updating Pi-Apps and Installed Apps ---"
+msgstr "[Nederlands] --- Updating Pi-Apps and Installed Apps ---"
+
+msgid "--- Upgrading outdated pip3 packages ---"
+msgstr "[Nederlands] --- Upgrading outdated pip3 packages ---"
+
+msgid "--------------------------------------------"
+msgstr "[Nederlands] --------------------------------------------"
+
+msgid "7z required but not installed."
+msgstr "[Nederlands] 7z required but not installed."
+
+msgid "============================================"
+msgstr "[Nederlands] ============================================"
+
+msgid "===================================================="
+msgstr "[Nederlands] ===================================================="
+
+msgid "======================================================="
+msgstr "[Nederlands] ======================================================="
+
+msgid "========================================================="
+msgstr "[Nederlands] ========================================================="
+
+msgid "==========================================================="
+msgstr "[Nederlands] ==========================================================="
+
+msgid "A firmware update was applied. A reboot is required."
+msgstr "[Nederlands] A firmware update was applied. A reboot is required."
+
+msgid "A reboot is required to finish applying updates."
+msgstr "[Nederlands] A reboot is required to finish applying updates."
+
+msgid "All dependencies are installed."
+msgstr "[Nederlands] All dependencies are installed."
+
+msgid "All enabled tasks completed successfully."
+msgstr "[Nederlands] All enabled tasks completed successfully."
+
+msgid "All pip3 packages are up-to-date."
+msgstr "[Nederlands] All pip3 packages are up-to-date."
+
+msgid "All tasks are ON by default. Space toggles. Enter confirms."
+msgstr "[Nederlands] All tasks are ON by default. Space toggles. Enter confirms."
+
+msgid "Are you sure you want to uninstall?"
+msgstr "[Nederlands] Are you sure you want to uninstall?"
+
+msgid "Base pip3 is managed by the OS (Debian) to avoid record-file errors."
+msgstr "[Nederlands] Base pip3 is managed by the OS (Debian) to avoid record-file errors."
+
+msgid "Buildx not detected. Falling back to legacy builder..."
+msgstr "[Nederlands] Buildx not detected. Falling back to legacy builder..."
+
+msgid "Cancel"
+msgstr "[Nederlands] Cancel"
+
+msgid "Cancelled: Enabled tasks were not run."
+msgstr "[Nederlands] Cancelled: Enabled tasks were not run."
+
+msgid "Checking dependencies..."
+msgstr "[Nederlands] Checking dependencies..."
+
+msgid "Checking for updates..."
+msgstr "[Nederlands] Checking for updates..."
+
+msgid "Choose Continue to proceed, or Cancel to abort without installing."
+msgstr "[Nederlands] Choose Continue to proceed, or Cancel to abort without installing."
+
+msgid "Cleaning up crontabs..."
+msgstr "[Nederlands] Cleaning up crontabs..."
+
+msgid "Completed with failures."
+msgstr "[Nederlands] Completed with failures."
+
+msgid "Configure Email Settings"
+msgstr "[Nederlands] Configure Email Settings"
+
+msgid "Continue"
+msgstr "[Nederlands] Continue"
+
+msgid "Could not find fumagician in initrd."
+msgstr "[Nederlands] Could not find fumagician in initrd."
+
+msgid "Could not find initrd in ISO."
+msgstr "[Nederlands] Could not find initrd in ISO."
+
+msgid "Could not parse remote tag from GitHub response."
+msgstr "[Nederlands] Could not parse remote tag from GitHub response."
+
+msgid "Current Email Settings"
+msgstr "[Nederlands] Current Email Settings"
+
+msgid "Custom Schedule"
+msgstr "[Nederlands] Custom Schedule"
+
+msgid "DISABLED|-"
+msgstr "[Nederlands] DISABLED|-"
+
+msgid "Daily @ %s:%s"
+msgstr "[Nederlands] Daily @ %s:%s"
+
+msgid "Dependencies installed successfully."
+msgstr "[Nederlands] Dependencies installed successfully."
+
+msgid "Docker Cleanup"
+msgstr "[Nederlands] Docker Cleanup"
+
+msgid "Dow %s"
+msgstr "[Nederlands] Dow %s"
+
+msgid "Download"
+msgstr "[Nederlands] Download"
+
+msgid "Download Scripts"
+msgstr "[Nederlands] Download Scripts"
+
+msgid "Downloaded file is empty."
+msgstr "[Nederlands] Downloaded file is empty."
+
+msgid "Downloading/Updating scripts..."
+msgstr "[Nederlands] Downloading/Updating scripts..."
+
+msgid "EOF detected"
+msgstr "[Nederlands] EOF detected"
+
+msgid "Edit Schedule"
+msgstr "[Nederlands] Edit Schedule"
+
+msgid "Email Configuration"
+msgstr "[Nederlands] Email Configuration"
+
+msgid "Email configured successfully."
+msgstr "[Nederlands] Email configured successfully."
+
+msgid "Enable Task"
+msgstr "[Nederlands] Enable Task"
+
+msgid "Enabled %s"
+msgstr "[Nederlands] Enabled %s"
+
+msgid "Enter App Password (16-char):"
+msgstr "[Nederlands] Enter App Password (16-char):"
+
+msgid "Enter App Password (16-char, input hidden):"
+msgstr "[Nederlands] Enter App Password (16-char, input hidden):"
+
+msgid "Enter Gmail address:"
+msgstr "[Nederlands] Enter Gmail address:"
+
+msgid "Enter cron schedule:"
+msgstr "[Nederlands] Enter cron schedule:"
+
+msgid "Error downloading %s"
+msgstr "[Nederlands] Error downloading %s"
+
+msgid "Error downloading lib/%s"
+msgstr "[Nederlands] Error downloading lib/%s"
+
+msgid "Error: This script supports 64-bit systems only."
+msgstr "[Nederlands] Error: This script supports 64-bit systems only."
+
+msgid "Error: curl is required but not installed."
+msgstr "[Nederlands] Error: curl is required but not installed."
+
+msgid "Error: fwupdmgr (fwupd) is not installed."
+msgstr "[Nederlands] Error: fwupdmgr (fwupd) is not installed."
+
+msgid "Esc / Cancel aborts the installer without enabling tasks."
+msgstr "[Nederlands] Esc / Cancel aborts the installer without enabling tasks."
+
+msgid "Exit"
+msgstr "[Nederlands] Exit"
+
+msgid "Extracting initrd..."
+msgstr "[Nederlands] Extracting initrd..."
+
+msgid "Failed to contact GitHub API."
+msgstr "[Nederlands] Failed to contact GitHub API."
+
+msgid "Failed to download firmware ISO."
+msgstr "[Nederlands] Failed to download firmware ISO."
+
+msgid "Failed to fetch Samsung firmware page."
+msgstr "[Nederlands] Failed to fetch Samsung firmware page."
+
+msgid "Failed to mount ISO."
+msgstr "[Nederlands] Failed to mount ISO."
+
+msgid "Fetching Samsung firmware page..."
+msgstr "[Nederlands] Fetching Samsung firmware page..."
+
+msgid "Finished running enabled tasks.\\nSee terminal output for details."
+msgstr "[Nederlands] Finished running enabled tasks.\\nSee terminal output for details."
+
+msgid "Firmware Update"
+msgstr "[Nederlands] Firmware Update"
+
+msgid "Firmware is already up to date."
+msgstr "[Nederlands] Firmware is already up to date."
+
+msgid "Firmware update applied successfully."
+msgstr "[Nederlands] Firmware update applied successfully."
+
+msgid "Firmware update via fumagician failed."
+msgstr "[Nederlands] Firmware update via fumagician failed."
+
+msgid "Force Update Scripts (from GitHub)"
+msgstr "[Nederlands] Force Update Scripts (from GitHub)"
+
+msgid "Fri"
+msgstr "[Nederlands] Fri"
+
+msgid "Installation Cancelled"
+msgstr "[Nederlands] Installation Cancelled"
+
+msgid "Installation Complete"
+msgstr "[Nederlands] Installation Complete"
+
+msgid "Installation Complete!"
+msgstr "[Nederlands] Installation Complete!"
+
+msgid "Installing curl..."
+msgstr "[Nederlands] Installing curl..."
+
+msgid "Invalid email address."
+msgstr "[Nederlands] Invalid email address."
+
+msgid "Invalid email. returning to menu."
+msgstr "[Nederlands] Invalid email. returning to menu."
+
+msgid "Invalid option: '%s'"
+msgstr "[Nederlands] Invalid option: '%s'"
+
+msgid "Mail sender not found. Installing mail-transport packages..."
+msgstr "[Nederlands] Mail sender not found. Installing mail-transport packages..."
+
+msgid "Mail transport installed successfully."
+msgstr "[Nederlands] Mail transport installed successfully."
+
+msgid "Mailer configuration files under /etc/ssmtp/ or /etc/msmtprc were not removed to preserve backups."
+msgstr "[Nederlands] Mailer configuration files under /etc/ssmtp/ or /etc/msmtprc were not removed to preserve backups."
+
+msgid "Manage Tasks & Schedules"
+msgstr "[Nederlands] Manage Tasks & Schedules"
+
+msgid "Manual update: https://semiconductor.samsung.com/consumer-storage/support/tools/"
+msgstr "[Nederlands] Manual update: https://semiconductor.samsung.com/consumer-storage/support/tools/"
+
+msgid "Matrix/non-interactive fresh install."
+msgstr "[Nederlands] Matrix/non-interactive fresh install."
+
+msgid "Modern Buildx detected. Pruning build cache..."
+msgstr "[Nederlands] Modern Buildx detected. Pruning build cache..."
+
+msgid "Mon"
+msgstr "[Nederlands] Mon"
+
+msgid "Monthly %s @ %s:%s"
+msgstr "[Nederlands] Monthly %s @ %s:%s"
+
+msgid "Mounting ISO..."
+msgstr "[Nederlands] Mounting ISO..."
+
+msgid "New firmware available! Downloading..."
+msgstr "[Nederlands] New firmware available! Downloading..."
+
+msgid "No SSMTP configuration found."
+msgstr "[Nederlands] No SSMTP configuration found."
+
+msgid "No Samsung SSDs detected by fwupd."
+msgstr "[Nederlands] No Samsung SSDs detected by fwupd."
+
+msgid "No Samsung SSDs detected by nvme-cli."
+msgstr "[Nederlands] No Samsung SSDs detected by nvme-cli."
+
+msgid "No enabled tasks found."
+msgstr "[Nederlands] No enabled tasks found."
+
+msgid "No firmware update was applied or no reboot is required."
+msgstr "[Nederlands] No firmware update was applied or no reboot is required."
+
+msgid "No mail recipient configured, skipping email notification."
+msgstr "[Nederlands] No mail recipient configured, skipping email notification."
+
+msgid "No mail sender (ssmtp/msmtp) found, skipping email notification."
+msgstr "[Nederlands] No mail sender (ssmtp/msmtp) found, skipping email notification."
+
+msgid "No reboot is required at this time."
+msgstr "[Nederlands] No reboot is required at this time."
+
+msgid "No supported firmware update tool found (rpi-eeprom-update or fwupdmgr)."
+msgstr "[Nederlands] No supported firmware update tool found (rpi-eeprom-update or fwupdmgr)."
+
+msgid "No updates available via LVFS."
+msgstr "[Nederlands] No updates available via LVFS."
+
+msgid "No updates available."
+msgstr "[Nederlands] No updates available."
+
+msgid "Note: Mail transport packages (ssmtp/mailutils or msmtp/s-nail) were left installed as system packages."
+msgstr "[Nederlands] Note: Mail transport packages (ssmtp/mailutils or msmtp/s-nail) were left installed as system packages."
+
+msgid "Password empty. Returning."
+msgstr "[Nederlands] Password empty. Returning."
+
+msgid "Password: [HIDDEN/MASKED]"
+msgstr "[Nederlands] Password: [HIDDEN/MASKED]"
+
+msgid "Pi Maintenance Update Failed"
+msgstr "[Nederlands] Pi Maintenance Update Failed"
+
+msgid "Pi Maintenance: System Up to Date"
+msgstr "[Nederlands] Pi Maintenance: System Up to Date"
+
+msgid "Pi-Apps Update"
+msgstr "Pi-Apps Update"
+
+msgid "Python Pip Update"
+msgstr "[Nederlands] Python Pip Update"
+
+msgid "Raspberry Pi Maintenance Suite"
+msgstr "[Nederlands] Raspberry Pi Maintenance Suite"
+
+msgid "Raspberry Pi Maintenance Suite %s"
+msgstr "[Nederlands] Raspberry Pi Maintenance Suite %s"
+
+msgid "Raspberry Pi Maintenance Suite Manager"
+msgstr "[Nederlands] Raspberry Pi Maintenance Suite Manager"
+
+msgid "Refreshing metadata..."
+msgstr "[Nederlands] Refreshing metadata..."
+
+msgid "Return to Main Menu"
+msgstr "[Nederlands] Return to Main Menu"
+
+msgid "Root crontab updated."
+msgstr "[Nederlands] Root crontab updated."
+
+msgid "Run Enabled Tasks Now"
+msgstr "[Nederlands] Run Enabled Tasks Now"
+
+msgid "Running firmware update..."
+msgstr "[Nederlands] Running firmware update..."
+
+msgid "Samsung SSD Firmware Update"
+msgstr "[Nederlands] Samsung SSD Firmware Update"
+
+msgid "Samsung SSD detected by fwupd."
+msgstr "[Nederlands] Samsung SSD detected by fwupd."
+
+msgid "Sat"
+msgstr "[Nederlands] Sat"
+
+msgid "Saving configuration..."
+msgstr "[Nederlands] Saving configuration..."
+
+msgid "Schedule updated."
+msgstr "[Nederlands] Schedule updated."
+
+msgid "Scripts updated."
+msgstr "[Nederlands] Scripts updated."
+
+msgid "Select which tasks to enable. Press Enter to accept default [Y]."
+msgstr "[Nederlands] Select which tasks to enable. Press Enter to accept default [Y]."
+
+msgid "Selected tasks use their default weekly schedules."
+msgstr "[Nederlands] Selected tasks use their default weekly schedules."
+
+msgid "Self-Update Service"
+msgstr "[Nederlands] Self-Update Service"
+
+msgid "Setting up default schedules..."
+msgstr "[Nederlands] Setting up default schedules..."
+
+msgid "Skipping update (not installed or wrong path)."
+msgstr "[Nederlands] Skipping update (not installed or wrong path)."
+
+msgid "Starting uninstallation process..."
+msgstr "[Nederlands] Starting uninstallation process..."
+
+msgid "Suite version: %s"
+msgstr "[Nederlands] Suite version: %s"
+
+msgid "Sun"
+msgstr "[Nederlands] Sun"
+
+msgid "System OS Update"
+msgstr "[Nederlands] System OS Update"
+
+msgid "System is up to date."
+msgstr "[Nederlands] System is up to date."
+
+msgid "Task Status Manager"
+msgstr "[Nederlands] Task Status Manager"
+
+msgid "Task disabled."
+msgstr "[Nederlands] Task disabled."
+
+msgid "Task enabled."
+msgstr "[Nederlands] Task enabled."
+
+msgid "Task: %s"
+msgstr "[Nederlands] Task: %s"
+
+msgid "The auto-update failed. Reason: %s"
+msgstr "[Nederlands] The auto-update failed. Reason: %s"
+
+msgid "The system is running the latest version: %s."
+msgstr "[Nederlands] The system is running the latest version: %s."
+
+msgid "The system will reboot shortly after this report is sent."
+msgstr "[Nederlands] The system will reboot shortly after this report is sent."
+
+msgid "This wizard configures email, downloads scripts, and schedules maintenance tasks."
+msgstr "[Nederlands] This wizard configures email, downloads scripts, and schedules maintenance tasks."
+
+msgid "This wizard will set up your email and default schedules."
+msgstr "[Nederlands] This wizard will set up your email and default schedules."
+
+msgid "Thu"
+msgstr "[Nederlands] Thu"
+
+msgid "Tue"
+msgstr "[Nederlands] Tue"
+
+msgid "Uninstall"
+msgstr "[Nederlands] Uninstall"
+
+msgid "Uninstall Suite"
+msgstr "[Nederlands] Uninstall Suite"
+
+msgid "Uninstallation complete."
+msgstr "[Nederlands] Uninstallation complete."
+
+msgid "Unsupported OS family for system update."
+msgstr "[Nederlands] Unsupported OS family for system update."
+
+msgid "Updates available. Installing..."
+msgstr "[Nederlands] Updates available. Installing..."
+
+msgid "Updating version tracking..."
+msgstr "[Nederlands] Updating version tracking..."
+
+msgid "Version set to: %s"
+msgstr "[Nederlands] Version set to: %s"
+
+msgid "Version: %s\\n\\nChoose an option. Enter selects. Esc cancels/exits."
+msgstr "[Nederlands] Version: %s\\n\\nChoose an option. Enter selects. Esc cancels/exits."
+
+msgid "View Current Email Config"
+msgstr "[Nederlands] View Current Email Config"
+
+msgid "Warning: Failed to install curl."
+msgstr "[Nederlands] Warning: Failed to install curl."
+
+msgid "Warning: Failed to install gettext. UI will stay in English."
+msgstr "[Nederlands] Warning: Failed to install gettext. UI will stay in English."
+
+msgid "Warning: Failed to install mail transport. Email notifications will be disabled."
+msgstr "[Nederlands] Warning: Failed to install mail transport. Email notifications will be disabled."
+
+msgid "Warning: Failed to install whiptail. Falling back to text UI."
+msgstr "[Nederlands] Warning: Failed to install whiptail. Falling back to text UI."
+
+msgid "Warning: One or more enabled tasks may reboot the system and terminate this session."
+msgstr "[Nederlands] Warning: One or more enabled tasks may reboot the system and terminate this session."
+
+msgid "Warning: Some dependencies may have failed to install."
+msgstr "[Nederlands] Warning: Some dependencies may have failed to install."
+
+msgid "Warning: could not read VERSION (local or %s)."
+msgstr "[Nederlands] Warning: could not read VERSION (local or %s)."
+
+msgid "Warning: no package mapping for '%s' on this OS family; skipping."
+msgstr "[Nederlands] Warning: no package mapping for '%s' on this OS family; skipping."
+
+msgid "Wed"
+msgstr "[Nederlands] Wed"
+
+msgid "Weekly %s @ %s:%s"
+msgstr "[Nederlands] Weekly %s @ %s:%s"
+
+msgid "Welcome to the One-Line Installer (%s)."
+msgstr "[Nederlands] Welcome to the One-Line Installer (%s)."
+
+msgid "Whiptail UI unavailable; switching to text interface."
+msgstr "[Nederlands] Whiptail UI unavailable; switching to text interface."
+
+msgid "[1/4] Welcome"
+msgstr "[Nederlands] [1/4] Welcome"
+
+msgid "[2/4] Email configuration..."
+msgstr "[Nederlands] [2/4] Email configuration..."
+
+msgid "[3/4] Downloading scripts..."
+msgstr "[Nederlands] [3/4] Downloading scripts..."
+
+msgid "[4/4] Select maintenance tasks to enable."
+msgstr "[Nederlands] [4/4] Select maintenance tasks to enable."
+
+msgid "[4/4] Task selection..."
+msgstr "[Nederlands] [4/4] Task selection..."
+
+msgid "fwupdmgr failed to query update availability. Skipping firmware apply step."
+msgstr "[Nederlands] fwupdmgr failed to query update availability. Skipping firmware apply step."
+
+msgid "gettext installed successfully."
+msgstr "[Nederlands] gettext installed successfully."
+
+msgid "gettext not found. Installing gettext..."
+msgstr "[Nederlands] gettext not found. Installing gettext..."
+
+msgid "nvme-cli is not installed and could not be installed automatically."
+msgstr "[Nederlands] nvme-cli is not installed and could not be installed automatically."
+
+msgid "whiptail installed successfully."
+msgstr "[Nederlands] whiptail installed successfully."
+
+msgid "whiptail not found. Installing whiptail..."
+msgstr "[Nederlands] whiptail not found. Installing whiptail..."
+

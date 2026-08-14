@@ -1,0 +1,880 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
+# This file is distributed under the same license as the pi-maintenance-suite package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: pi-maintenance-suite\n"
+"Report-Msgid-Bugs-To: https://github.com/ventura8/Raspberry-Pi-Maintenance-"
+"Automation-Suite/issues\n"
+"POT-Creation-Date: 1970-01-01 00:00+0000\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"Language: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=CHARSET\n"
+"Content-Transfer-Encoding: 8bit\n"
+
+#: install.sh:168
+msgid "      Raspberry Pi Maintenance Suite Manager"
+msgstr ""
+
+#: install.sh:1087
+msgid "   -------------------"
+msgstr ""
+
+#: install.sh:1090
+msgid "   ----------------------------------------------------------------------------------"
+msgstr ""
+
+#: install.sh:1451
+msgid "   0. Exit"
+msgstr ""
+
+#: install.sh:1445
+msgid "   1. Configure Email Settings"
+msgstr ""
+
+#: install.sh:1446
+msgid "   2. View Current Email Config"
+msgstr ""
+
+#: install.sh:1447
+msgid "   3. Manage Tasks & Schedules (Enable/Disable)"
+msgstr ""
+
+#: install.sh:1448
+msgid "   4. Force Update Scripts (from GitHub)"
+msgstr ""
+
+#: install.sh:1449
+msgid "   5. Run Enabled Tasks Now"
+msgstr ""
+
+#: install.sh:1450
+msgid "   6. Uninstall Suite"
+msgstr ""
+
+#: install.sh:1117
+msgid "   Enter ID to toggle/edit, or '0' to return to Main Menu."
+msgstr ""
+
+#: uninstall.sh:49
+msgid "   RPi Maintenance Suite Uninstaller"
+msgstr ""
+
+#: install.sh:1086
+msgid "   Task Status Manager"
+msgstr ""
+
+#: install.sh:998 install.sh:1006
+msgid "  Failed"
+msgstr ""
+
+#: install.sh:996 install.sh:1004
+msgid "  Success"
+msgstr ""
+
+#: install.sh:388
+msgid "-"
+msgstr ""
+
+#: scripts/update_pi_firmware.sh:33 scripts/update_samsung_ssd.sh:46
+msgid "--- Checking Dependencies ---"
+msgstr ""
+
+#: scripts/update_samsung_ssd.sh:304
+msgid "--- Checking for Samsung SSDs via fwupd ---"
+msgstr ""
+
+#: scripts/update_samsung_ssd.sh:319
+msgid "--- Checking for Updates ---"
+msgstr ""
+
+#: install.sh:628
+msgid "--- Current Email Settings ---"
+msgstr ""
+
+#: install.sh:531
+msgid "--- Email Configuration ---"
+msgstr ""
+
+#: scripts/update_samsung_ssd.sh:336
+msgid "--- Fallback: Samsung Official ISO Update ---"
+msgstr ""
+
+#: scripts/update_pi_firmware.sh:146 scripts/update_pi_firmware.sh:150
+#: scripts/update_pi_os.sh:49 scripts/update_pi_os.sh:54
+#: scripts/update_samsung_ssd.sh:368 scripts/update_samsung_ssd.sh:372
+msgid "--- REBOOT STATUS ---"
+msgstr ""
+
+#: scripts/update_samsung_ssd.sh:316
+msgid "--- Refreshing Metadata ---"
+msgstr ""
+
+#: install.sh:1045
+msgid "--- Run Enabled Tasks Now ---"
+msgstr ""
+
+#: scripts/update_pi_firmware.sh:98
+msgid "--- Running 'fwupdmgr' ---"
+msgstr ""
+
+#: scripts/update_pi_firmware.sh:84
+msgid "--- Running 'sudo rpi-eeprom-update -a' ---"
+msgstr ""
+
+#: scripts/update_pip.sh:43
+msgid "--- Skipping pip3 self-upgrade ---"
+msgstr ""
+
+#: scripts/docker_cleanup.sh:43
+msgid "--- Step 1: System Prune ---"
+msgstr ""
+
+#: scripts/docker_cleanup.sh:49
+msgid "--- Step 2: Builder Prune ---"
+msgstr ""
+
+#: scripts/update_pi_apps.sh:39
+msgid "--- Updating Pi-Apps and Installed Apps ---"
+msgstr ""
+
+#: scripts/update_pip.sh:47
+msgid "--- Upgrading outdated pip3 packages ---"
+msgstr ""
+
+#: uninstall.sh:123
+msgid "--------------------------------------------"
+msgstr ""
+
+#: scripts/update_samsung_ssd.sh:195
+msgid "7z required but not installed."
+msgstr ""
+
+#: uninstall.sh:48 uninstall.sh:50 uninstall.sh:127
+msgid "============================================"
+msgstr ""
+
+#: scripts/update_pi_apps.sh:34 scripts/update_pi_apps.sh:36
+#: scripts/update_pi_os.sh:40 scripts/update_pi_os.sh:42
+#: scripts/update_pip.sh:38 scripts/update_pip.sh:40
+msgid "===================================================="
+msgstr ""
+
+#: scripts/update_pi_apps.sh:59 scripts/update_pi_apps.sh:61
+#: scripts/update_pi_firmware.sh:75 scripts/update_pi_firmware.sh:77
+#: scripts/update_pi_firmware.sh:154 scripts/update_pi_firmware.sh:156
+#: scripts/update_pi_os.sh:60 scripts/update_pi_os.sh:62
+#: scripts/update_pip.sh:62 scripts/update_pip.sh:64
+#: scripts/update_samsung_ssd.sh:296 scripts/update_samsung_ssd.sh:298
+#: scripts/update_samsung_ssd.sh:376 scripts/update_samsung_ssd.sh:378
+msgid "======================================================="
+msgstr ""
+
+#: scripts/docker_cleanup.sh:38 scripts/docker_cleanup.sh:40
+#: scripts/docker_cleanup.sh:62 scripts/docker_cleanup.sh:64
+msgid "========================================================="
+msgstr ""
+
+#: install.sh:167 install.sh:170
+msgid "==========================================================="
+msgstr ""
+
+#: scripts/update_pi_firmware.sh:147 scripts/update_samsung_ssd.sh:369
+msgid "A firmware update was applied. A reboot is required."
+msgstr ""
+
+#: scripts/update_pi_os.sh:50
+msgid "A reboot is required to finish applying updates."
+msgstr ""
+
+#: scripts/update_pi_firmware.sh:63 scripts/update_samsung_ssd.sh:66
+msgid "All dependencies are installed."
+msgstr ""
+
+#: install.sh:1018
+msgid "All enabled tasks completed successfully."
+msgstr ""
+
+#: scripts/update_pip.sh:52
+msgid "All pip3 packages are up-to-date."
+msgstr ""
+
+#: install.sh:1249
+msgid "All tasks are ON by default. Space toggles. Enter confirms."
+msgstr ""
+
+#: install.sh:1540
+msgid "Are you sure you want to uninstall?"
+msgstr ""
+
+#: scripts/update_pip.sh:44
+msgid "Base pip3 is managed by the OS (Debian) to avoid record-file errors."
+msgstr ""
+
+#: scripts/docker_cleanup.sh:56
+msgid "Buildx not detected. Falling back to legacy builder..."
+msgstr ""
+
+#: install.sh:1359 install.sh:1381
+msgid "Cancel"
+msgstr ""
+
+#: install.sh:1055 install.sh:1060 install.sh:1061 install.sh:1066
+msgid "Cancelled: Enabled tasks were not run."
+msgstr ""
+
+#: install.sh:188
+msgid "Checking dependencies..."
+msgstr ""
+
+#: scripts/update_pi_firmware.sh:104 scripts/update_self.sh:74
+msgid "Checking for updates..."
+msgstr ""
+
+#: install.sh:1357
+msgid "Choose Continue to proceed, or Cancel to abort without installing."
+msgstr ""
+
+#: uninstall.sh:53
+msgid "Cleaning up crontabs..."
+msgstr ""
+
+#: install.sh:1016
+msgid "Completed with failures."
+msgstr ""
+
+#: install.sh:1493
+msgid "Configure Email Settings"
+msgstr ""
+
+#: install.sh:1359
+msgid "Continue"
+msgstr ""
+
+#: scripts/update_samsung_ssd.sh:209
+msgid "Could not find fumagician in initrd."
+msgstr ""
+
+#: scripts/update_samsung_ssd.sh:180
+msgid "Could not find initrd in ISO."
+msgstr ""
+
+#: scripts/update_self.sh:94
+msgid "Could not parse remote tag from GitHub response."
+msgstr ""
+
+#: install.sh:651
+msgid "Current Email Settings"
+msgstr ""
+
+#: install.sh:424
+msgid "Custom Schedule"
+msgstr ""
+
+#: install.sh:815
+msgid "DISABLED|-"
+msgstr ""
+
+#: install.sh:408
+#, sh-format
+msgid "Daily @ %s:%s"
+msgstr ""
+
+#: scripts/update_pi_firmware.sh:58 scripts/update_samsung_ssd.sh:60
+msgid "Dependencies installed successfully."
+msgstr ""
+
+#: install.sh:90
+msgid "Docker Cleanup"
+msgstr ""
+
+#: install.sh:418
+#, sh-format
+msgid "Dow %s"
+msgstr ""
+
+#: install.sh:1381
+msgid "Download"
+msgstr ""
+
+#: install.sh:1381
+msgid "Download Scripts"
+msgstr ""
+
+#: scripts/update_samsung_ssd.sh:271
+msgid "Downloaded file is empty."
+msgstr ""
+
+#: install.sh:672
+msgid "Downloading/Updating scripts..."
+msgstr ""
+
+#: install.sh:1120 install.sh:1457
+msgid "EOF detected"
+msgstr ""
+
+#: install.sh:906
+msgid "Edit Schedule"
+msgstr ""
+
+#: install.sh:572 install.sh:586 install.sh:593 install.sh:597 install.sh:604
+#: install.sh:609
+msgid "Email Configuration"
+msgstr ""
+
+#: install.sh:487 install.sh:609
+msgid "Email configured successfully."
+msgstr ""
+
+#: install.sh:927
+msgid "Enable Task"
+msgstr ""
+
+#: install.sh:1277
+#, sh-format
+msgid "Enabled %s"
+msgstr ""
+
+#: install.sh:597
+msgid "Enter App Password (16-char):"
+msgstr ""
+
+#: install.sh:551
+msgid "Enter App Password (16-char, input hidden):"
+msgstr ""
+
+#: install.sh:586
+msgid "Enter Gmail address:"
+msgstr ""
+
+#: install.sh:906 install.sh:927
+msgid "Enter cron schedule:"
+msgstr ""
+
+#: install.sh:706 install.sh:714
+#, sh-format
+msgid "Error downloading %s"
+msgstr ""
+
+#: install.sh:690
+#, sh-format
+msgid "Error downloading lib/%s"
+msgstr ""
+
+#: scripts/update_samsung_ssd.sh:40
+msgid "Error: This script supports 64-bit systems only."
+msgstr ""
+
+#: scripts/update_self.sh:78
+msgid "Error: curl is required but not installed."
+msgstr ""
+
+#: scripts/update_samsung_ssd.sh:363
+msgid "Error: fwupdmgr (fwupd) is not installed."
+msgstr ""
+
+#: install.sh:1252
+msgid "Esc / Cancel aborts the installer without enabling tasks."
+msgstr ""
+
+#: install.sh:1499
+msgid "Exit"
+msgstr ""
+
+#: scripts/update_samsung_ssd.sh:186
+msgid "Extracting initrd..."
+msgstr ""
+
+#: scripts/update_self.sh:84
+msgid "Failed to contact GitHub API."
+msgstr ""
+
+#: scripts/update_samsung_ssd.sh:265
+msgid "Failed to download firmware ISO."
+msgstr ""
+
+#: scripts/update_samsung_ssd.sh:80
+msgid "Failed to fetch Samsung firmware page."
+msgstr ""
+
+#: scripts/update_samsung_ssd.sh:166
+msgid "Failed to mount ISO."
+msgstr ""
+
+#: scripts/update_samsung_ssd.sh:76
+msgid "Fetching Samsung firmware page..."
+msgstr ""
+
+#: install.sh:1077
+msgid "Finished running enabled tasks.\\nSee terminal output for details."
+msgstr ""
+
+#: install.sh:88
+msgid "Firmware Update"
+msgstr ""
+
+#: scripts/update_samsung_ssd.sh:255
+msgid "Firmware is already up to date."
+msgstr ""
+
+#: scripts/update_samsung_ssd.sh:279
+msgid "Firmware update applied successfully."
+msgstr ""
+
+#: scripts/update_samsung_ssd.sh:283
+msgid "Firmware update via fumagician failed."
+msgstr ""
+
+#: install.sh:1496
+msgid "Force Update Scripts (from GitHub)"
+msgstr ""
+
+#: install.sh:416
+msgid "Fri"
+msgstr ""
+
+#: install.sh:1286
+msgid "Installation Cancelled"
+msgstr ""
+
+#: install.sh:1404
+msgid "Installation Complete"
+msgstr ""
+
+#: install.sh:1318 install.sh:1330
+msgid "Installation Complete!"
+msgstr ""
+
+#: install.sh:191
+msgid "Installing curl..."
+msgstr ""
+
+#: install.sh:593
+msgid "Invalid email address."
+msgstr ""
+
+#: install.sh:546
+msgid "Invalid email. returning to menu."
+msgstr ""
+
+#: install.sh:1479
+#, sh-format
+msgid "Invalid option: '%s'"
+msgstr ""
+
+#: install.sh:198
+msgid "Mail sender not found. Installing mail-transport packages..."
+msgstr ""
+
+#: install.sh:200
+msgid "Mail transport installed successfully."
+msgstr ""
+
+#: uninstall.sh:126
+msgid ""
+"Mailer configuration files under /etc/ssmtp/ or /etc/msmtprc were not "
+"removed to preserve backups."
+msgstr ""
+
+#: install.sh:1495
+msgid "Manage Tasks & Schedules"
+msgstr ""
+
+#: scripts/update_samsung_ssd.sh:245
+msgid ""
+"Manual update: https://semiconductor.samsung.com/consumer-storage/support/"
+"tools/"
+msgstr ""
+
+#: install.sh:1311
+msgid "Matrix/non-interactive fresh install."
+msgstr ""
+
+#: scripts/docker_cleanup.sh:52
+msgid "Modern Buildx detected. Pruning build cache..."
+msgstr ""
+
+#: install.sh:412
+msgid "Mon"
+msgstr ""
+
+#: install.sh:422
+#, sh-format
+msgid "Monthly %s @ %s:%s"
+msgstr ""
+
+#: scripts/update_samsung_ssd.sh:164
+msgid "Mounting ISO..."
+msgstr ""
+
+#: scripts/update_samsung_ssd.sh:259
+msgid "New firmware available! Downloading..."
+msgstr ""
+
+#: install.sh:636
+msgid "No SSMTP configuration found."
+msgstr ""
+
+#: scripts/update_samsung_ssd.sh:334
+msgid "No Samsung SSDs detected by fwupd."
+msgstr ""
+
+#: scripts/update_samsung_ssd.sh:356
+msgid "No Samsung SSDs detected by nvme-cli."
+msgstr ""
+
+#: install.sh:1014
+msgid "No enabled tasks found."
+msgstr ""
+
+#: scripts/update_pi_firmware.sh:151 scripts/update_samsung_ssd.sh:373
+msgid "No firmware update was applied or no reboot is required."
+msgstr ""
+
+#: scripts/update_self.sh:53
+msgid "No mail recipient configured, skipping email notification."
+msgstr ""
+
+#: lib/mail_send.sh:82
+msgid "No mail sender (ssmtp/msmtp) found, skipping email notification."
+msgstr ""
+
+#: scripts/update_pi_os.sh:55
+msgid "No reboot is required at this time."
+msgstr ""
+
+#: scripts/update_pi_firmware.sh:141
+msgid ""
+"No supported firmware update tool found (rpi-eeprom-update or fwupdmgr)."
+msgstr ""
+
+#: scripts/update_samsung_ssd.sh:331
+msgid "No updates available via LVFS."
+msgstr ""
+
+#: scripts/update_pi_firmware.sh:136
+msgid "No updates available."
+msgstr ""
+
+#: uninstall.sh:125
+msgid ""
+"Note: Mail transport packages (ssmtp/mailutils or msmtp/s-nail) were left "
+"installed as system packages."
+msgstr ""
+
+#: install.sh:559 install.sh:604
+msgid "Password empty. Returning."
+msgstr ""
+
+#: install.sh:634
+msgid "Password: [HIDDEN/MASKED]"
+msgstr ""
+
+#: scripts/update_self.sh:69
+msgid "Pi Maintenance Update Failed"
+msgstr ""
+
+#: scripts/update_self.sh:109
+msgid "Pi Maintenance: System Up to Date"
+msgstr ""
+
+#: install.sh:91
+msgid "Pi-Apps Update"
+msgstr ""
+
+#: install.sh:89
+msgid "Python Pip Update"
+msgstr ""
+
+#: install.sh:1263
+msgid "Raspberry Pi Maintenance Suite"
+msgstr ""
+
+#: install.sh:1358
+#, sh-format
+msgid "Raspberry Pi Maintenance Suite %s"
+msgstr ""
+
+#: install.sh:1491
+msgid "Raspberry Pi Maintenance Suite Manager"
+msgstr ""
+
+#: scripts/update_pi_firmware.sh:100
+msgid "Refreshing metadata..."
+msgstr ""
+
+#: install.sh:1158
+msgid "Return to Main Menu"
+msgstr ""
+
+#: uninstall.sh:77
+msgid "Root crontab updated."
+msgstr ""
+
+#: install.sh:950 install.sh:1061 install.sh:1076 install.sh:1497
+msgid "Run Enabled Tasks Now"
+msgstr ""
+
+#: scripts/update_samsung_ssd.sh:221
+msgid "Running firmware update..."
+msgstr ""
+
+#: install.sh:92
+msgid "Samsung SSD Firmware Update"
+msgstr ""
+
+#: scripts/update_samsung_ssd.sh:314
+msgid "Samsung SSD detected by fwupd."
+msgstr ""
+
+#: install.sh:417
+msgid "Sat"
+msgstr ""
+
+#: install.sh:437
+msgid "Saving configuration..."
+msgstr ""
+
+#: install.sh:860 install.sh:913
+msgid "Schedule updated."
+msgstr ""
+
+#: install.sh:717
+msgid "Scripts updated."
+msgstr ""
+
+#: install.sh:1198
+msgid "Select which tasks to enable. Press Enter to accept default [Y]."
+msgstr ""
+
+#: install.sh:1255
+msgid "Selected tasks use their default weekly schedules."
+msgstr ""
+
+#: install.sh:93
+msgid "Self-Update Service"
+msgstr ""
+
+#: install.sh:1197
+msgid "Setting up default schedules..."
+msgstr ""
+
+#: scripts/update_pi_apps.sh:54
+msgid "Skipping update (not installed or wrong path)."
+msgstr ""
+
+#: install.sh:1426
+msgid "Starting uninstallation process..."
+msgstr ""
+
+#: install.sh:1348
+#, sh-format
+msgid "Suite version: %s"
+msgstr ""
+
+#: install.sh:411
+msgid "Sun"
+msgstr ""
+
+#: install.sh:87
+msgid "System OS Update"
+msgstr ""
+
+#: scripts/update_self.sh:108
+msgid "System is up to date."
+msgstr ""
+
+#: install.sh:1160
+msgid "Task Status Manager"
+msgstr ""
+
+#: install.sh:855 install.sh:903
+msgid "Task disabled."
+msgstr ""
+
+#: install.sh:869 install.sh:934
+msgid "Task enabled."
+msgstr ""
+
+#: install.sh:843 install.sh:891 install.sh:917
+#, sh-format
+msgid "Task: %s"
+msgstr ""
+
+#: scripts/update_self.sh:69
+#, sh-format
+msgid "The auto-update failed. Reason: %s"
+msgstr ""
+
+#: scripts/update_self.sh:110
+#, sh-format
+msgid "The system is running the latest version: %s."
+msgstr ""
+
+#: scripts/update_pi_firmware.sh:148 scripts/update_pi_os.sh:51
+#: scripts/update_samsung_ssd.sh:370
+msgid "The system will reboot shortly after this report is sent."
+msgstr ""
+
+#: install.sh:1354
+msgid ""
+"This wizard configures email, downloads scripts, and schedules maintenance "
+"tasks."
+msgstr ""
+
+#: install.sh:1324
+msgid "This wizard will set up your email and default schedules."
+msgstr ""
+
+#: install.sh:415
+msgid "Thu"
+msgstr ""
+
+#: install.sh:413
+msgid "Tue"
+msgstr ""
+
+#: install.sh:1540
+msgid "Uninstall"
+msgstr ""
+
+#: install.sh:1498
+msgid "Uninstall Suite"
+msgstr ""
+
+#: uninstall.sh:124
+msgid "Uninstallation complete."
+msgstr ""
+
+#: lib/os_pkg.sh:304
+msgid "Unsupported OS family for system update."
+msgstr ""
+
+#: scripts/update_pi_firmware.sh:118 scripts/update_samsung_ssd.sh:321
+msgid "Updates available. Installing..."
+msgstr ""
+
+#: install.sh:785
+msgid "Updating version tracking..."
+msgstr ""
+
+#: install.sh:797
+#, sh-format
+msgid "Version set to: %s"
+msgstr ""
+
+#: install.sh:1492
+#, sh-format
+msgid "Version: %s\\n\\nChoose an option. Enter selects. Esc cancels/exits."
+msgstr ""
+
+#: install.sh:1494
+msgid "View Current Email Config"
+msgstr ""
+
+#: install.sh:193
+msgid "Warning: Failed to install curl."
+msgstr ""
+
+#: install.sh:222
+msgid "Warning: Failed to install gettext. UI will stay in English."
+msgstr ""
+
+#: install.sh:202
+msgid ""
+"Warning: Failed to install mail transport. Email notifications will be "
+"disabled."
+msgstr ""
+
+#: install.sh:212
+msgid "Warning: Failed to install whiptail. Falling back to text UI."
+msgstr ""
+
+#: install.sh:941
+msgid ""
+"Warning: One or more enabled tasks may reboot the system and terminate this "
+"session."
+msgstr ""
+
+#: scripts/update_pi_firmware.sh:60 scripts/update_samsung_ssd.sh:62
+msgid "Warning: Some dependencies may have failed to install."
+msgstr ""
+
+#: install.sh:799
+#, sh-format
+msgid "Warning: could not read VERSION (local or %s)."
+msgstr ""
+
+#: lib/os_pkg.sh:258
+#, sh-format
+msgid "Warning: no package mapping for '%s' on this OS family; skipping."
+msgstr ""
+
+#: install.sh:414
+msgid "Wed"
+msgstr ""
+
+#: install.sh:420
+#, sh-format
+msgid "Weekly %s @ %s:%s"
+msgstr ""
+
+#: install.sh:1310 install.sh:1323
+#, sh-format
+msgid "Welcome to the One-Line Installer (%s)."
+msgstr ""
+
+#: install.sh:304
+msgid "Whiptail UI unavailable; switching to text interface."
+msgstr ""
+
+#: install.sh:1351
+msgid "[1/4] Welcome"
+msgstr ""
+
+#: install.sh:1368
+msgid "[2/4] Email configuration..."
+msgstr ""
+
+#: install.sh:1390
+msgid "[3/4] Downloading scripts..."
+msgstr ""
+
+#: install.sh:1246
+msgid "[4/4] Select maintenance tasks to enable."
+msgstr ""
+
+#: install.sh:1393
+msgid "[4/4] Task selection..."
+msgstr ""
+
+#: scripts/update_pi_firmware.sh:133
+msgid ""
+"fwupdmgr failed to query update availability. Skipping firmware apply step."
+msgstr ""
+
+#: install.sh:220
+msgid "gettext installed successfully."
+msgstr ""
+
+#: install.sh:218
+msgid "gettext not found. Installing gettext..."
+msgstr ""
+
+#: scripts/update_samsung_ssd.sh:359
+msgid "nvme-cli is not installed and could not be installed automatically."
+msgstr ""
+
+#: install.sh:210
+msgid "whiptail installed successfully."
+msgstr ""
+
+#: install.sh:208
+msgid "whiptail not found. Installing whiptail..."
+msgstr ""

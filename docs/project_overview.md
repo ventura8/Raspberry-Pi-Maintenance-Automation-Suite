@@ -7,18 +7,16 @@ Bash scripts for automating Raspberry Pi maintenance with email reporting via Gm
 ## Directory Structure
 
 ```
-├── scripts/           # Maintenance scripts
-│   ├── update_pi_os.sh
-│   ├── update_pi_firmware.sh
-│   ├── update_pip.sh
-│   ├── update_pi_apps.sh
-│   ├── docker_cleanup.sh
-│   ├── update_samsung_ssd.sh
-│   └── update_self.sh     # Auto-update; stores version in .version (release tag)
+├── scripts/           # Maintenance scripts + Docker CI helpers
+├── lib/               # Shared helpers (os_pkg, mail_send)
 ├── tests/             # Bats tests with kcov coverage
+├── docker/images/     # Lint + distro test Dockerfiles
 ├── assets/            # Coverage badge + email screenshots
 ├── docs/              # AI-friendly documentation
-├── install.sh         # One-liner installer (--update flag for non-interactive use)
+├── AGENTS.md          # Always-on agent rules
+├── .agents/skills/    # Task playbooks (installer, matrix, pipeline, …)
+├── .github/agents|skills|prompts|instructions/  # Copilot agent pack
+├── install.sh         # Whiptail UI default; text fallback; --update cron-safe
 └── uninstall.sh       # Cleanup script
 ```
 
@@ -28,4 +26,4 @@ Bash scripts for automating Raspberry Pi maintenance with email reporting via Gm
 - Email reporting via SSMTP/Gmail
 - Intelligent reboot detection
 - Zero user input during execution
-- **Self-healing auto-update**: tracks version via GitHub release tag; updates non-interactively via `install.sh --update` (cron-safe)
+- **Self-healing auto-update**: repo [`VERSION`](../VERSION) is the SSOT; installed `.version` tracks it; updates via GitHub release tags + `install.sh --update` (cron-safe)

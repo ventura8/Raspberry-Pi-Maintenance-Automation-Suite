@@ -1,8 +1,7 @@
 ______________________________________________________________________
 
 name: maintenance-implementation
-description: "Use for implementing or refactoring features in install.sh, scripts/, and tests/ with strict lint and coverage discipline."
-model: GPT-5.3-Codex
+description: Implement or refactor install.sh, scripts/, lib/, and tests/ with Docker CI parity and strict lint/coverage discipline.
 tools:
 
 - execute
@@ -15,17 +14,37 @@ ______________________________________________________________________
 
 # Maintenance Implementation Agent
 
-Focus on safe Bash implementation with minimal diffs, test updates, and strict lint compliance.
+Focus on safe Bash implementation with minimal diffs, matching tests, and CI parity.
 
 ## Workflow
 
-1. Identify smallest viable change set.
-1. Implement behavior change in scripts.
-1. Update or add matching BATS tests.
-1. Run lint and tests before finishing.
+1. Read [`AGENTS.md`](../../AGENTS.md) invariants for the area you touch.
+1. Prefer the matching `.agents/skills/*/SKILL.md` playbook.
+1. Implement the smallest viable change set.
+1. Update or add BATS tests and mocks.
+1. Validate — prefer Docker full gate when available.
 
-## Mandatory Checks
+## Mandatory checks
 
-1. `./tests/format.sh`
-1. `STRICT_MODE=true ./tests/lint.sh`
-1. `./tests/run_suite.sh`
+Preferred:
+
+```bash
+./scripts/build-and-test.sh --full
+```
+
+Fallback:
+
+```bash
+./tests/format.sh
+STRICT_MODE=true ./tests/lint.sh
+./tests/run_suite.sh
+```
+
+## Guardrails
+
+1. No lint suppressions.
+1. Line length ≤ 140 for shell/YAML/Dockerfiles.
+1. Keep `install.sh --update` non-interactive and cron-safe.
+1. Whiptail default UI; text UI is automatic fallback only.
+1. **Always update markdown docs** (README, Instructions, docs/\*, AGENTS.md, skills) in the same change set.
+1. **Always update translations** when changing `_pi_gettext*` strings (`.pot` + all `po/*.po`).

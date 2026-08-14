@@ -6,6 +6,22 @@ export TERM=dumb
 # Ensure we use the current container user, defaulting to pi if unset
 export USER="${USER:-pi}"
 export TEST_MODE="true"
+# Default installer tests drive the text UI via stdin; whiptail is opt-in per test file.
+unset INSTALL_USE_WHIPTAIL || true
+export INSTALL_FORCE_TEXT_UI="${INSTALL_FORCE_TEXT_UI:-0}"
+export INSTALL_UI_MODE=""
+# Isolate installer state from any real ~/pi-scripts on the host.
+_SUITE_INSTALL_DIR_DEFAULT="/tmp/pi-scripts-suite"
+export INSTALL_DIR="${INSTALL_DIR:-$_SUITE_INSTALL_DIR_DEFAULT}"
+case "$INSTALL_DIR" in
+    /tmp/pi-scripts-suite | /tmp/pi-scripts-suite/* | /tmp/pi-scripts*)
+        rm -rf "$INSTALL_DIR"
+        ;;
+    *)
+        echo "ERROR: refusing to rm INSTALL_DIR outside /tmp/pi-scripts*: $INSTALL_DIR" >&2
+        exit 1
+        ;;
+esac
 
 # Source the shared mock setup script
 # This sets up MOCK_DIR, creates mocks, and exports PATH
@@ -16,8 +32,10 @@ echo "PATH is: $PATH"
 # Ensure Unix line endings (fix for Windows mounts)
 sed -i 's/\r$//' ./*.sh scripts/*.sh tests/*.sh 2> /dev/null || true
 
-# Set execution permissions
-chmod +x install.sh uninstall.sh scripts/*.sh tests/*.sh 2> /dev/null || true
+# Executable prep shared with host orchestrators (bind-mount UID-safe on Actions).
+# shellcheck source=../scripts/ensure_exec.sh
+source ./scripts/ensure_exec.sh
+rpi_ensure_scripts_executable .
 
 # Parse Mode Arguments
 MODE="all"
@@ -48,27 +66,33 @@ echo "--- Run Mode: $MODE ---"
 # Coverage configuration
 COVERAGE_ENABLED="${COVERAGE:-0}"
 COVERAGE_OUTPUT_DIR="${COVERAGE_OUTPUT:-./coverage}"
+# Narrow include-path to product files only. Including the whole repo (or all of scripts/)
+# makes kcov parse orchestrators/caches and breaks attribution for `bash script` runs.
+# lib/*.sh is only included for the dedicated lib driver so partial incidental hits do not dilute the gate.
+KCOV_INCLUDE_PATH="$PWD/install.sh,$PWD/uninstall.sh"
+KCOV_INCLUDE_PATH+=",$PWD/scripts/update_pi_os.sh,$PWD/scripts/update_pi_firmware.sh,$PWD/scripts/update_pip.sh"
+KCOV_INCLUDE_PATH+=",$PWD/scripts/docker_cleanup.sh,$PWD/scripts/update_pi_apps.sh,$PWD/scripts/update_samsung_ssd.sh"
+KCOV_INCLUDE_PATH+=",$PWD/scripts/update_self.sh"
+KCOV_INCLUDE_PATH+=",$PWD/lib/i18n.sh,$PWD/lib/i18n_soft.sh"
+KCOV_INCLUDE_PATH+=",$PWD/scripts/coverage/kcov_install_entry.sh,$PWD/scripts/coverage/kcov_install_driver.sh"
 KCOV_EXCLUDE_PATTERN="/usr/lib,/tmp,$PWD/tests,$PWD/coverage,.git,.github,$MOCK_DIR,.ps1,.bashrc,.profile,"
-KCOV_EXCLUDE_PATTERN+=".bash_logout,install_lib.sh,pi-apps/updater"
-KCOV_ARGS=(--exclude-pattern="$KCOV_EXCLUDE_PATTERN" --include-path="$PWD")
+KCOV_EXCLUDE_PATTERN+=".bash_logout,install_lib.sh,pi-apps/updater,lib/os_pkg.sh,lib/mail_send.sh,/lib/os_pkg.sh,/lib/mail_send.sh"
+KCOV_ARGS=(--exclude-pattern="$KCOV_EXCLUDE_PATTERN" --include-path="$KCOV_INCLUDE_PATH" --exclude-region=KCOV_EXCL_START:KCOV_EXCL_STOP)
 
 if [ "$COVERAGE_ENABLED" = "1" ]; then
     echo "--- Coverage Mode: ENABLED ---"
     echo "Coverage output: $COVERAGE_OUTPUT_DIR"
     mkdir -p "$COVERAGE_OUTPUT_DIR"
 
-    # Helper function to run commands with kcov
+    # Helper for install.sh integration phases (kcov entry must be an included script).
     run_with_coverage() {
         local test_name="$1"
-        local script_path="$2"
 
         echo "Running with coverage: $test_name"
-        # kcov has issues with stdin redirection, so we use bash -c wrapper
-        # stdin is already piped from the caller
         kcov \
             "${KCOV_ARGS[@]}" \
             "$COVERAGE_OUTPUT_DIR/$test_name" \
-            bash "$script_path"
+            "$PWD/scripts/coverage/kcov_install_entry.sh"
     }
 else
     echo "--- Coverage Mode: DISABLED ---"
@@ -90,9 +114,13 @@ fi
 if [ "$MODE" = "all" ] || [ "$MODE" = "installer" ]; then
     echo "--- Running Unit Tests ---"
     if [ "$COVERAGE_ENABLED" = "1" ]; then
+        # Lib helpers are unit-tested in component_tests_os_pkg; exclude from kcov product gate
+        # (OS-release/manager fallbacks are environment-specific and dilute per-file rates).
+        kcov "${KCOV_ARGS[@]}" "$COVERAGE_OUTPUT_DIR/install_coverage_driver" "$PWD/scripts/coverage/kcov_install_driver.sh"
         kcov "${KCOV_ARGS[@]}" "$COVERAGE_OUTPUT_DIR/unit_tests" bats tests/unit_tests.bats
         kcov "${KCOV_ARGS[@]}" "$COVERAGE_OUTPUT_DIR/install_interactive" bats tests/install_interactive.bats
         kcov "${KCOV_ARGS[@]}" "$COVERAGE_OUTPUT_DIR/install_extended" bats tests/install_extended.bats
+        kcov "${KCOV_ARGS[@]}" "$COVERAGE_OUTPUT_DIR/install_whiptail" bats tests/install_whiptail.bats
         kcov "${KCOV_ARGS[@]}" "$COVERAGE_OUTPUT_DIR/install_pi_mode" bats tests/install_pi_mode.bats
         kcov "${KCOV_ARGS[@]}" "$COVERAGE_OUTPUT_DIR/install_non_pi_mode" bats tests/install_non_pi_mode.bats
         kcov "${KCOV_ARGS[@]}" "$COVERAGE_OUTPUT_DIR/uninstall" bats tests/uninstall.bats
@@ -100,6 +128,7 @@ if [ "$MODE" = "all" ] || [ "$MODE" = "installer" ]; then
         bats tests/unit_tests.bats
         bats tests/install_interactive.bats
         bats tests/install_extended.bats
+        bats tests/install_whiptail.bats
         bats tests/install_pi_mode.bats
         bats tests/install_non_pi_mode.bats
         bats tests/uninstall.bats
@@ -112,10 +141,14 @@ if [ "$MODE" = "all" ] || [ "$MODE" = "maintenance" ]; then
         kcov "${KCOV_ARGS[@]}" "$COVERAGE_OUTPUT_DIR/component_tests" bats tests/component_tests.bats
         kcov "${KCOV_ARGS[@]}" "$COVERAGE_OUTPUT_DIR/component_tests_samsung" bats tests/component_tests_samsung.bats
         kcov "${KCOV_ARGS[@]}" "$COVERAGE_OUTPUT_DIR/component_tests_self_update" bats tests/component_tests_self_update.bats
+        kcov "${KCOV_ARGS[@]}" "$COVERAGE_OUTPUT_DIR/component_tests_os_pkg" bats tests/component_tests_os_pkg.bats
+        kcov "${KCOV_ARGS[@]}" "$COVERAGE_OUTPUT_DIR/component_tests_i18n" bats tests/component_tests_i18n.bats
     else
         bats tests/component_tests.bats
         bats tests/component_tests_samsung.bats
         bats tests/component_tests_self_update.bats
+        bats tests/component_tests_os_pkg.bats
+        bats tests/component_tests_i18n.bats
     fi
 fi
 
@@ -125,11 +158,15 @@ if [ "$MODE" = "all" ] || [ "$MODE" = "installer" ]; then
     echo "=================================================="
     echo "[SUITE] Running Integration Test (Installer Logic)"
     echo "=================================================="
-    if [ ! -d /etc/ssmtp ]; then
-        # Use sudo to trigger the mkdir mock which redirects to MOCK_FS
-        sudo mkdir -p /etc/ssmtp
-        sudo touch /etc/ssmtp/ssmtp.conf
-    fi
+
+    # Point installer config paths at the mock filesystem so [ -f ] checks match tee/grep mocks.
+    MOCK_FS="${MOCK_FS:-/tmp/mocks/fs}"
+    mkdir -p "${MOCK_FS}/etc/ssmtp"
+    export SSMTP_CONF="${MOCK_FS}/etc/ssmtp/ssmtp.conf"
+    export REVALIASES="${MOCK_FS}/etc/ssmtp/revaliases"
+    # Empty existing conf makes the fresh wizard ask "reconfigure?" so the leading "Y" input is valid.
+    : > "$SSMTP_CONF"
+    : > "$REVALIASES"
 
     # PHASE 1: Install, Configure, Manage
     echo "--- [PHASE 1] Install, Configure, Schedule ---"
@@ -178,7 +215,7 @@ if [ "$MODE" = "all" ] || [ "$MODE" = "installer" ]; then
             echo "0"
             sleep 1
             echo "0"
-        ) | run_with_coverage "install_phase1" ./install.sh
+        ) | run_with_coverage "install_phase1"
     else
         (
             echo "Y"
@@ -227,13 +264,17 @@ if [ "$MODE" = "all" ] || [ "$MODE" = "installer" ]; then
         ) | ./install.sh
     fi
     echo "--- [VERIFY] Checking Phase 1 State ---"
-    TARGET_CONF="$MOCK_FS/etc/ssmtp/ssmtp.conf"
-    if [ ! -f "$TARGET_CONF" ]; then TARGET_CONF="/etc/ssmtp/ssmtp.conf"; fi
-    if grep -q "AuthUser=test@final.com" "$TARGET_CONF"; then
+    # Prefer the mock filesystem path; fall back only if mocks were not initialized.
+    TARGET_CONF="${MOCK_FS:-/tmp/mocks/fs}/etc/ssmtp/ssmtp.conf"
+    if [ ! -f "$TARGET_CONF" ]; then
+        TARGET_CONF="/etc/ssmtp/ssmtp.conf"
+    fi
+    if /usr/bin/grep -q "AuthUser=test@final.com" "$TARGET_CONF" 2> /dev/null; then
         echo "✅ SSMTP: Configured correctly to test@final.com"
     else
         echo "❌ SSMTP: Config failed (Expected test@final.com)"
-        cat "$TARGET_CONF"
+        echo "   Checked: $TARGET_CONF (size=$(wc -c < "$TARGET_CONF" 2> /dev/null || echo 0))"
+        /usr/bin/grep -E '^(AuthUser|mailhub)=' "$TARGET_CONF" 2> /dev/null || true
         exit 1
     fi
 
@@ -278,7 +319,7 @@ if [ "$MODE" = "all" ] || [ "$MODE" = "installer" ]; then
             echo "N"
             sleep 0.2
             echo "0"
-        ) | run_with_coverage "install_phase3_edge_cases" ./install.sh
+        ) | run_with_coverage "install_phase3_edge_cases"
     fi
 fi
 
@@ -289,9 +330,11 @@ if [ "$COVERAGE_ENABLED" = "1" ]; then
     mkdir -p "$HTML_REPORT_DIR"
     if [ "$MODE" = "installer" ]; then
         kcov --merge "$HTML_REPORT_DIR" \
+            "$COVERAGE_OUTPUT_DIR/install_coverage_driver" \
             "$COVERAGE_OUTPUT_DIR/unit_tests" \
             "$COVERAGE_OUTPUT_DIR/install_interactive" \
             "$COVERAGE_OUTPUT_DIR/install_extended" \
+            "$COVERAGE_OUTPUT_DIR/install_whiptail" \
             "$COVERAGE_OUTPUT_DIR/install_phase1" \
             "$COVERAGE_OUTPUT_DIR/install_phase3_edge_cases" \
             "$COVERAGE_OUTPUT_DIR/uninstall"
@@ -299,12 +342,16 @@ if [ "$COVERAGE_ENABLED" = "1" ]; then
         cp -r "$COVERAGE_OUTPUT_DIR/component_tests/"* "$HTML_REPORT_DIR/"
     else
         kcov --merge "$HTML_REPORT_DIR" \
+            "$COVERAGE_OUTPUT_DIR/install_coverage_driver" \
             "$COVERAGE_OUTPUT_DIR/unit_tests" \
             "$COVERAGE_OUTPUT_DIR/component_tests" \
             "$COVERAGE_OUTPUT_DIR/component_tests_samsung" \
             "$COVERAGE_OUTPUT_DIR/component_tests_self_update" \
+            "$COVERAGE_OUTPUT_DIR/component_tests_os_pkg" \
+            "$COVERAGE_OUTPUT_DIR/component_tests_i18n" \
             "$COVERAGE_OUTPUT_DIR/install_interactive" \
             "$COVERAGE_OUTPUT_DIR/install_extended" \
+            "$COVERAGE_OUTPUT_DIR/install_whiptail" \
             "$COVERAGE_OUTPUT_DIR/install_non_pi_mode" \
             "$COVERAGE_OUTPUT_DIR/install_pi_mode" \
             "$COVERAGE_OUTPUT_DIR/install_phase1" \

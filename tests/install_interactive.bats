@@ -3,28 +3,41 @@
 # Interactive installer tests for install.sh
 
 setup() {
-    export MOCK_DIR="/tmp/mocks"
-    export INSTALL_DIR="/tmp/scripts"
-    rm -rf "$INSTALL_DIR"
-    export SSMTP_CONF="/tmp/ssmtp.conf"
-    export REVALIASES="/tmp/revaliases"
+    local repo_root
+    repo_root="$(cd "${BATS_TEST_DIRNAME}/.." && pwd)"
+
+    export TEST_WORKSPACE
+    TEST_WORKSPACE=$(mktemp -d)
+    export MOCK_DIR="$TEST_WORKSPACE/mocks"
+    export INSTALL_DIR="$TEST_WORKSPACE/scripts"
+    export SSMTP_CONF="$TEST_WORKSPACE/ssmtp.conf"
+    export REVALIASES="$TEST_WORKSPACE/revaliases"
+    mkdir -p "$MOCK_DIR" "$INSTALL_DIR"
+    : > "$SSMTP_CONF"
+    : > "$REVALIASES"
+
     export TEST_MODE="true"
-    
-    # Always ensure clean shared mocks
-    # Use absolute path or relative to BATS_TEST_DIRNAME if easier, but we are in root initially
-    ./tests/setup_mocks.sh > /dev/null
+    unset INSTALL_USE_WHIPTAIL || true
+    export INSTALL_FORCE_TEXT_UI="0"
+    export INSTALL_UI_MODE=""
+
+    (
+        cd "$repo_root"
+        # Honor workspace MOCK_DIR for isolated cron/mail mock state.
+        MOCK_DIR="$MOCK_DIR" ./tests/setup_mocks.sh > /dev/null
+    )
     export PATH="$MOCK_DIR:$PATH"
-    
-    # Reset Config Files
 
-    # Reset Config Files
-    > "$SSMTP_CONF"
-    > "$REVALIASES"
-
-    # Isolate Execution
-    export TEST_WORKSPACE=$(mktemp -d)
-    cp ./install.sh "$TEST_WORKSPACE/"
+    cp "$repo_root/install.sh" "$TEST_WORKSPACE/"
+    mkdir -p "$TEST_WORKSPACE/lib"
+    cp "$repo_root/lib/"*.sh "$TEST_WORKSPACE/lib/"
+    cp "$repo_root/VERSION" "$TEST_WORKSPACE/" 2> /dev/null || printf 'v1.1.0\n' > "$TEST_WORKSPACE/VERSION"
     cd "$TEST_WORKSPACE"
+}
+
+teardown() {
+    cd / > /dev/null || true
+    rm -rf "${TEST_WORKSPACE:-}"
 }
 
 @test "Install: Configure Email - Invalid Email" {
@@ -99,6 +112,7 @@ EOF
     run bash -c "export PATH=$MOCK_DIR:$PATH; source ./install.sh; run_fresh_install <<< $'Y\ntest@fresh.com\npassword\n\n\n\n\n\n\n\n0'"
     
     [[ "$output" =~ "Welcome to the One-Line Installer" ]]
+    [[ "$output" =~ "v1.1.0" ]]
     [[ "$output" =~ "Installation Complete" ]]
 }
 
@@ -170,60 +184,49 @@ EOF
 }
 
 @test "Install: Check Dependencies - Installs Missing" {
-    # Mock command to fail for ssmtp
-    cat << 'EOF' > "$MOCK_DIR/command"
-#!/bin/bash
-if [[ "$*" == *"-v ssmtp"* ]]; then exit 1; fi
-builtin command "$@"
-EOF
-    chmod +x "$MOCK_DIR/command"
-    
     # Mock apt-get
     cat << 'EOF' > "$MOCK_DIR/apt-get"
 #!/bin/bash
 echo "Installing dependencies..."
 EOF
-    chmod +x "$MOCK_DIR/apt-get"
+    /usr/bin/chmod +x "$MOCK_DIR/apt-get"
 
-    # We need to export a function to override 'command' builtin if possible, 
-    # but 'command' is a keyword/builtin. Hard to mock in bash script sourcing.
-    # However, check_dependencies uses `command -v`.
-    # Tests run in bash -c.
-    # Alternatives: define function `command` in the sourced script environment.
-    
     run bash -c "
         export PATH=$MOCK_DIR:\$PATH
         source ./install.sh
         
-        # Override AFTER sourcing to prevent overwrite
+        # Override AFTER sourcing to force mail-transport install path
+        has_mail_sender() { return 1; }
         is_installed() {
-            if [[ \"\$1\" == \"ssmtp\" ]]; then return 1; fi
+            if [[ \"\$1\" == \"whiptail\" ]]; then return 1; fi
+            if [[ \"\$1\" == \"curl\" ]]; then return 0; fi
             command -v \"\$1\" &> /dev/null
         }
         
         check_dependencies
     "
-    [[ "$output" =~ "ssmtp not found. Installing ssmtp" ]]
+    [[ "$output" =~ "Mail sender not found. Installing mail-transport" ]]
+    [[ "$output" =~ "whiptail not found. Installing whiptail" ]]
 }
 
 @test "Install: Pi-Apps (User Crontab) Management" {
     # Add Pi-Apps to user crontab (ID 5)
     echo "0 5 * * 0 $INSTALL_DIR/update_pi_apps.sh >/dev/null" > "$MOCK_DIR/user_cron"
-    
-    # Mock crontab to read/write user file
-    cat << 'EOF' > "$MOCK_DIR/crontab"
+
+    # Mock crontab to read/write user file under this test's MOCK_DIR
+    cat << EOF > "$MOCK_DIR/crontab"
 #!/bin/bash
-if [[ "$*" == *"-l"* ]]; then
-    if [ -f "/tmp/mocks/user_cron" ]; then cat "/tmp/mocks/user_cron"; else echo ""; fi
+if [[ "\$*" == *"-l"* ]]; then
+    if [ -f "$MOCK_DIR/user_cron" ]; then cat "$MOCK_DIR/user_cron"; else echo ""; fi
 else
-    cat > "/tmp/mocks/user_cron"
+    cat > "$MOCK_DIR/user_cron"
 fi
 EOF
     chmod +x "$MOCK_DIR/crontab"
 
     # Toggle Pi-Apps (Disable)
-    run bash -c "export PATH=$MOCK_DIR:$PATH; source ./install.sh; toggle_task 5 <<< $'y'"
-    
+    run bash -c "export PATH=$MOCK_DIR:\$PATH; source ./install.sh; toggle_task 5 <<< \$'y'"
+
     [[ "$output" =~ "Task disabled" ]]
     # Verify file is empty/line removed
     run bash -c "cat $MOCK_DIR/user_cron"
@@ -377,6 +380,7 @@ EOF
     # Pass inputs for fresh install (Y, email, pass, accept tasks..., enter, 0 exit menu)
     run ./install.sh <<< $'Y\ntest@entry.com\npassword\n\n\n\n\n\n\n\n\n0'
     
+    [[ "$output" =~ "Raspberry Pi Maintenance Suite v1.1.0" ]]
     [[ "$output" =~ "Welcome to the One-Line Installer" ]]
     [[ "$output" =~ "Installation Complete" ]]
 }
@@ -405,4 +409,43 @@ EOF
     # Check that AuthPass has no spaces
     run grep "^AuthPass=" "$SSMTP_CONF"
     [[ "$output" == "AuthPass=aaaabbbbccccdddd" ]]
+}
+
+@test "Install: MATRIX_FRESH non-interactive install" {
+    rm -rf "$INSTALL_DIR"
+    run env PATH="$MOCK_DIR:$PATH" INSTALL_MATRIX_FRESH=1 \
+        MATRIX_EMAIL="matrix@test.com" MATRIX_PASS="secretpass" \
+        INSTALL_DIR="$INSTALL_DIR" SSMTP_CONF="$SSMTP_CONF" REVALIASES="$REVALIASES" \
+        TEST_MODE=true INSTALL_FORCE_TEXT_UI=1 \
+        ./install.sh
+
+    [[ "$status" -eq 0 ]]
+    [[ "$output" =~ "Matrix/non-interactive fresh install" ]]
+    [[ "$output" =~ "Installation Complete" ]]
+    [[ "$output" =~ "Enabled" ]]
+    [ -f "$INSTALL_DIR/.version" ]
+    [ -f "$INSTALL_DIR/update_pi_os.sh" ]
+    [ -f "$INSTALL_DIR/lib/os_pkg.sh" ]
+}
+
+@test "Install: lib download HTTP failure is reported" {
+    rm -rf "$TEST_WORKSPACE/lib"
+    mkdir -p "$INSTALL_DIR"
+    cat << 'EOF' > "$MOCK_DIR/curl"
+#!/bin/bash
+if [[ "$*" == *"/lib/"* ]]; then
+    exit 22
+fi
+outfile=""
+prev=""
+for a in "$@"; do
+  if [ "$prev" = "-o" ]; then outfile="$a"; fi
+  prev="$a"
+done
+[ -n "$outfile" ] && : > "$outfile"
+exit 0
+EOF
+    chmod +x "$MOCK_DIR/curl"
+    run bash -c "export PATH=$MOCK_DIR:\$PATH; source ./install.sh; download_scripts"
+    [[ "$output" =~ "Error downloading lib/" ]]
 }

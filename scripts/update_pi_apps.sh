@@ -6,7 +6,23 @@
 # --- Configuration ---
 RECIPIENT_EMAIL="your_email@gmail.com"
 # ---------------------
-export PATH=$PATH:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
+
+_RPI_HERE="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+if [ -f "$_RPI_HERE/lib/os_pkg.sh" ]; then
+    # shellcheck source=../lib/os_pkg.sh
+    source "$_RPI_HERE/lib/os_pkg.sh"
+    # shellcheck source=../lib/mail_send.sh
+    source "$_RPI_HERE/lib/mail_send.sh"
+    # shellcheck source=../lib/i18n.sh
+    source "$_RPI_HERE/lib/i18n.sh"
+elif [ -f "$_RPI_HERE/../lib/os_pkg.sh" ]; then
+    # shellcheck source=../lib/os_pkg.sh
+    source "$_RPI_HERE/../lib/os_pkg.sh"
+    # shellcheck source=../lib/mail_send.sh
+    source "$_RPI_HERE/../lib/mail_send.sh"
+    # shellcheck source=../lib/i18n.sh
+    source "$_RPI_HERE/../lib/i18n.sh"
+fi
 
 main() {
     LOG_FILE=$(mktemp)
@@ -15,12 +31,12 @@ main() {
 
     {
         # Hardcoded separators matching text length
-        echo "===================================================="
+        _pi_echo "===================================================="
         echo "   PI-APPS UPDATE LOG - $(date)"
-        echo "===================================================="
+        _pi_echo "===================================================="
         echo ""
 
-        echo "--- Updating Pi-Apps and Installed Apps ---"
+        _pi_echo "--- Updating Pi-Apps and Installed Apps ---"
 
         UPDATER_PATH="$HOME/pi-apps/updater"
 
@@ -35,32 +51,23 @@ main() {
                 sed -r 's/\x1B\]0;[^\x07]*\x07//g'
         else
             echo "Pi-Apps updater not found at $UPDATER_PATH"
-            echo "Skipping update (not installed or wrong path)."
+            _pi_echo "Skipping update (not installed or wrong path)."
         fi
 
         echo ""
 
-        echo "======================================================="
+        _pi_echo "======================================================="
         echo "   Maintenance Finished at $(date)"
-        echo "======================================================="
+        _pi_echo "======================================================="
     } > "$LOG_FILE"
 
-    # --- Send the report ---
-    if command -v ssmtp > /dev/null 2>&1; then
-        ssmtp "$RECIPIENT_EMAIL" << EOF
-To: $RECIPIENT_EMAIL
-Subject: $SUBJECT_LINE
-From: "Raspberry Pi Maintenance" <$RECIPIENT_EMAIL>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8bit
-
-$(cat "$LOG_FILE")
-EOF
-    else
-        echo "ssmtp not found, skipping email notification."
+    if ! declare -F send_mail > /dev/null 2>&1; then
+        echo "ERROR: mail helper (lib/mail_send.sh) is not available" >&2
+        return 1
     fi
-
+    if ! send_mail "$RECIPIENT_EMAIL" "$SUBJECT_LINE" "Raspberry Pi Maintenance" "$LOG_FILE"; then
+        echo "WARNING: failed to deliver email notification" >&2
+    fi
     # --- Cleanup ---
     rm "$LOG_FILE"
 }

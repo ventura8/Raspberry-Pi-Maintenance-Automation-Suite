@@ -2,6 +2,33 @@
 
 # Tests for updated Samsung SSD firmware script (Dynamic Scraping)
 
+# Build a PATH that keeps MOCK_DIR first while hiding named binaries without dropping
+# whole directories (Fedora ships /usr/bin/7z alongside mktemp/find/etc.).
+path_hiding_cmds() {
+    local filter_dir dir f base skip h
+    filter_dir="${MOCK_DIR}/pathhide.$$"
+    rm -rf "$filter_dir"
+    mkdir -p "$filter_dir"
+    for dir in /usr/local/sbin /usr/local/bin /usr/sbin /usr/bin /sbin /bin; do
+        [ -d "$dir" ] || continue
+        for f in "$dir"/*; do
+            [ -e "$f" ] || [ -L "$f" ] || continue
+            base="${f##*/}"
+            skip=0
+            for h in "$@"; do
+                if [ "$base" = "$h" ]; then
+                    skip=1
+                    break
+                fi
+            done
+            [ "$skip" -eq 1 ] && continue
+            [ -e "$filter_dir/$base" ] && continue
+            ln -s "$f" "$filter_dir/$base" 2> /dev/null || true
+        done
+    done
+    printf '%s' "${MOCK_DIR}:${filter_dir}"
+}
+
 setup() {
     export MOCK_DIR="/tmp/mocks"
     export PATH="$MOCK_DIR:$PATH"
@@ -291,23 +318,24 @@ EOF
 }
 
 @test "Samsung SSD: Dependency Installation Failure" {
-    # Mock apt-get failure
-    cat << 'EOF' > "$MOCK_DIR/apt-get"
+    # Mock package-manager install failure for all families
+    for mgr in apt-get dnf yum pacman; do
+        cat << 'EOF' > "$MOCK_DIR/$mgr"
 #!/bin/bash
-if [[ "$*" == *"install"* ]]; then exit 1; fi
+if [[ "$*" == *"install"* ]] || [[ "$1" == "-S" ]] || [[ "$*" == *"-S "* ]]; then
+    exit 1
+fi
+exit 0
 EOF
-    chmod +x "$MOCK_DIR/apt-get"
-    
-    # Ensure a dependency is missing to trigger install
-    cat << 'EOF' > "$MOCK_DIR/fwupdmgr"
-#!/bin/bash
-exit 127
-EOF
-    # Remove from path for this test just to be sure check fails (handled by mock returning 127 if called, but command -v checks file existence/exec)
-    # Actually command -v checks PATH. Since MOCK_DIR is in PATH, we need to delete the mock or make it non-executable
-    rm "$MOCK_DIR/fwupdmgr"
+        /usr/bin/chmod +x "$MOCK_DIR/$mgr"
+    done
 
-    run bash -c "export PATH='$PATH'; export TEST_MODE=true; source ./scripts/update_samsung_ssd.sh; main"
+    # Ensure fwupdmgr is missing (including any real system binary).
+    rm -f "$MOCK_DIR/fwupdmgr"
+    local hidden_path
+    hidden_path=$(path_hiding_cmds fwupdmgr)
+
+    run bash -c "export PATH='$hidden_path'; export TEST_MODE=true; source ./scripts/update_samsung_ssd.sh; main"
     echo "$output" | grep -q "Warning: Some dependencies may have failed to install"
 }
 
@@ -463,16 +491,18 @@ if [ -n "$4" ]; then touch "$4/initrd"; fi
 exit 0
 EOF
     chmod +x "$MOCK_DIR/mount"
-    
+
     cat << 'EOF' > "$MOCK_DIR/file"
 #!/bin/bash
 echo "7-zip archive data"
 EOF
     chmod +x "$MOCK_DIR/file"
-    
+
     rm -f "$MOCK_DIR/7z"
-    
-    run bash -c "export PATH='$PATH'; export TEST_MODE=false; source ./scripts/update_samsung_ssd.sh; main"
+    local hidden_path
+    hidden_path=$(path_hiding_cmds 7z 7za 7zz)
+
+    run bash -c "export PATH='$hidden_path'; export TEST_MODE=false; source ./scripts/update_samsung_ssd.sh; main"
     echo "$output" | grep -q "7z required but not installed"
 }
 
@@ -537,7 +567,7 @@ if [[ "$*" == *"install"* ]]; then
     exit 0
 fi
 EOF
-    chmod +x "$MOCK_DIR/apt-get"
+    /usr/bin/chmod +x "$MOCK_DIR/apt-get"
 
     run bash -c "export PATH='$PATH'; export TEST_MODE=true; source ./scripts/update_samsung_ssd.sh; main"
     
@@ -671,24 +701,31 @@ EOF
 exit 0
 EOF
     chmod +x "$MOCK_DIR/nvme"
-    
-    cat << 'EOF' > "$MOCK_DIR/apt-get"
+
+    for mgr in apt-get dnf yum pacman; do
+        cat << 'EOF' > "$MOCK_DIR/$mgr"
 #!/bin/bash
-if [[ "$*" == *"install"* ]]; then
+if [[ "$*" == *"install"* ]] || [[ "$1" == "-S" ]] || [[ "$*" == *"-S "* ]]; then
     exit 0
 fi
+exit 0
 EOF
-    chmod +x "$MOCK_DIR/apt-get"
-    
+        /usr/bin/chmod +x "$MOCK_DIR/$mgr"
+    done
+
     rm -f "$MOCK_DIR/7z"
-    
-    run bash -c "export PATH='$PATH'; export TEST_MODE=true; source ./scripts/update_samsung_ssd.sh; check_and_install_dependencies"
+    local hidden_path
+    hidden_path=$(path_hiding_cmds 7z 7za 7zz)
+
+    run bash -c "export PATH='$hidden_path'; export TEST_MODE=true; source ./scripts/update_samsung_ssd.sh; check_and_install_dependencies"
     echo "$output" | grep -q "Dependencies installed successfully"
 }
 
 @test "Samsung SSD: Fwupdmgr Missing" {
     rm -f "$MOCK_DIR/fwupdmgr"
-    run bash -c "export PATH='$PATH'; export TEST_MODE=true; source ./scripts/update_samsung_ssd.sh; main"
+    local hidden_path
+    hidden_path=$(path_hiding_cmds fwupdmgr)
+    run bash -c "export PATH='$hidden_path'; export TEST_MODE=true; source ./scripts/update_samsung_ssd.sh; main"
     echo "$output" | grep -q "Error: fwupdmgr (fwupd) is not installed"
 }
 

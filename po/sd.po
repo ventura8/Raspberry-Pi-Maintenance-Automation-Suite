@@ -1,0 +1,629 @@
+# Raspberry Pi Maintenance Automation Suite
+# Copyright (C) 2026
+# This file is distributed under the same license as the package.
+msgid ""
+msgstr ""
+"Project-Id-Version: pi-maintenance-suite\n"
+"Report-Msgid-Bugs-To: https://github.com/ventura8/Raspberry-Pi-Maintenance-Automation-Suite/issues\n"
+"POT-Creation-Date: 1970-01-01 00:00+0000\n"
+"PO-Revision-Date: 2026-01-01 00:00+0000\n"
+"Last-Translator: AUTO\n"
+"Language-Team: سنڌي\n"
+"Language: sd\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+
+msgid "      Raspberry Pi Maintenance Suite Manager"
+msgstr "[سنڌي]       Raspberry Pi Maintenance Suite Manager"
+
+msgid "   -------------------"
+msgstr "[سنڌي]    -------------------"
+
+msgid "   ----------------------------------------------------------------------------------"
+msgstr "[سنڌي]    ----------------------------------------------------------------------------------"
+
+msgid "   0. Exit"
+msgstr "[سنڌي]    0. Exit"
+
+msgid "   1. Configure Email Settings"
+msgstr "[سنڌي]    1. Configure Email Settings"
+
+msgid "   2. View Current Email Config"
+msgstr "[سنڌي]    2. View Current Email Config"
+
+msgid "   3. Manage Tasks & Schedules (Enable/Disable)"
+msgstr "[سنڌي]    3. Manage Tasks & Schedules (Enable/Disable)"
+
+msgid "   4. Force Update Scripts (from GitHub)"
+msgstr "[سنڌي]    4. Force Update Scripts (from GitHub)"
+
+msgid "   5. Run Enabled Tasks Now"
+msgstr "[سنڌي]    5. Run Enabled Tasks Now"
+
+msgid "   6. Uninstall Suite"
+msgstr "[سنڌي]    6. Uninstall Suite"
+
+msgid "   Enter ID to toggle/edit, or '0' to return to Main Menu."
+msgstr "[سنڌي]    Enter ID to toggle/edit, or '0' to return to Main Menu."
+
+msgid "   RPi Maintenance Suite Uninstaller"
+msgstr "[سنڌي]    RPi Maintenance Suite Uninstaller"
+
+msgid "   Task Status Manager"
+msgstr "[سنڌي]    Task Status Manager"
+
+msgid "  Failed"
+msgstr "[سنڌي]   Failed"
+
+msgid "  Success"
+msgstr "[سنڌي]   Success"
+
+msgid "-"
+msgstr "[سنڌي] -"
+
+msgid "--- Checking Dependencies ---"
+msgstr "[سنڌي] --- Checking Dependencies ---"
+
+msgid "--- Checking for Samsung SSDs via fwupd ---"
+msgstr "[سنڌي] --- Checking for Samsung SSDs via fwupd ---"
+
+msgid "--- Checking for Updates ---"
+msgstr "[سنڌي] --- Checking for Updates ---"
+
+msgid "--- Current Email Settings ---"
+msgstr "[سنڌي] --- Current Email Settings ---"
+
+msgid "--- Email Configuration ---"
+msgstr "[سنڌي] --- Email Configuration ---"
+
+msgid "--- Fallback: Samsung Official ISO Update ---"
+msgstr "[سنڌي] --- Fallback: Samsung Official ISO Update ---"
+
+msgid "--- REBOOT STATUS ---"
+msgstr "[سنڌي] --- REBOOT STATUS ---"
+
+msgid "--- Refreshing Metadata ---"
+msgstr "[سنڌي] --- Refreshing Metadata ---"
+
+msgid "--- Run Enabled Tasks Now ---"
+msgstr "[سنڌي] --- Run Enabled Tasks Now ---"
+
+msgid "--- Running 'fwupdmgr' ---"
+msgstr "[سنڌي] --- Running 'fwupdmgr' ---"
+
+msgid "--- Running 'sudo rpi-eeprom-update -a' ---"
+msgstr "[سنڌي] --- Running 'sudo rpi-eeprom-update -a' ---"
+
+msgid "--- Skipping pip3 self-upgrade ---"
+msgstr "[سنڌي] --- Skipping pip3 self-upgrade ---"
+
+msgid "--- Step 1: System Prune ---"
+msgstr "[سنڌي] --- Step 1: System Prune ---"
+
+msgid "--- Step 2: Builder Prune ---"
+msgstr "[سنڌي] --- Step 2: Builder Prune ---"
+
+msgid "--- Updating Pi-Apps and Installed Apps ---"
+msgstr "[سنڌي] --- Updating Pi-Apps and Installed Apps ---"
+
+msgid "--- Upgrading outdated pip3 packages ---"
+msgstr "[سنڌي] --- Upgrading outdated pip3 packages ---"
+
+msgid "--------------------------------------------"
+msgstr "[سنڌي] --------------------------------------------"
+
+msgid "7z required but not installed."
+msgstr "[سنڌي] 7z required but not installed."
+
+msgid "============================================"
+msgstr "[سنڌي] ============================================"
+
+msgid "===================================================="
+msgstr "[سنڌي] ===================================================="
+
+msgid "======================================================="
+msgstr "[سنڌي] ======================================================="
+
+msgid "========================================================="
+msgstr "[سنڌي] ========================================================="
+
+msgid "==========================================================="
+msgstr "[سنڌي] ==========================================================="
+
+msgid "A firmware update was applied. A reboot is required."
+msgstr "[سنڌي] A firmware update was applied. A reboot is required."
+
+msgid "A reboot is required to finish applying updates."
+msgstr "[سنڌي] A reboot is required to finish applying updates."
+
+msgid "All dependencies are installed."
+msgstr "[سنڌي] All dependencies are installed."
+
+msgid "All enabled tasks completed successfully."
+msgstr "[سنڌي] All enabled tasks completed successfully."
+
+msgid "All pip3 packages are up-to-date."
+msgstr "[سنڌي] All pip3 packages are up-to-date."
+
+msgid "All tasks are ON by default. Space toggles. Enter confirms."
+msgstr "[سنڌي] All tasks are ON by default. Space toggles. Enter confirms."
+
+msgid "Are you sure you want to uninstall?"
+msgstr "[سنڌي] Are you sure you want to uninstall?"
+
+msgid "Base pip3 is managed by the OS (Debian) to avoid record-file errors."
+msgstr "[سنڌي] Base pip3 is managed by the OS (Debian) to avoid record-file errors."
+
+msgid "Buildx not detected. Falling back to legacy builder..."
+msgstr "[سنڌي] Buildx not detected. Falling back to legacy builder..."
+
+msgid "Cancel"
+msgstr "[سنڌي] Cancel"
+
+msgid "Cancelled: Enabled tasks were not run."
+msgstr "[سنڌي] Cancelled: Enabled tasks were not run."
+
+msgid "Checking dependencies..."
+msgstr "[سنڌي] Checking dependencies..."
+
+msgid "Checking for updates..."
+msgstr "[سنڌي] Checking for updates..."
+
+msgid "Choose Continue to proceed, or Cancel to abort without installing."
+msgstr "[سنڌي] Choose Continue to proceed, or Cancel to abort without installing."
+
+msgid "Cleaning up crontabs..."
+msgstr "[سنڌي] Cleaning up crontabs..."
+
+msgid "Completed with failures."
+msgstr "[سنڌي] Completed with failures."
+
+msgid "Configure Email Settings"
+msgstr "[سنڌي] Configure Email Settings"
+
+msgid "Continue"
+msgstr "[سنڌي] Continue"
+
+msgid "Could not find fumagician in initrd."
+msgstr "[سنڌي] Could not find fumagician in initrd."
+
+msgid "Could not find initrd in ISO."
+msgstr "[سنڌي] Could not find initrd in ISO."
+
+msgid "Could not parse remote tag from GitHub response."
+msgstr "[سنڌي] Could not parse remote tag from GitHub response."
+
+msgid "Current Email Settings"
+msgstr "[سنڌي] Current Email Settings"
+
+msgid "Custom Schedule"
+msgstr "[سنڌي] Custom Schedule"
+
+msgid "DISABLED|-"
+msgstr "[سنڌي] DISABLED|-"
+
+msgid "Daily @ %s:%s"
+msgstr "[سنڌي] Daily @ %s:%s"
+
+msgid "Dependencies installed successfully."
+msgstr "[سنڌي] Dependencies installed successfully."
+
+msgid "Docker Cleanup"
+msgstr "[سنڌي] Docker Cleanup"
+
+msgid "Dow %s"
+msgstr "[سنڌي] Dow %s"
+
+msgid "Download"
+msgstr "[سنڌي] Download"
+
+msgid "Download Scripts"
+msgstr "[سنڌي] Download Scripts"
+
+msgid "Downloaded file is empty."
+msgstr "[سنڌي] Downloaded file is empty."
+
+msgid "Downloading/Updating scripts..."
+msgstr "[سنڌي] Downloading/Updating scripts..."
+
+msgid "EOF detected"
+msgstr "[سنڌي] EOF detected"
+
+msgid "Edit Schedule"
+msgstr "[سنڌي] Edit Schedule"
+
+msgid "Email Configuration"
+msgstr "[سنڌي] Email Configuration"
+
+msgid "Email configured successfully."
+msgstr "[سنڌي] Email configured successfully."
+
+msgid "Enable Task"
+msgstr "[سنڌي] Enable Task"
+
+msgid "Enabled %s"
+msgstr "[سنڌي] Enabled %s"
+
+msgid "Enter App Password (16-char):"
+msgstr "[سنڌي] Enter App Password (16-char):"
+
+msgid "Enter App Password (16-char, input hidden):"
+msgstr "[سنڌي] Enter App Password (16-char, input hidden):"
+
+msgid "Enter Gmail address:"
+msgstr "[سنڌي] Enter Gmail address:"
+
+msgid "Enter cron schedule:"
+msgstr "[سنڌي] Enter cron schedule:"
+
+msgid "Error downloading %s"
+msgstr "[سنڌي] Error downloading %s"
+
+msgid "Error downloading lib/%s"
+msgstr "[سنڌي] Error downloading lib/%s"
+
+msgid "Error: This script supports 64-bit systems only."
+msgstr "[سنڌي] Error: This script supports 64-bit systems only."
+
+msgid "Error: curl is required but not installed."
+msgstr "[سنڌي] Error: curl is required but not installed."
+
+msgid "Error: fwupdmgr (fwupd) is not installed."
+msgstr "[سنڌي] Error: fwupdmgr (fwupd) is not installed."
+
+msgid "Esc / Cancel aborts the installer without enabling tasks."
+msgstr "[سنڌي] Esc / Cancel aborts the installer without enabling tasks."
+
+msgid "Exit"
+msgstr "[سنڌي] Exit"
+
+msgid "Extracting initrd..."
+msgstr "[سنڌي] Extracting initrd..."
+
+msgid "Failed to contact GitHub API."
+msgstr "[سنڌي] Failed to contact GitHub API."
+
+msgid "Failed to download firmware ISO."
+msgstr "[سنڌي] Failed to download firmware ISO."
+
+msgid "Failed to fetch Samsung firmware page."
+msgstr "[سنڌي] Failed to fetch Samsung firmware page."
+
+msgid "Failed to mount ISO."
+msgstr "[سنڌي] Failed to mount ISO."
+
+msgid "Fetching Samsung firmware page..."
+msgstr "[سنڌي] Fetching Samsung firmware page..."
+
+msgid "Finished running enabled tasks.\\nSee terminal output for details."
+msgstr "[سنڌي] Finished running enabled tasks.\\nSee terminal output for details."
+
+msgid "Firmware Update"
+msgstr "[سنڌي] Firmware Update"
+
+msgid "Firmware is already up to date."
+msgstr "[سنڌي] Firmware is already up to date."
+
+msgid "Firmware update applied successfully."
+msgstr "[سنڌي] Firmware update applied successfully."
+
+msgid "Firmware update via fumagician failed."
+msgstr "[سنڌي] Firmware update via fumagician failed."
+
+msgid "Force Update Scripts (from GitHub)"
+msgstr "[سنڌي] Force Update Scripts (from GitHub)"
+
+msgid "Fri"
+msgstr "[سنڌي] Fri"
+
+msgid "Installation Cancelled"
+msgstr "[سنڌي] Installation Cancelled"
+
+msgid "Installation Complete"
+msgstr "[سنڌي] Installation Complete"
+
+msgid "Installation Complete!"
+msgstr "[سنڌي] Installation Complete!"
+
+msgid "Installing curl..."
+msgstr "[سنڌي] Installing curl..."
+
+msgid "Invalid email address."
+msgstr "[سنڌي] Invalid email address."
+
+msgid "Invalid email. returning to menu."
+msgstr "[سنڌي] Invalid email. returning to menu."
+
+msgid "Invalid option: '%s'"
+msgstr "[سنڌي] Invalid option: '%s'"
+
+msgid "Mail sender not found. Installing mail-transport packages..."
+msgstr "[سنڌي] Mail sender not found. Installing mail-transport packages..."
+
+msgid "Mail transport installed successfully."
+msgstr "[سنڌي] Mail transport installed successfully."
+
+msgid "Mailer configuration files under /etc/ssmtp/ or /etc/msmtprc were not removed to preserve backups."
+msgstr "[سنڌي] Mailer configuration files under /etc/ssmtp/ or /etc/msmtprc were not removed to preserve backups."
+
+msgid "Manage Tasks & Schedules"
+msgstr "[سنڌي] Manage Tasks & Schedules"
+
+msgid "Manual update: https://semiconductor.samsung.com/consumer-storage/support/tools/"
+msgstr "[سنڌي] Manual update: https://semiconductor.samsung.com/consumer-storage/support/tools/"
+
+msgid "Matrix/non-interactive fresh install."
+msgstr "[سنڌي] Matrix/non-interactive fresh install."
+
+msgid "Modern Buildx detected. Pruning build cache..."
+msgstr "[سنڌي] Modern Buildx detected. Pruning build cache..."
+
+msgid "Mon"
+msgstr "[سنڌي] Mon"
+
+msgid "Monthly %s @ %s:%s"
+msgstr "[سنڌي] Monthly %s @ %s:%s"
+
+msgid "Mounting ISO..."
+msgstr "[سنڌي] Mounting ISO..."
+
+msgid "New firmware available! Downloading..."
+msgstr "[سنڌي] New firmware available! Downloading..."
+
+msgid "No SSMTP configuration found."
+msgstr "[سنڌي] No SSMTP configuration found."
+
+msgid "No Samsung SSDs detected by fwupd."
+msgstr "[سنڌي] No Samsung SSDs detected by fwupd."
+
+msgid "No Samsung SSDs detected by nvme-cli."
+msgstr "[سنڌي] No Samsung SSDs detected by nvme-cli."
+
+msgid "No enabled tasks found."
+msgstr "[سنڌي] No enabled tasks found."
+
+msgid "No firmware update was applied or no reboot is required."
+msgstr "[سنڌي] No firmware update was applied or no reboot is required."
+
+msgid "No mail recipient configured, skipping email notification."
+msgstr "[سنڌي] No mail recipient configured, skipping email notification."
+
+msgid "No mail sender (ssmtp/msmtp) found, skipping email notification."
+msgstr "[سنڌي] No mail sender (ssmtp/msmtp) found, skipping email notification."
+
+msgid "No reboot is required at this time."
+msgstr "[سنڌي] No reboot is required at this time."
+
+msgid "No supported firmware update tool found (rpi-eeprom-update or fwupdmgr)."
+msgstr "[سنڌي] No supported firmware update tool found (rpi-eeprom-update or fwupdmgr)."
+
+msgid "No updates available via LVFS."
+msgstr "[سنڌي] No updates available via LVFS."
+
+msgid "No updates available."
+msgstr "[سنڌي] No updates available."
+
+msgid "Note: Mail transport packages (ssmtp/mailutils or msmtp/s-nail) were left installed as system packages."
+msgstr "[سنڌي] Note: Mail transport packages (ssmtp/mailutils or msmtp/s-nail) were left installed as system packages."
+
+msgid "Password empty. Returning."
+msgstr "[سنڌي] Password empty. Returning."
+
+msgid "Password: [HIDDEN/MASKED]"
+msgstr "[سنڌي] Password: [HIDDEN/MASKED]"
+
+msgid "Pi Maintenance Update Failed"
+msgstr "[سنڌي] Pi Maintenance Update Failed"
+
+msgid "Pi Maintenance: System Up to Date"
+msgstr "[سنڌي] Pi Maintenance: System Up to Date"
+
+msgid "Pi-Apps Update"
+msgstr "Pi-Apps Update"
+
+msgid "Python Pip Update"
+msgstr "[سنڌي] Python Pip Update"
+
+msgid "Raspberry Pi Maintenance Suite"
+msgstr "[سنڌي] Raspberry Pi Maintenance Suite"
+
+msgid "Raspberry Pi Maintenance Suite %s"
+msgstr "[سنڌي] Raspberry Pi Maintenance Suite %s"
+
+msgid "Raspberry Pi Maintenance Suite Manager"
+msgstr "[سنڌي] Raspberry Pi Maintenance Suite Manager"
+
+msgid "Refreshing metadata..."
+msgstr "[سنڌي] Refreshing metadata..."
+
+msgid "Return to Main Menu"
+msgstr "[سنڌي] Return to Main Menu"
+
+msgid "Root crontab updated."
+msgstr "[سنڌي] Root crontab updated."
+
+msgid "Run Enabled Tasks Now"
+msgstr "[سنڌي] Run Enabled Tasks Now"
+
+msgid "Running firmware update..."
+msgstr "[سنڌي] Running firmware update..."
+
+msgid "Samsung SSD Firmware Update"
+msgstr "[سنڌي] Samsung SSD Firmware Update"
+
+msgid "Samsung SSD detected by fwupd."
+msgstr "[سنڌي] Samsung SSD detected by fwupd."
+
+msgid "Sat"
+msgstr "[سنڌي] Sat"
+
+msgid "Saving configuration..."
+msgstr "[سنڌي] Saving configuration..."
+
+msgid "Schedule updated."
+msgstr "[سنڌي] Schedule updated."
+
+msgid "Scripts updated."
+msgstr "[سنڌي] Scripts updated."
+
+msgid "Select which tasks to enable. Press Enter to accept default [Y]."
+msgstr "[سنڌي] Select which tasks to enable. Press Enter to accept default [Y]."
+
+msgid "Selected tasks use their default weekly schedules."
+msgstr "[سنڌي] Selected tasks use their default weekly schedules."
+
+msgid "Self-Update Service"
+msgstr "[سنڌي] Self-Update Service"
+
+msgid "Setting up default schedules..."
+msgstr "[سنڌي] Setting up default schedules..."
+
+msgid "Skipping update (not installed or wrong path)."
+msgstr "[سنڌي] Skipping update (not installed or wrong path)."
+
+msgid "Starting uninstallation process..."
+msgstr "[سنڌي] Starting uninstallation process..."
+
+msgid "Suite version: %s"
+msgstr "[سنڌي] Suite version: %s"
+
+msgid "Sun"
+msgstr "[سنڌي] Sun"
+
+msgid "System OS Update"
+msgstr "[سنڌي] System OS Update"
+
+msgid "System is up to date."
+msgstr "[سنڌي] System is up to date."
+
+msgid "Task Status Manager"
+msgstr "[سنڌي] Task Status Manager"
+
+msgid "Task disabled."
+msgstr "[سنڌي] Task disabled."
+
+msgid "Task enabled."
+msgstr "[سنڌي] Task enabled."
+
+msgid "Task: %s"
+msgstr "[سنڌي] Task: %s"
+
+msgid "The auto-update failed. Reason: %s"
+msgstr "[سنڌي] The auto-update failed. Reason: %s"
+
+msgid "The system is running the latest version: %s."
+msgstr "[سنڌي] The system is running the latest version: %s."
+
+msgid "The system will reboot shortly after this report is sent."
+msgstr "[سنڌي] The system will reboot shortly after this report is sent."
+
+msgid "This wizard configures email, downloads scripts, and schedules maintenance tasks."
+msgstr "[سنڌي] This wizard configures email, downloads scripts, and schedules maintenance tasks."
+
+msgid "This wizard will set up your email and default schedules."
+msgstr "[سنڌي] This wizard will set up your email and default schedules."
+
+msgid "Thu"
+msgstr "[سنڌي] Thu"
+
+msgid "Tue"
+msgstr "[سنڌي] Tue"
+
+msgid "Uninstall"
+msgstr "[سنڌي] Uninstall"
+
+msgid "Uninstall Suite"
+msgstr "[سنڌي] Uninstall Suite"
+
+msgid "Uninstallation complete."
+msgstr "[سنڌي] Uninstallation complete."
+
+msgid "Unsupported OS family for system update."
+msgstr "[سنڌي] Unsupported OS family for system update."
+
+msgid "Updates available. Installing..."
+msgstr "[سنڌي] Updates available. Installing..."
+
+msgid "Updating version tracking..."
+msgstr "[سنڌي] Updating version tracking..."
+
+msgid "Version set to: %s"
+msgstr "[سنڌي] Version set to: %s"
+
+msgid "Version: %s\\n\\nChoose an option. Enter selects. Esc cancels/exits."
+msgstr "[سنڌي] Version: %s\\n\\nChoose an option. Enter selects. Esc cancels/exits."
+
+msgid "View Current Email Config"
+msgstr "[سنڌي] View Current Email Config"
+
+msgid "Warning: Failed to install curl."
+msgstr "[سنڌي] Warning: Failed to install curl."
+
+msgid "Warning: Failed to install gettext. UI will stay in English."
+msgstr "[سنڌي] Warning: Failed to install gettext. UI will stay in English."
+
+msgid "Warning: Failed to install mail transport. Email notifications will be disabled."
+msgstr "[سنڌي] Warning: Failed to install mail transport. Email notifications will be disabled."
+
+msgid "Warning: Failed to install whiptail. Falling back to text UI."
+msgstr "[سنڌي] Warning: Failed to install whiptail. Falling back to text UI."
+
+msgid "Warning: One or more enabled tasks may reboot the system and terminate this session."
+msgstr "[سنڌي] Warning: One or more enabled tasks may reboot the system and terminate this session."
+
+msgid "Warning: Some dependencies may have failed to install."
+msgstr "[سنڌي] Warning: Some dependencies may have failed to install."
+
+msgid "Warning: could not read VERSION (local or %s)."
+msgstr "[سنڌي] Warning: could not read VERSION (local or %s)."
+
+msgid "Warning: no package mapping for '%s' on this OS family; skipping."
+msgstr "[سنڌي] Warning: no package mapping for '%s' on this OS family; skipping."
+
+msgid "Wed"
+msgstr "[سنڌي] Wed"
+
+msgid "Weekly %s @ %s:%s"
+msgstr "[سنڌي] Weekly %s @ %s:%s"
+
+msgid "Welcome to the One-Line Installer (%s)."
+msgstr "[سنڌي] Welcome to the One-Line Installer (%s)."
+
+msgid "Whiptail UI unavailable; switching to text interface."
+msgstr "[سنڌي] Whiptail UI unavailable; switching to text interface."
+
+msgid "[1/4] Welcome"
+msgstr "[سنڌي] [1/4] Welcome"
+
+msgid "[2/4] Email configuration..."
+msgstr "[سنڌي] [2/4] Email configuration..."
+
+msgid "[3/4] Downloading scripts..."
+msgstr "[سنڌي] [3/4] Downloading scripts..."
+
+msgid "[4/4] Select maintenance tasks to enable."
+msgstr "[سنڌي] [4/4] Select maintenance tasks to enable."
+
+msgid "[4/4] Task selection..."
+msgstr "[سنڌي] [4/4] Task selection..."
+
+msgid "fwupdmgr failed to query update availability. Skipping firmware apply step."
+msgstr "[سنڌي] fwupdmgr failed to query update availability. Skipping firmware apply step."
+
+msgid "gettext installed successfully."
+msgstr "[سنڌي] gettext installed successfully."
+
+msgid "gettext not found. Installing gettext..."
+msgstr "[سنڌي] gettext not found. Installing gettext..."
+
+msgid "nvme-cli is not installed and could not be installed automatically."
+msgstr "[سنڌي] nvme-cli is not installed and could not be installed automatically."
+
+msgid "whiptail installed successfully."
+msgstr "[سنڌي] whiptail installed successfully."
+
+msgid "whiptail not found. Installing whiptail..."
+msgstr "[سنڌي] whiptail not found. Installing whiptail..."
+

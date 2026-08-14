@@ -23,55 +23,39 @@ $maxComplexityPerFile = 15
 $scriptDir = Split-Path -Parent $MyInvocation.MyCommand.Path
 $projectRoot = (Resolve-Path (Join-Path $scriptDir "..\..")).Path
 $dockerfilePath = Join-Path $projectRoot "docker/Dockerfile.test"
+$coverageDir = Join-Path $projectRoot "coverage"
 
-# Build Docker  image unless --NoBuild is specified
-if (-not $NoBuild) {
-    Write-Host "[1/3] Building test Docker image..." -ForegroundColor Yellow
-    docker build -t rpi-maintenance-test -f "$dockerfilePath" "$projectRoot"
-    
-    if ($LASTEXITCODE -ne 0) {
-        Write-Host "Docker build failed!" -ForegroundColor Red
-        exit 1
+Write-Host "[1/1] Running Docker pipeline (build-and-test)..." -ForegroundColor Yellow
+Push-Location $projectRoot
+if (Get-Command bash -ErrorAction SilentlyContinue) {
+    if ($NoCoverage) {
+        # Supported build-and-test.sh flags only — skip the coverage gate.
+        bash ./scripts/build-and-test.sh --lints-only
+        if ($LASTEXITCODE -ne 0) { Pop-Location; exit $LASTEXITCODE }
+        bash ./scripts/build-and-test.sh --compat-only
+        if ($LASTEXITCODE -ne 0) { Pop-Location; exit $LASTEXITCODE }
+        bash ./scripts/build-and-test.sh --e2e-only
+    } else {
+        bash ./scripts/build-and-test.sh --full
     }
-    Write-Host "Docker image built successfully`n" -ForegroundColor Green
-}
-else {
-    Write-Host "[1/3] Skipping Docker build (--NoBuild specified)`n" -ForegroundColor Yellow
-}
-
-# Prepare coverage directory
-if ($coverageEnabled) {
-    $coverageDir = Join-Path $projectRoot "coverage"
-    if (Test-Path $coverageDir) {
-        Write-Host "[2/3] Cleaning previous coverage data..." -ForegroundColor Yellow
-        Remove-Item -Path $coverageDir -Recurse -Force
+} else {
+    Write-Host "bash not found; falling back to legacy Dockerfile.test run" -ForegroundColor Yellow
+    if (-not $NoBuild) {
+        docker build -t rpi-maintenance-test -f "$dockerfilePath" "$projectRoot"
+        if ($LASTEXITCODE -ne 0) { Pop-Location; exit 1 }
     }
-    New-Item -ItemType Directory -Path $coverageDir -Force | Out-Null
-    Write-Host "Coverage directory prepared`n" -ForegroundColor Green
+    if ($coverageEnabled) {
+        New-Item -ItemType Directory -Path $coverageDir -Force | Out-Null
+        docker run --rm --security-opt seccomp=unconfined --cap-add SYS_PTRACE `
+            -e COVERAGE=1 -e COVERAGE_OUTPUT=/home/pi/coverage_output `
+            -v "${coverageDir}:/home/pi/coverage_output" `
+            rpi-maintenance-test
+    } else {
+        docker run --rm rpi-maintenance-test
+    }
 }
-else {
-    Write-Host "[2/3] Coverage reporting disabled`n" -ForegroundColor Yellow
-}
-
-# Run tests
-Write-Host "[3/3] Running tests in Docker..." -ForegroundColor Yellow
-
-if ($coverageEnabled) {
-    $volumeMount = "${coverageDir}:/home/pi/coverage_output"
-    docker run --rm `
-        --security-opt seccomp=unconfined `
-        --cap-add SYS_PTRACE `
-        -e COVERAGE=1 `
-        -e COVERAGE_OUTPUT=/home/pi/coverage_output `
-        -v $volumeMount `
-        -v "${projectRoot}/assets:/home/pi/assets" `
-        rpi-maintenance-test
-}
-else {
-    docker run --rm rpi-maintenance-test
-}
-
 $testExitCode = $LASTEXITCODE
+Pop-Location
 
 Write-Host ""
 if ($testExitCode -eq 0) {

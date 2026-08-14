@@ -1,0 +1,629 @@
+# Raspberry Pi Maintenance Automation Suite
+# Copyright (C) 2026
+# This file is distributed under the same license as the package.
+msgid ""
+msgstr ""
+"Project-Id-Version: pi-maintenance-suite\n"
+"Report-Msgid-Bugs-To: https://github.com/ventura8/Raspberry-Pi-Maintenance-Automation-Suite/issues\n"
+"POT-Creation-Date: 1970-01-01 00:00+0000\n"
+"PO-Revision-Date: 2026-01-01 00:00+0000\n"
+"Last-Translator: AUTO\n"
+"Language-Team: অসমীয়া\n"
+"Language: as\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+
+msgid "      Raspberry Pi Maintenance Suite Manager"
+msgstr "[অসমীয়া]       Raspberry Pi Maintenance Suite Manager"
+
+msgid "   -------------------"
+msgstr "[অসমীয়া]    -------------------"
+
+msgid "   ----------------------------------------------------------------------------------"
+msgstr "[অসমীয়া]    ----------------------------------------------------------------------------------"
+
+msgid "   0. Exit"
+msgstr "[অসমীয়া]    0. Exit"
+
+msgid "   1. Configure Email Settings"
+msgstr "[অসমীয়া]    1. Configure Email Settings"
+
+msgid "   2. View Current Email Config"
+msgstr "[অসমীয়া]    2. View Current Email Config"
+
+msgid "   3. Manage Tasks & Schedules (Enable/Disable)"
+msgstr "[অসমীয়া]    3. Manage Tasks & Schedules (Enable/Disable)"
+
+msgid "   4. Force Update Scripts (from GitHub)"
+msgstr "[অসমীয়া]    4. Force Update Scripts (from GitHub)"
+
+msgid "   5. Run Enabled Tasks Now"
+msgstr "[অসমীয়া]    5. Run Enabled Tasks Now"
+
+msgid "   6. Uninstall Suite"
+msgstr "[অসমীয়া]    6. Uninstall Suite"
+
+msgid "   Enter ID to toggle/edit, or '0' to return to Main Menu."
+msgstr "[অসমীয়া]    Enter ID to toggle/edit, or '0' to return to Main Menu."
+
+msgid "   RPi Maintenance Suite Uninstaller"
+msgstr "[অসমীয়া]    RPi Maintenance Suite Uninstaller"
+
+msgid "   Task Status Manager"
+msgstr "[অসমীয়া]    Task Status Manager"
+
+msgid "  Failed"
+msgstr "[অসমীয়া]   Failed"
+
+msgid "  Success"
+msgstr "[অসমীয়া]   Success"
+
+msgid "-"
+msgstr "[অসমীয়া] -"
+
+msgid "--- Checking Dependencies ---"
+msgstr "[অসমীয়া] --- Checking Dependencies ---"
+
+msgid "--- Checking for Samsung SSDs via fwupd ---"
+msgstr "[অসমীয়া] --- Checking for Samsung SSDs via fwupd ---"
+
+msgid "--- Checking for Updates ---"
+msgstr "[অসমীয়া] --- Checking for Updates ---"
+
+msgid "--- Current Email Settings ---"
+msgstr "[অসমীয়া] --- Current Email Settings ---"
+
+msgid "--- Email Configuration ---"
+msgstr "[অসমীয়া] --- Email Configuration ---"
+
+msgid "--- Fallback: Samsung Official ISO Update ---"
+msgstr "[অসমীয়া] --- Fallback: Samsung Official ISO Update ---"
+
+msgid "--- REBOOT STATUS ---"
+msgstr "[অসমীয়া] --- REBOOT STATUS ---"
+
+msgid "--- Refreshing Metadata ---"
+msgstr "[অসমীয়া] --- Refreshing Metadata ---"
+
+msgid "--- Run Enabled Tasks Now ---"
+msgstr "[অসমীয়া] --- Run Enabled Tasks Now ---"
+
+msgid "--- Running 'fwupdmgr' ---"
+msgstr "[অসমীয়া] --- Running 'fwupdmgr' ---"
+
+msgid "--- Running 'sudo rpi-eeprom-update -a' ---"
+msgstr "[অসমীয়া] --- Running 'sudo rpi-eeprom-update -a' ---"
+
+msgid "--- Skipping pip3 self-upgrade ---"
+msgstr "[অসমীয়া] --- Skipping pip3 self-upgrade ---"
+
+msgid "--- Step 1: System Prune ---"
+msgstr "[অসমীয়া] --- Step 1: System Prune ---"
+
+msgid "--- Step 2: Builder Prune ---"
+msgstr "[অসমীয়া] --- Step 2: Builder Prune ---"
+
+msgid "--- Updating Pi-Apps and Installed Apps ---"
+msgstr "[অসমীয়া] --- Updating Pi-Apps and Installed Apps ---"
+
+msgid "--- Upgrading outdated pip3 packages ---"
+msgstr "[অসমীয়া] --- Upgrading outdated pip3 packages ---"
+
+msgid "--------------------------------------------"
+msgstr "[অসমীয়া] --------------------------------------------"
+
+msgid "7z required but not installed."
+msgstr "[অসমীয়া] 7z required but not installed."
+
+msgid "============================================"
+msgstr "[অসমীয়া] ============================================"
+
+msgid "===================================================="
+msgstr "[অসমীয়া] ===================================================="
+
+msgid "======================================================="
+msgstr "[অসমীয়া] ======================================================="
+
+msgid "========================================================="
+msgstr "[অসমীয়া] ========================================================="
+
+msgid "==========================================================="
+msgstr "[অসমীয়া] ==========================================================="
+
+msgid "A firmware update was applied. A reboot is required."
+msgstr "[অসমীয়া] A firmware update was applied. A reboot is required."
+
+msgid "A reboot is required to finish applying updates."
+msgstr "[অসমীয়া] A reboot is required to finish applying updates."
+
+msgid "All dependencies are installed."
+msgstr "[অসমীয়া] All dependencies are installed."
+
+msgid "All enabled tasks completed successfully."
+msgstr "[অসমীয়া] All enabled tasks completed successfully."
+
+msgid "All pip3 packages are up-to-date."
+msgstr "[অসমীয়া] All pip3 packages are up-to-date."
+
+msgid "All tasks are ON by default. Space toggles. Enter confirms."
+msgstr "[অসমীয়া] All tasks are ON by default. Space toggles. Enter confirms."
+
+msgid "Are you sure you want to uninstall?"
+msgstr "[অসমীয়া] Are you sure you want to uninstall?"
+
+msgid "Base pip3 is managed by the OS (Debian) to avoid record-file errors."
+msgstr "[অসমীয়া] Base pip3 is managed by the OS (Debian) to avoid record-file errors."
+
+msgid "Buildx not detected. Falling back to legacy builder..."
+msgstr "[অসমীয়া] Buildx not detected. Falling back to legacy builder..."
+
+msgid "Cancel"
+msgstr "[অসমীয়া] Cancel"
+
+msgid "Cancelled: Enabled tasks were not run."
+msgstr "[অসমীয়া] Cancelled: Enabled tasks were not run."
+
+msgid "Checking dependencies..."
+msgstr "[অসমীয়া] Checking dependencies..."
+
+msgid "Checking for updates..."
+msgstr "[অসমীয়া] Checking for updates..."
+
+msgid "Choose Continue to proceed, or Cancel to abort without installing."
+msgstr "[অসমীয়া] Choose Continue to proceed, or Cancel to abort without installing."
+
+msgid "Cleaning up crontabs..."
+msgstr "[অসমীয়া] Cleaning up crontabs..."
+
+msgid "Completed with failures."
+msgstr "[অসমীয়া] Completed with failures."
+
+msgid "Configure Email Settings"
+msgstr "[অসমীয়া] Configure Email Settings"
+
+msgid "Continue"
+msgstr "[অসমীয়া] Continue"
+
+msgid "Could not find fumagician in initrd."
+msgstr "[অসমীয়া] Could not find fumagician in initrd."
+
+msgid "Could not find initrd in ISO."
+msgstr "[অসমীয়া] Could not find initrd in ISO."
+
+msgid "Could not parse remote tag from GitHub response."
+msgstr "[অসমীয়া] Could not parse remote tag from GitHub response."
+
+msgid "Current Email Settings"
+msgstr "[অসমীয়া] Current Email Settings"
+
+msgid "Custom Schedule"
+msgstr "[অসমীয়া] Custom Schedule"
+
+msgid "DISABLED|-"
+msgstr "[অসমীয়া] DISABLED|-"
+
+msgid "Daily @ %s:%s"
+msgstr "[অসমীয়া] Daily @ %s:%s"
+
+msgid "Dependencies installed successfully."
+msgstr "[অসমীয়া] Dependencies installed successfully."
+
+msgid "Docker Cleanup"
+msgstr "[অসমীয়া] Docker Cleanup"
+
+msgid "Dow %s"
+msgstr "[অসমীয়া] Dow %s"
+
+msgid "Download"
+msgstr "[অসমীয়া] Download"
+
+msgid "Download Scripts"
+msgstr "[অসমীয়া] Download Scripts"
+
+msgid "Downloaded file is empty."
+msgstr "[অসমীয়া] Downloaded file is empty."
+
+msgid "Downloading/Updating scripts..."
+msgstr "[অসমীয়া] Downloading/Updating scripts..."
+
+msgid "EOF detected"
+msgstr "[অসমীয়া] EOF detected"
+
+msgid "Edit Schedule"
+msgstr "[অসমীয়া] Edit Schedule"
+
+msgid "Email Configuration"
+msgstr "[অসমীয়া] Email Configuration"
+
+msgid "Email configured successfully."
+msgstr "[অসমীয়া] Email configured successfully."
+
+msgid "Enable Task"
+msgstr "[অসমীয়া] Enable Task"
+
+msgid "Enabled %s"
+msgstr "[অসমীয়া] Enabled %s"
+
+msgid "Enter App Password (16-char):"
+msgstr "[অসমীয়া] Enter App Password (16-char):"
+
+msgid "Enter App Password (16-char, input hidden):"
+msgstr "[অসমীয়া] Enter App Password (16-char, input hidden):"
+
+msgid "Enter Gmail address:"
+msgstr "[অসমীয়া] Enter Gmail address:"
+
+msgid "Enter cron schedule:"
+msgstr "[অসমীয়া] Enter cron schedule:"
+
+msgid "Error downloading %s"
+msgstr "[অসমীয়া] Error downloading %s"
+
+msgid "Error downloading lib/%s"
+msgstr "[অসমীয়া] Error downloading lib/%s"
+
+msgid "Error: This script supports 64-bit systems only."
+msgstr "[অসমীয়া] Error: This script supports 64-bit systems only."
+
+msgid "Error: curl is required but not installed."
+msgstr "[অসমীয়া] Error: curl is required but not installed."
+
+msgid "Error: fwupdmgr (fwupd) is not installed."
+msgstr "[অসমীয়া] Error: fwupdmgr (fwupd) is not installed."
+
+msgid "Esc / Cancel aborts the installer without enabling tasks."
+msgstr "[অসমীয়া] Esc / Cancel aborts the installer without enabling tasks."
+
+msgid "Exit"
+msgstr "[অসমীয়া] Exit"
+
+msgid "Extracting initrd..."
+msgstr "[অসমীয়া] Extracting initrd..."
+
+msgid "Failed to contact GitHub API."
+msgstr "[অসমীয়া] Failed to contact GitHub API."
+
+msgid "Failed to download firmware ISO."
+msgstr "[অসমীয়া] Failed to download firmware ISO."
+
+msgid "Failed to fetch Samsung firmware page."
+msgstr "[অসমীয়া] Failed to fetch Samsung firmware page."
+
+msgid "Failed to mount ISO."
+msgstr "[অসমীয়া] Failed to mount ISO."
+
+msgid "Fetching Samsung firmware page..."
+msgstr "[অসমীয়া] Fetching Samsung firmware page..."
+
+msgid "Finished running enabled tasks.\\nSee terminal output for details."
+msgstr "[অসমীয়া] Finished running enabled tasks.\\nSee terminal output for details."
+
+msgid "Firmware Update"
+msgstr "[অসমীয়া] Firmware Update"
+
+msgid "Firmware is already up to date."
+msgstr "[অসমীয়া] Firmware is already up to date."
+
+msgid "Firmware update applied successfully."
+msgstr "[অসমীয়া] Firmware update applied successfully."
+
+msgid "Firmware update via fumagician failed."
+msgstr "[অসমীয়া] Firmware update via fumagician failed."
+
+msgid "Force Update Scripts (from GitHub)"
+msgstr "[অসমীয়া] Force Update Scripts (from GitHub)"
+
+msgid "Fri"
+msgstr "[অসমীয়া] Fri"
+
+msgid "Installation Cancelled"
+msgstr "[অসমীয়া] Installation Cancelled"
+
+msgid "Installation Complete"
+msgstr "[অসমীয়া] Installation Complete"
+
+msgid "Installation Complete!"
+msgstr "[অসমীয়া] Installation Complete!"
+
+msgid "Installing curl..."
+msgstr "[অসমীয়া] Installing curl..."
+
+msgid "Invalid email address."
+msgstr "[অসমীয়া] Invalid email address."
+
+msgid "Invalid email. returning to menu."
+msgstr "[অসমীয়া] Invalid email. returning to menu."
+
+msgid "Invalid option: '%s'"
+msgstr "[অসমীয়া] Invalid option: '%s'"
+
+msgid "Mail sender not found. Installing mail-transport packages..."
+msgstr "[অসমীয়া] Mail sender not found. Installing mail-transport packages..."
+
+msgid "Mail transport installed successfully."
+msgstr "[অসমীয়া] Mail transport installed successfully."
+
+msgid "Mailer configuration files under /etc/ssmtp/ or /etc/msmtprc were not removed to preserve backups."
+msgstr "[অসমীয়া] Mailer configuration files under /etc/ssmtp/ or /etc/msmtprc were not removed to preserve backups."
+
+msgid "Manage Tasks & Schedules"
+msgstr "[অসমীয়া] Manage Tasks & Schedules"
+
+msgid "Manual update: https://semiconductor.samsung.com/consumer-storage/support/tools/"
+msgstr "[অসমীয়া] Manual update: https://semiconductor.samsung.com/consumer-storage/support/tools/"
+
+msgid "Matrix/non-interactive fresh install."
+msgstr "[অসমীয়া] Matrix/non-interactive fresh install."
+
+msgid "Modern Buildx detected. Pruning build cache..."
+msgstr "[অসমীয়া] Modern Buildx detected. Pruning build cache..."
+
+msgid "Mon"
+msgstr "[অসমীয়া] Mon"
+
+msgid "Monthly %s @ %s:%s"
+msgstr "[অসমীয়া] Monthly %s @ %s:%s"
+
+msgid "Mounting ISO..."
+msgstr "[অসমীয়া] Mounting ISO..."
+
+msgid "New firmware available! Downloading..."
+msgstr "[অসমীয়া] New firmware available! Downloading..."
+
+msgid "No SSMTP configuration found."
+msgstr "[অসমীয়া] No SSMTP configuration found."
+
+msgid "No Samsung SSDs detected by fwupd."
+msgstr "[অসমীয়া] No Samsung SSDs detected by fwupd."
+
+msgid "No Samsung SSDs detected by nvme-cli."
+msgstr "[অসমীয়া] No Samsung SSDs detected by nvme-cli."
+
+msgid "No enabled tasks found."
+msgstr "[অসমীয়া] No enabled tasks found."
+
+msgid "No firmware update was applied or no reboot is required."
+msgstr "[অসমীয়া] No firmware update was applied or no reboot is required."
+
+msgid "No mail recipient configured, skipping email notification."
+msgstr "[অসমীয়া] No mail recipient configured, skipping email notification."
+
+msgid "No mail sender (ssmtp/msmtp) found, skipping email notification."
+msgstr "[অসমীয়া] No mail sender (ssmtp/msmtp) found, skipping email notification."
+
+msgid "No reboot is required at this time."
+msgstr "[অসমীয়া] No reboot is required at this time."
+
+msgid "No supported firmware update tool found (rpi-eeprom-update or fwupdmgr)."
+msgstr "[অসমীয়া] No supported firmware update tool found (rpi-eeprom-update or fwupdmgr)."
+
+msgid "No updates available via LVFS."
+msgstr "[অসমীয়া] No updates available via LVFS."
+
+msgid "No updates available."
+msgstr "[অসমীয়া] No updates available."
+
+msgid "Note: Mail transport packages (ssmtp/mailutils or msmtp/s-nail) were left installed as system packages."
+msgstr "[অসমীয়া] Note: Mail transport packages (ssmtp/mailutils or msmtp/s-nail) were left installed as system packages."
+
+msgid "Password empty. Returning."
+msgstr "[অসমীয়া] Password empty. Returning."
+
+msgid "Password: [HIDDEN/MASKED]"
+msgstr "[অসমীয়া] Password: [HIDDEN/MASKED]"
+
+msgid "Pi Maintenance Update Failed"
+msgstr "[অসমীয়া] Pi Maintenance Update Failed"
+
+msgid "Pi Maintenance: System Up to Date"
+msgstr "[অসমীয়া] Pi Maintenance: System Up to Date"
+
+msgid "Pi-Apps Update"
+msgstr "Pi-Apps Update"
+
+msgid "Python Pip Update"
+msgstr "[অসমীয়া] Python Pip Update"
+
+msgid "Raspberry Pi Maintenance Suite"
+msgstr "[অসমীয়া] Raspberry Pi Maintenance Suite"
+
+msgid "Raspberry Pi Maintenance Suite %s"
+msgstr "[অসমীয়া] Raspberry Pi Maintenance Suite %s"
+
+msgid "Raspberry Pi Maintenance Suite Manager"
+msgstr "[অসমীয়া] Raspberry Pi Maintenance Suite Manager"
+
+msgid "Refreshing metadata..."
+msgstr "[অসমীয়া] Refreshing metadata..."
+
+msgid "Return to Main Menu"
+msgstr "[অসমীয়া] Return to Main Menu"
+
+msgid "Root crontab updated."
+msgstr "[অসমীয়া] Root crontab updated."
+
+msgid "Run Enabled Tasks Now"
+msgstr "[অসমীয়া] Run Enabled Tasks Now"
+
+msgid "Running firmware update..."
+msgstr "[অসমীয়া] Running firmware update..."
+
+msgid "Samsung SSD Firmware Update"
+msgstr "[অসমীয়া] Samsung SSD Firmware Update"
+
+msgid "Samsung SSD detected by fwupd."
+msgstr "[অসমীয়া] Samsung SSD detected by fwupd."
+
+msgid "Sat"
+msgstr "[অসমীয়া] Sat"
+
+msgid "Saving configuration..."
+msgstr "[অসমীয়া] Saving configuration..."
+
+msgid "Schedule updated."
+msgstr "[অসমীয়া] Schedule updated."
+
+msgid "Scripts updated."
+msgstr "[অসমীয়া] Scripts updated."
+
+msgid "Select which tasks to enable. Press Enter to accept default [Y]."
+msgstr "[অসমীয়া] Select which tasks to enable. Press Enter to accept default [Y]."
+
+msgid "Selected tasks use their default weekly schedules."
+msgstr "[অসমীয়া] Selected tasks use their default weekly schedules."
+
+msgid "Self-Update Service"
+msgstr "[অসমীয়া] Self-Update Service"
+
+msgid "Setting up default schedules..."
+msgstr "[অসমীয়া] Setting up default schedules..."
+
+msgid "Skipping update (not installed or wrong path)."
+msgstr "[অসমীয়া] Skipping update (not installed or wrong path)."
+
+msgid "Starting uninstallation process..."
+msgstr "[অসমীয়া] Starting uninstallation process..."
+
+msgid "Suite version: %s"
+msgstr "[অসমীয়া] Suite version: %s"
+
+msgid "Sun"
+msgstr "[অসমীয়া] Sun"
+
+msgid "System OS Update"
+msgstr "[অসমীয়া] System OS Update"
+
+msgid "System is up to date."
+msgstr "[অসমীয়া] System is up to date."
+
+msgid "Task Status Manager"
+msgstr "[অসমীয়া] Task Status Manager"
+
+msgid "Task disabled."
+msgstr "[অসমীয়া] Task disabled."
+
+msgid "Task enabled."
+msgstr "[অসমীয়া] Task enabled."
+
+msgid "Task: %s"
+msgstr "[অসমীয়া] Task: %s"
+
+msgid "The auto-update failed. Reason: %s"
+msgstr "[অসমীয়া] The auto-update failed. Reason: %s"
+
+msgid "The system is running the latest version: %s."
+msgstr "[অসমীয়া] The system is running the latest version: %s."
+
+msgid "The system will reboot shortly after this report is sent."
+msgstr "[অসমীয়া] The system will reboot shortly after this report is sent."
+
+msgid "This wizard configures email, downloads scripts, and schedules maintenance tasks."
+msgstr "[অসমীয়া] This wizard configures email, downloads scripts, and schedules maintenance tasks."
+
+msgid "This wizard will set up your email and default schedules."
+msgstr "[অসমীয়া] This wizard will set up your email and default schedules."
+
+msgid "Thu"
+msgstr "[অসমীয়া] Thu"
+
+msgid "Tue"
+msgstr "[অসমীয়া] Tue"
+
+msgid "Uninstall"
+msgstr "[অসমীয়া] Uninstall"
+
+msgid "Uninstall Suite"
+msgstr "[অসমীয়া] Uninstall Suite"
+
+msgid "Uninstallation complete."
+msgstr "[অসমীয়া] Uninstallation complete."
+
+msgid "Unsupported OS family for system update."
+msgstr "[অসমীয়া] Unsupported OS family for system update."
+
+msgid "Updates available. Installing..."
+msgstr "[অসমীয়া] Updates available. Installing..."
+
+msgid "Updating version tracking..."
+msgstr "[অসমীয়া] Updating version tracking..."
+
+msgid "Version set to: %s"
+msgstr "[অসমীয়া] Version set to: %s"
+
+msgid "Version: %s\\n\\nChoose an option. Enter selects. Esc cancels/exits."
+msgstr "[অসমীয়া] Version: %s\\n\\nChoose an option. Enter selects. Esc cancels/exits."
+
+msgid "View Current Email Config"
+msgstr "[অসমীয়া] View Current Email Config"
+
+msgid "Warning: Failed to install curl."
+msgstr "[অসমীয়া] Warning: Failed to install curl."
+
+msgid "Warning: Failed to install gettext. UI will stay in English."
+msgstr "[অসমীয়া] Warning: Failed to install gettext. UI will stay in English."
+
+msgid "Warning: Failed to install mail transport. Email notifications will be disabled."
+msgstr "[অসমীয়া] Warning: Failed to install mail transport. Email notifications will be disabled."
+
+msgid "Warning: Failed to install whiptail. Falling back to text UI."
+msgstr "[অসমীয়া] Warning: Failed to install whiptail. Falling back to text UI."
+
+msgid "Warning: One or more enabled tasks may reboot the system and terminate this session."
+msgstr "[অসমীয়া] Warning: One or more enabled tasks may reboot the system and terminate this session."
+
+msgid "Warning: Some dependencies may have failed to install."
+msgstr "[অসমীয়া] Warning: Some dependencies may have failed to install."
+
+msgid "Warning: could not read VERSION (local or %s)."
+msgstr "[অসমীয়া] Warning: could not read VERSION (local or %s)."
+
+msgid "Warning: no package mapping for '%s' on this OS family; skipping."
+msgstr "[অসমীয়া] Warning: no package mapping for '%s' on this OS family; skipping."
+
+msgid "Wed"
+msgstr "[অসমীয়া] Wed"
+
+msgid "Weekly %s @ %s:%s"
+msgstr "[অসমীয়া] Weekly %s @ %s:%s"
+
+msgid "Welcome to the One-Line Installer (%s)."
+msgstr "[অসমীয়া] Welcome to the One-Line Installer (%s)."
+
+msgid "Whiptail UI unavailable; switching to text interface."
+msgstr "[অসমীয়া] Whiptail UI unavailable; switching to text interface."
+
+msgid "[1/4] Welcome"
+msgstr "[অসমীয়া] [1/4] Welcome"
+
+msgid "[2/4] Email configuration..."
+msgstr "[অসমীয়া] [2/4] Email configuration..."
+
+msgid "[3/4] Downloading scripts..."
+msgstr "[অসমীয়া] [3/4] Downloading scripts..."
+
+msgid "[4/4] Select maintenance tasks to enable."
+msgstr "[অসমীয়া] [4/4] Select maintenance tasks to enable."
+
+msgid "[4/4] Task selection..."
+msgstr "[অসমীয়া] [4/4] Task selection..."
+
+msgid "fwupdmgr failed to query update availability. Skipping firmware apply step."
+msgstr "[অসমীয়া] fwupdmgr failed to query update availability. Skipping firmware apply step."
+
+msgid "gettext installed successfully."
+msgstr "[অসমীয়া] gettext installed successfully."
+
+msgid "gettext not found. Installing gettext..."
+msgstr "[অসমীয়া] gettext not found. Installing gettext..."
+
+msgid "nvme-cli is not installed and could not be installed automatically."
+msgstr "[অসমীয়া] nvme-cli is not installed and could not be installed automatically."
+
+msgid "whiptail installed successfully."
+msgstr "[অসমীয়া] whiptail installed successfully."
+
+msgid "whiptail not found. Installing whiptail..."
+msgstr "[অসমীয়া] whiptail not found. Installing whiptail..."
+

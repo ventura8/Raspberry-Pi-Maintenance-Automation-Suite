@@ -10,7 +10,23 @@ RECIPIENT_EMAIL="your_email@gmail.com"
 # Prevent ANSI color codes from being generated
 export TERM=dumb
 export NO_COLOR=1
-export PATH=$PATH:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
+
+_RPI_HERE="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+if [ -f "$_RPI_HERE/lib/os_pkg.sh" ]; then
+    # shellcheck source=../lib/os_pkg.sh
+    source "$_RPI_HERE/lib/os_pkg.sh"
+    # shellcheck source=../lib/mail_send.sh
+    source "$_RPI_HERE/lib/mail_send.sh"
+    # shellcheck source=../lib/i18n.sh
+    source "$_RPI_HERE/lib/i18n.sh"
+elif [ -f "$_RPI_HERE/../lib/os_pkg.sh" ]; then
+    # shellcheck source=../lib/os_pkg.sh
+    source "$_RPI_HERE/../lib/os_pkg.sh"
+    # shellcheck source=../lib/mail_send.sh
+    source "$_RPI_HERE/../lib/mail_send.sh"
+    # shellcheck source=../lib/i18n.sh
+    source "$_RPI_HERE/../lib/i18n.sh"
+fi
 
 main() {
     LOG_FILE=$(mktemp)
@@ -19,51 +35,42 @@ main() {
 
     {
         # Hardcoded separators matching text length
-        echo "========================================================="
+        _pi_echo "========================================================="
         echo "   DOCKER CLEANUP LOG - $(date)"
-        echo "========================================================="
+        _pi_echo "========================================================="
         echo ""
 
-        echo "--- Step 1: System Prune ---"
+        _pi_echo "--- Step 1: System Prune ---"
         # system prune handles stopped containers, unused networks, and dangling images.
         # The -a flag is omitted here to ensure compatibility with your Docker version.
         sudo docker system prune -f --volumes 2>&1
         echo ""
 
-        echo "--- Step 2: Builder Prune ---"
+        _pi_echo "--- Step 2: Builder Prune ---"
         # Check if buildx is available as a docker plugin
         if sudo docker buildx version &> /dev/null; then
-            echo "Modern Buildx detected. Pruning build cache..."
+            _pi_echo "Modern Buildx detected. Pruning build cache..."
             # Using --force to handle confirmation natively.
             sudo docker buildx prune --force 2>&1
         else
-            echo "Buildx not detected. Falling back to legacy builder..."
+            _pi_echo "Buildx not detected. Falling back to legacy builder..."
             # Filters out the legacy builder deprecation noise and installation suggestions.
             sudo docker builder prune -f 2>&1 | grep -vE "DEPRECATED|Install the buildx|docs.docker.com"
         fi
         echo ""
 
-        echo "========================================================="
+        _pi_echo "========================================================="
         echo "   Maintenance Finished at $(date)"
-        echo "========================================================="
+        _pi_echo "========================================================="
     } > "$LOG_FILE"
 
-    # --- Send the report ---
-    if command -v ssmtp > /dev/null 2>&1; then
-        ssmtp "$RECIPIENT_EMAIL" << EOF
-To: $RECIPIENT_EMAIL
-Subject: $SUBJECT_LINE
-From: "Raspberry Pi Docker" <$RECIPIENT_EMAIL>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8bit
-
-$(cat "$LOG_FILE")
-EOF
-    else
-        echo "ssmtp not found, skipping email notification."
+    if ! declare -F send_mail > /dev/null 2>&1; then
+        echo "ERROR: mail helper (lib/mail_send.sh) is not available" >&2
+        return 1
     fi
-
+    if ! send_mail "$RECIPIENT_EMAIL" "$SUBJECT_LINE" "Raspberry Pi Docker" "$LOG_FILE"; then
+        echo "WARNING: failed to deliver email notification" >&2
+    fi
     # --- Cleanup ---
     rm "$LOG_FILE"
 }

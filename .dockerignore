@@ -1,7 +1,12 @@
-coverage/
-coverage*/
+# Report dirs at repo root only — do not exclude scripts/coverage/ kcov drivers
+/coverage/
+/coverage_*/
+.cache/
+reports/
 .git/
 .github/
 .idea/
 .vscode/
 build/
+*.log
+assets/*.svg

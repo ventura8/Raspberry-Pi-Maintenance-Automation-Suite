@@ -1,0 +1,629 @@
+# Raspberry Pi Maintenance Automation Suite
+# Copyright (C) 2026
+# This file is distributed under the same license as the package.
+msgid ""
+msgstr ""
+"Project-Id-Version: pi-maintenance-suite\n"
+"Report-Msgid-Bugs-To: https://github.com/ventura8/Raspberry-Pi-Maintenance-Automation-Suite/issues\n"
+"POT-Creation-Date: 1970-01-01 00:00+0000\n"
+"PO-Revision-Date: 2026-01-01 00:00+0000\n"
+"Last-Translator: AUTO\n"
+"Language-Team: Հայերեն\n"
+"Language: hy\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+
+msgid "      Raspberry Pi Maintenance Suite Manager"
+msgstr "[Հայերեն]       Raspberry Pi Maintenance Suite Manager"
+
+msgid "   -------------------"
+msgstr "[Հայերեն]    -------------------"
+
+msgid "   ----------------------------------------------------------------------------------"
+msgstr "[Հայերեն]    ----------------------------------------------------------------------------------"
+
+msgid "   0. Exit"
+msgstr "[Հայերեն]    0. Exit"
+
+msgid "   1. Configure Email Settings"
+msgstr "[Հայերեն]    1. Configure Email Settings"
+
+msgid "   2. View Current Email Config"
+msgstr "[Հայերեն]    2. View Current Email Config"
+
+msgid "   3. Manage Tasks & Schedules (Enable/Disable)"
+msgstr "[Հայերեն]    3. Manage Tasks & Schedules (Enable/Disable)"
+
+msgid "   4. Force Update Scripts (from GitHub)"
+msgstr "[Հայերեն]    4. Force Update Scripts (from GitHub)"
+
+msgid "   5. Run Enabled Tasks Now"
+msgstr "[Հայերեն]    5. Run Enabled Tasks Now"
+
+msgid "   6. Uninstall Suite"
+msgstr "[Հայերեն]    6. Uninstall Suite"
+
+msgid "   Enter ID to toggle/edit, or '0' to return to Main Menu."
+msgstr "[Հայերեն]    Enter ID to toggle/edit, or '0' to return to Main Menu."
+
+msgid "   RPi Maintenance Suite Uninstaller"
+msgstr "[Հայերեն]    RPi Maintenance Suite Uninstaller"
+
+msgid "   Task Status Manager"
+msgstr "[Հայերեն]    Task Status Manager"
+
+msgid "  Failed"
+msgstr "[Հայերեն]   Failed"
+
+msgid "  Success"
+msgstr "[Հայերեն]   Success"
+
+msgid "-"
+msgstr "[Հայերեն] -"
+
+msgid "--- Checking Dependencies ---"
+msgstr "[Հայերեն] --- Checking Dependencies ---"
+
+msgid "--- Checking for Samsung SSDs via fwupd ---"
+msgstr "[Հայերեն] --- Checking for Samsung SSDs via fwupd ---"
+
+msgid "--- Checking for Updates ---"
+msgstr "[Հայերեն] --- Checking for Updates ---"
+
+msgid "--- Current Email Settings ---"
+msgstr "[Հայերեն] --- Current Email Settings ---"
+
+msgid "--- Email Configuration ---"
+msgstr "[Հայերեն] --- Email Configuration ---"
+
+msgid "--- Fallback: Samsung Official ISO Update ---"
+msgstr "[Հայերեն] --- Fallback: Samsung Official ISO Update ---"
+
+msgid "--- REBOOT STATUS ---"
+msgstr "[Հայերեն] --- REBOOT STATUS ---"
+
+msgid "--- Refreshing Metadata ---"
+msgstr "[Հայերեն] --- Refreshing Metadata ---"
+
+msgid "--- Run Enabled Tasks Now ---"
+msgstr "[Հայերեն] --- Run Enabled Tasks Now ---"
+
+msgid "--- Running 'fwupdmgr' ---"
+msgstr "[Հայերեն] --- Running 'fwupdmgr' ---"
+
+msgid "--- Running 'sudo rpi-eeprom-update -a' ---"
+msgstr "[Հայերեն] --- Running 'sudo rpi-eeprom-update -a' ---"
+
+msgid "--- Skipping pip3 self-upgrade ---"
+msgstr "[Հայերեն] --- Skipping pip3 self-upgrade ---"
+
+msgid "--- Step 1: System Prune ---"
+msgstr "[Հայերեն] --- Step 1: System Prune ---"
+
+msgid "--- Step 2: Builder Prune ---"
+msgstr "[Հայերեն] --- Step 2: Builder Prune ---"
+
+msgid "--- Updating Pi-Apps and Installed Apps ---"
+msgstr "[Հայերեն] --- Updating Pi-Apps and Installed Apps ---"
+
+msgid "--- Upgrading outdated pip3 packages ---"
+msgstr "[Հայերեն] --- Upgrading outdated pip3 packages ---"
+
+msgid "--------------------------------------------"
+msgstr "[Հայերեն] --------------------------------------------"
+
+msgid "7z required but not installed."
+msgstr "[Հայերեն] 7z required but not installed."
+
+msgid "============================================"
+msgstr "[Հայերեն] ============================================"
+
+msgid "===================================================="
+msgstr "[Հայերեն] ===================================================="
+
+msgid "======================================================="
+msgstr "[Հայերեն] ======================================================="
+
+msgid "========================================================="
+msgstr "[Հայերեն] ========================================================="
+
+msgid "==========================================================="
+msgstr "[Հայերեն] ==========================================================="
+
+msgid "A firmware update was applied. A reboot is required."
+msgstr "[Հայերեն] A firmware update was applied. A reboot is required."
+
+msgid "A reboot is required to finish applying updates."
+msgstr "[Հայերեն] A reboot is required to finish applying updates."
+
+msgid "All dependencies are installed."
+msgstr "[Հայերեն] All dependencies are installed."
+
+msgid "All enabled tasks completed successfully."
+msgstr "[Հայերեն] All enabled tasks completed successfully."
+
+msgid "All pip3 packages are up-to-date."
+msgstr "[Հայերեն] All pip3 packages are up-to-date."
+
+msgid "All tasks are ON by default. Space toggles. Enter confirms."
+msgstr "[Հայերեն] All tasks are ON by default. Space toggles. Enter confirms."
+
+msgid "Are you sure you want to uninstall?"
+msgstr "[Հայերեն] Are you sure you want to uninstall?"
+
+msgid "Base pip3 is managed by the OS (Debian) to avoid record-file errors."
+msgstr "[Հայերեն] Base pip3 is managed by the OS (Debian) to avoid record-file errors."
+
+msgid "Buildx not detected. Falling back to legacy builder..."
+msgstr "[Հայերեն] Buildx not detected. Falling back to legacy builder..."
+
+msgid "Cancel"
+msgstr "[Հայերեն] Cancel"
+
+msgid "Cancelled: Enabled tasks were not run."
+msgstr "[Հայերեն] Cancelled: Enabled tasks were not run."
+
+msgid "Checking dependencies..."
+msgstr "[Հայերեն] Checking dependencies..."
+
+msgid "Checking for updates..."
+msgstr "[Հայերեն] Checking for updates..."
+
+msgid "Choose Continue to proceed, or Cancel to abort without installing."
+msgstr "[Հայերեն] Choose Continue to proceed, or Cancel to abort without installing."
+
+msgid "Cleaning up crontabs..."
+msgstr "[Հայերեն] Cleaning up crontabs..."
+
+msgid "Completed with failures."
+msgstr "[Հայերեն] Completed with failures."
+
+msgid "Configure Email Settings"
+msgstr "[Հայերեն] Configure Email Settings"
+
+msgid "Continue"
+msgstr "[Հայերեն] Continue"
+
+msgid "Could not find fumagician in initrd."
+msgstr "[Հայերեն] Could not find fumagician in initrd."
+
+msgid "Could not find initrd in ISO."
+msgstr "[Հայերեն] Could not find initrd in ISO."
+
+msgid "Could not parse remote tag from GitHub response."
+msgstr "[Հայերեն] Could not parse remote tag from GitHub response."
+
+msgid "Current Email Settings"
+msgstr "[Հայերեն] Current Email Settings"
+
+msgid "Custom Schedule"
+msgstr "[Հայերեն] Custom Schedule"
+
+msgid "DISABLED|-"
+msgstr "[Հայերեն] DISABLED|-"
+
+msgid "Daily @ %s:%s"
+msgstr "[Հայերեն] Daily @ %s:%s"
+
+msgid "Dependencies installed successfully."
+msgstr "[Հայերեն] Dependencies installed successfully."
+
+msgid "Docker Cleanup"
+msgstr "[Հայերեն] Docker Cleanup"
+
+msgid "Dow %s"
+msgstr "[Հայերեն] Dow %s"
+
+msgid "Download"
+msgstr "[Հայերեն] Download"
+
+msgid "Download Scripts"
+msgstr "[Հայերեն] Download Scripts"
+
+msgid "Downloaded file is empty."
+msgstr "[Հայերեն] Downloaded file is empty."
+
+msgid "Downloading/Updating scripts..."
+msgstr "[Հայերեն] Downloading/Updating scripts..."
+
+msgid "EOF detected"
+msgstr "[Հայերեն] EOF detected"
+
+msgid "Edit Schedule"
+msgstr "[Հայերեն] Edit Schedule"
+
+msgid "Email Configuration"
+msgstr "[Հայերեն] Email Configuration"
+
+msgid "Email configured successfully."
+msgstr "[Հայերեն] Email configured successfully."
+
+msgid "Enable Task"
+msgstr "[Հայերեն] Enable Task"
+
+msgid "Enabled %s"
+msgstr "[Հայերեն] Enabled %s"
+
+msgid "Enter App Password (16-char):"
+msgstr "[Հայերեն] Enter App Password (16-char):"
+
+msgid "Enter App Password (16-char, input hidden):"
+msgstr "[Հայերեն] Enter App Password (16-char, input hidden):"
+
+msgid "Enter Gmail address:"
+msgstr "[Հայերեն] Enter Gmail address:"
+
+msgid "Enter cron schedule:"
+msgstr "[Հայերեն] Enter cron schedule:"
+
+msgid "Error downloading %s"
+msgstr "[Հայերեն] Error downloading %s"
+
+msgid "Error downloading lib/%s"
+msgstr "[Հայերեն] Error downloading lib/%s"
+
+msgid "Error: This script supports 64-bit systems only."
+msgstr "[Հայերեն] Error: This script supports 64-bit systems only."
+
+msgid "Error: curl is required but not installed."
+msgstr "[Հայերեն] Error: curl is required but not installed."
+
+msgid "Error: fwupdmgr (fwupd) is not installed."
+msgstr "[Հայերեն] Error: fwupdmgr (fwupd) is not installed."
+
+msgid "Esc / Cancel aborts the installer without enabling tasks."
+msgstr "[Հայերեն] Esc / Cancel aborts the installer without enabling tasks."
+
+msgid "Exit"
+msgstr "[Հայերեն] Exit"
+
+msgid "Extracting initrd..."
+msgstr "[Հայերեն] Extracting initrd..."
+
+msgid "Failed to contact GitHub API."
+msgstr "[Հայերեն] Failed to contact GitHub API."
+
+msgid "Failed to download firmware ISO."
+msgstr "[Հայերեն] Failed to download firmware ISO."
+
+msgid "Failed to fetch Samsung firmware page."
+msgstr "[Հայերեն] Failed to fetch Samsung firmware page."
+
+msgid "Failed to mount ISO."
+msgstr "[Հայերեն] Failed to mount ISO."
+
+msgid "Fetching Samsung firmware page..."
+msgstr "[Հայերեն] Fetching Samsung firmware page..."
+
+msgid "Finished running enabled tasks.\\nSee terminal output for details."
+msgstr "[Հայերեն] Finished running enabled tasks.\\nSee terminal output for details."
+
+msgid "Firmware Update"
+msgstr "[Հայերեն] Firmware Update"
+
+msgid "Firmware is already up to date."
+msgstr "[Հայերեն] Firmware is already up to date."
+
+msgid "Firmware update applied successfully."
+msgstr "[Հայերեն] Firmware update applied successfully."
+
+msgid "Firmware update via fumagician failed."
+msgstr "[Հայերեն] Firmware update via fumagician failed."
+
+msgid "Force Update Scripts (from GitHub)"
+msgstr "[Հայերեն] Force Update Scripts (from GitHub)"
+
+msgid "Fri"
+msgstr "[Հայերեն] Fri"
+
+msgid "Installation Cancelled"
+msgstr "[Հայերեն] Installation Cancelled"
+
+msgid "Installation Complete"
+msgstr "[Հայերեն] Installation Complete"
+
+msgid "Installation Complete!"
+msgstr "[Հայերեն] Installation Complete!"
+
+msgid "Installing curl..."
+msgstr "[Հայերեն] Installing curl..."
+
+msgid "Invalid email address."
+msgstr "[Հայերեն] Invalid email address."
+
+msgid "Invalid email. returning to menu."
+msgstr "[Հայերեն] Invalid email. returning to menu."
+
+msgid "Invalid option: '%s'"
+msgstr "[Հայերեն] Invalid option: '%s'"
+
+msgid "Mail sender not found. Installing mail-transport packages..."
+msgstr "[Հայերեն] Mail sender not found. Installing mail-transport packages..."
+
+msgid "Mail transport installed successfully."
+msgstr "[Հայերեն] Mail transport installed successfully."
+
+msgid "Mailer configuration files under /etc/ssmtp/ or /etc/msmtprc were not removed to preserve backups."
+msgstr "[Հայերեն] Mailer configuration files under /etc/ssmtp/ or /etc/msmtprc were not removed to preserve backups."
+
+msgid "Manage Tasks & Schedules"
+msgstr "[Հայերեն] Manage Tasks & Schedules"
+
+msgid "Manual update: https://semiconductor.samsung.com/consumer-storage/support/tools/"
+msgstr "[Հայերեն] Manual update: https://semiconductor.samsung.com/consumer-storage/support/tools/"
+
+msgid "Matrix/non-interactive fresh install."
+msgstr "[Հայերեն] Matrix/non-interactive fresh install."
+
+msgid "Modern Buildx detected. Pruning build cache..."
+msgstr "[Հայերեն] Modern Buildx detected. Pruning build cache..."
+
+msgid "Mon"
+msgstr "[Հայերեն] Mon"
+
+msgid "Monthly %s @ %s:%s"
+msgstr "[Հայերեն] Monthly %s @ %s:%s"
+
+msgid "Mounting ISO..."
+msgstr "[Հայերեն] Mounting ISO..."
+
+msgid "New firmware available! Downloading..."
+msgstr "[Հայերեն] New firmware available! Downloading..."
+
+msgid "No SSMTP configuration found."
+msgstr "[Հայերեն] No SSMTP configuration found."
+
+msgid "No Samsung SSDs detected by fwupd."
+msgstr "[Հայերեն] No Samsung SSDs detected by fwupd."
+
+msgid "No Samsung SSDs detected by nvme-cli."
+msgstr "[Հայերեն] No Samsung SSDs detected by nvme-cli."
+
+msgid "No enabled tasks found."
+msgstr "[Հայերեն] No enabled tasks found."
+
+msgid "No firmware update was applied or no reboot is required."
+msgstr "[Հայերեն] No firmware update was applied or no reboot is required."
+
+msgid "No mail recipient configured, skipping email notification."
+msgstr "[Հայերեն] No mail recipient configured, skipping email notification."
+
+msgid "No mail sender (ssmtp/msmtp) found, skipping email notification."
+msgstr "[Հայերեն] No mail sender (ssmtp/msmtp) found, skipping email notification."
+
+msgid "No reboot is required at this time."
+msgstr "[Հայերեն] No reboot is required at this time."
+
+msgid "No supported firmware update tool found (rpi-eeprom-update or fwupdmgr)."
+msgstr "[Հայերեն] No supported firmware update tool found (rpi-eeprom-update or fwupdmgr)."
+
+msgid "No updates available via LVFS."
+msgstr "[Հայերեն] No updates available via LVFS."
+
+msgid "No updates available."
+msgstr "[Հայերեն] No updates available."
+
+msgid "Note: Mail transport packages (ssmtp/mailutils or msmtp/s-nail) were left installed as system packages."
+msgstr "[Հայերեն] Note: Mail transport packages (ssmtp/mailutils or msmtp/s-nail) were left installed as system packages."
+
+msgid "Password empty. Returning."
+msgstr "[Հայերեն] Password empty. Returning."
+
+msgid "Password: [HIDDEN/MASKED]"
+msgstr "[Հայերեն] Password: [HIDDEN/MASKED]"
+
+msgid "Pi Maintenance Update Failed"
+msgstr "[Հայերեն] Pi Maintenance Update Failed"
+
+msgid "Pi Maintenance: System Up to Date"
+msgstr "[Հայերեն] Pi Maintenance: System Up to Date"
+
+msgid "Pi-Apps Update"
+msgstr "Pi-Apps Update"
+
+msgid "Python Pip Update"
+msgstr "[Հայերեն] Python Pip Update"
+
+msgid "Raspberry Pi Maintenance Suite"
+msgstr "[Հայերեն] Raspberry Pi Maintenance Suite"
+
+msgid "Raspberry Pi Maintenance Suite %s"
+msgstr "[Հայերեն] Raspberry Pi Maintenance Suite %s"
+
+msgid "Raspberry Pi Maintenance Suite Manager"
+msgstr "[Հայերեն] Raspberry Pi Maintenance Suite Manager"
+
+msgid "Refreshing metadata..."
+msgstr "[Հայերեն] Refreshing metadata..."
+
+msgid "Return to Main Menu"
+msgstr "[Հայերեն] Return to Main Menu"
+
+msgid "Root crontab updated."
+msgstr "[Հայերեն] Root crontab updated."
+
+msgid "Run Enabled Tasks Now"
+msgstr "[Հայերեն] Run Enabled Tasks Now"
+
+msgid "Running firmware update..."
+msgstr "[Հայերեն] Running firmware update..."
+
+msgid "Samsung SSD Firmware Update"
+msgstr "[Հայերեն] Samsung SSD Firmware Update"
+
+msgid "Samsung SSD detected by fwupd."
+msgstr "[Հայերեն] Samsung SSD detected by fwupd."
+
+msgid "Sat"
+msgstr "[Հայերեն] Sat"
+
+msgid "Saving configuration..."
+msgstr "[Հայերեն] Saving configuration..."
+
+msgid "Schedule updated."
+msgstr "[Հայերեն] Schedule updated."
+
+msgid "Scripts updated."
+msgstr "[Հայերեն] Scripts updated."
+
+msgid "Select which tasks to enable. Press Enter to accept default [Y]."
+msgstr "[Հայերեն] Select which tasks to enable. Press Enter to accept default [Y]."
+
+msgid "Selected tasks use their default weekly schedules."
+msgstr "[Հայերեն] Selected tasks use their default weekly schedules."
+
+msgid "Self-Update Service"
+msgstr "[Հայերեն] Self-Update Service"
+
+msgid "Setting up default schedules..."
+msgstr "[Հայերեն] Setting up default schedules..."
+
+msgid "Skipping update (not installed or wrong path)."
+msgstr "[Հայերեն] Skipping update (not installed or wrong path)."
+
+msgid "Starting uninstallation process..."
+msgstr "[Հայերեն] Starting uninstallation process..."
+
+msgid "Suite version: %s"
+msgstr "[Հայերեն] Suite version: %s"
+
+msgid "Sun"
+msgstr "[Հայերեն] Sun"
+
+msgid "System OS Update"
+msgstr "[Հայերեն] System OS Update"
+
+msgid "System is up to date."
+msgstr "[Հայերեն] System is up to date."
+
+msgid "Task Status Manager"
+msgstr "[Հայերեն] Task Status Manager"
+
+msgid "Task disabled."
+msgstr "[Հայերեն] Task disabled."
+
+msgid "Task enabled."
+msgstr "[Հայերեն] Task enabled."
+
+msgid "Task: %s"
+msgstr "[Հայերեն] Task: %s"
+
+msgid "The auto-update failed. Reason: %s"
+msgstr "[Հայերեն] The auto-update failed. Reason: %s"
+
+msgid "The system is running the latest version: %s."
+msgstr "[Հայերեն] The system is running the latest version: %s."
+
+msgid "The system will reboot shortly after this report is sent."
+msgstr "[Հայերեն] The system will reboot shortly after this report is sent."
+
+msgid "This wizard configures email, downloads scripts, and schedules maintenance tasks."
+msgstr "[Հայերեն] This wizard configures email, downloads scripts, and schedules maintenance tasks."
+
+msgid "This wizard will set up your email and default schedules."
+msgstr "[Հայերեն] This wizard will set up your email and default schedules."
+
+msgid "Thu"
+msgstr "[Հայերեն] Thu"
+
+msgid "Tue"
+msgstr "[Հայերեն] Tue"
+
+msgid "Uninstall"
+msgstr "[Հայերեն] Uninstall"
+
+msgid "Uninstall Suite"
+msgstr "[Հայերեն] Uninstall Suite"
+
+msgid "Uninstallation complete."
+msgstr "[Հայերեն] Uninstallation complete."
+
+msgid "Unsupported OS family for system update."
+msgstr "[Հայերեն] Unsupported OS family for system update."
+
+msgid "Updates available. Installing..."
+msgstr "[Հայերեն] Updates available. Installing..."
+
+msgid "Updating version tracking..."
+msgstr "[Հայերեն] Updating version tracking..."
+
+msgid "Version set to: %s"
+msgstr "[Հայերեն] Version set to: %s"
+
+msgid "Version: %s\\n\\nChoose an option. Enter selects. Esc cancels/exits."
+msgstr "[Հայերեն] Version: %s\\n\\nChoose an option. Enter selects. Esc cancels/exits."
+
+msgid "View Current Email Config"
+msgstr "[Հայերեն] View Current Email Config"
+
+msgid "Warning: Failed to install curl."
+msgstr "[Հայերեն] Warning: Failed to install curl."
+
+msgid "Warning: Failed to install gettext. UI will stay in English."
+msgstr "[Հայերեն] Warning: Failed to install gettext. UI will stay in English."
+
+msgid "Warning: Failed to install mail transport. Email notifications will be disabled."
+msgstr "[Հայերեն] Warning: Failed to install mail transport. Email notifications will be disabled."
+
+msgid "Warning: Failed to install whiptail. Falling back to text UI."
+msgstr "[Հայերեն] Warning: Failed to install whiptail. Falling back to text UI."
+
+msgid "Warning: One or more enabled tasks may reboot the system and terminate this session."
+msgstr "[Հայերեն] Warning: One or more enabled tasks may reboot the system and terminate this session."
+
+msgid "Warning: Some dependencies may have failed to install."
+msgstr "[Հայերեն] Warning: Some dependencies may have failed to install."
+
+msgid "Warning: could not read VERSION (local or %s)."
+msgstr "[Հայերեն] Warning: could not read VERSION (local or %s)."
+
+msgid "Warning: no package mapping for '%s' on this OS family; skipping."
+msgstr "[Հայերեն] Warning: no package mapping for '%s' on this OS family; skipping."
+
+msgid "Wed"
+msgstr "[Հայերեն] Wed"
+
+msgid "Weekly %s @ %s:%s"
+msgstr "[Հայերեն] Weekly %s @ %s:%s"
+
+msgid "Welcome to the One-Line Installer (%s)."
+msgstr "[Հայերեն] Welcome to the One-Line Installer (%s)."
+
+msgid "Whiptail UI unavailable; switching to text interface."
+msgstr "[Հայերեն] Whiptail UI unavailable; switching to text interface."
+
+msgid "[1/4] Welcome"
+msgstr "[Հայերեն] [1/4] Welcome"
+
+msgid "[2/4] Email configuration..."
+msgstr "[Հայերեն] [2/4] Email configuration..."
+
+msgid "[3/4] Downloading scripts..."
+msgstr "[Հայերեն] [3/4] Downloading scripts..."
+
+msgid "[4/4] Select maintenance tasks to enable."
+msgstr "[Հայերեն] [4/4] Select maintenance tasks to enable."
+
+msgid "[4/4] Task selection..."
+msgstr "[Հայերեն] [4/4] Task selection..."
+
+msgid "fwupdmgr failed to query update availability. Skipping firmware apply step."
+msgstr "[Հայերեն] fwupdmgr failed to query update availability. Skipping firmware apply step."
+
+msgid "gettext installed successfully."
+msgstr "[Հայերեն] gettext installed successfully."
+
+msgid "gettext not found. Installing gettext..."
+msgstr "[Հայերեն] gettext not found. Installing gettext..."
+
+msgid "nvme-cli is not installed and could not be installed automatically."
+msgstr "[Հայերեն] nvme-cli is not installed and could not be installed automatically."
+
+msgid "whiptail installed successfully."
+msgstr "[Հայերեն] whiptail installed successfully."
+
+msgid "whiptail not found. Installing whiptail..."
+msgstr "[Հայերեն] whiptail not found. Installing whiptail..."
+

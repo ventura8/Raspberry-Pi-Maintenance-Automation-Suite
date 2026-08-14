@@ -1,23 +1,20 @@
 ______________________________________________________________________
 
-## applyTo: "\*\*/\*.{yml,yaml}" description: "Use when editing workflow or YAML config files; enforces CI reliability, strict lint compatibility, and quoting correctness."
+## applyTo: "\*\*/\*.{yml,yaml}" description: "GitHub Actions and YAML reliability rules."
 
 # CI and YAML Instructions
 
-## Workflow Reliability
-
-1. Keep workflow steps deterministic and idempotent.
-1. Pin to stable action versions.
-1. Avoid unnecessary permission expansion in workflow jobs.
-
-## Shell-in-YAML Safety
-
-1. Quote interpolated paths and variables in shell commands.
-1. Keep multi-line run blocks readable and lint-clean.
-1. Ensure Docker command arguments remain explicit and portable.
-
-## Policy Constraints
-
-1. Keep YAML lint-compliant with max line length 140.
-1. Do not disable actionlint/yamllint checks.
-1. Keep CI behavior aligned with `tests/lint.sh` and test wrappers.
+1. Quote shell variables in `run:` steps; use `set -euo pipefail` in multi-line scripts.
+1. Keep workflow matrix distros synced with `scripts/run_docker_matrix.sh` and `AGENTS.md`.
+1. Prefer pinned action versions already used in-repo; Dependabot may bump them.
+1. Do not weaken or skip lint/coverage/matrix gates.
+1. Upload useful logs/artifacts on failure (`reports/distro-logs/`, coverage).
+1. Pass `yamllint` and `actionlint` via Docker/host lint gates.
+1. Line length ≤ 140 for YAML.
+1. Workflow jobs must invoke `./scripts/build-and-test.sh` stage flags only
+   (`--lints-only`, `--coverage-only`, `--distro <image>`), matching local
+   `./scripts/build-and-test.sh --full`. Do not call raw `lint-in-docker.sh` /
+   `run_docker_matrix.sh` or ad-hoc `chmod` lists from the workflow — executable prep is
+   `scripts/ensure_exec.sh` inside the entrypoint.
+1. Distro/coverage containers must use host-UID bind-mount parity (`CI_UID`/`CI_GID` image
+   build args + `docker run --user $(id -u):$(id -g)` via `run_docker_matrix.sh`).

@@ -10,45 +10,57 @@ RECIPIENT_EMAIL="your_email@gmail.com"
 # Prevent ANSI color codes from being generated
 export TERM=dumb
 export NO_COLOR=1
-export PATH=$PATH:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
+
+_RPI_HERE="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+if [ -f "$_RPI_HERE/lib/os_pkg.sh" ]; then
+    # shellcheck source=../lib/os_pkg.sh
+    source "$_RPI_HERE/lib/os_pkg.sh"
+    # shellcheck source=../lib/mail_send.sh
+    source "$_RPI_HERE/lib/mail_send.sh"
+    # shellcheck source=../lib/i18n.sh
+    source "$_RPI_HERE/lib/i18n.sh"
+elif [ -f "$_RPI_HERE/../lib/os_pkg.sh" ]; then
+    # shellcheck source=../lib/os_pkg.sh
+    source "$_RPI_HERE/../lib/os_pkg.sh"
+    # shellcheck source=../lib/mail_send.sh
+    source "$_RPI_HERE/../lib/mail_send.sh"
+    # shellcheck source=../lib/i18n.sh
+    source "$_RPI_HERE/../lib/i18n.sh"
+fi
 
 # --- Dependency Management ---
 check_and_install_dependencies() {
-    echo "--- Checking Dependencies ---"
-    local MISSING_DEPS=()
+    _pi_echo "--- Checking Dependencies ---"
+    local MISSING_LOGICAL=()
 
-    # 1. Hardware Detection
     local IS_PI=false
     if grep -q "Raspberry Pi" /proc/device-tree/model 2> /dev/null || grep -q "Raspberry Pi" /proc/cpuinfo 2> /dev/null; then
         IS_PI=true
     fi
 
-    # 2. Define required tools
     if [ "$IS_PI" = true ]; then
         if ! command -v rpi-eeprom-update > /dev/null 2>&1; then
-            MISSING_DEPS+=("rpi-eeprom-update")
+            MISSING_LOGICAL+=("rpi-eeprom")
         fi
     else
         if ! command -v fwupdmgr > /dev/null 2>&1; then
-            MISSING_DEPS+=("fwupd")
+            MISSING_LOGICAL+=("fwupd")
         fi
     fi
 
-    if ! command -v ssmtp > /dev/null 2>&1; then
-        MISSING_DEPS+=("ssmtp")
+    if ! has_mail_sender; then
+        MISSING_LOGICAL+=("mail-transport")
     fi
 
-    # 3. Install if missing
-    if [ ${#MISSING_DEPS[@]} -gt 0 ]; then
-        echo "Installing missing dependencies: ${MISSING_DEPS[*]}"
-        sudo apt-get update > /dev/null 2>&1
-        if sudo apt-get install -y "${MISSING_DEPS[@]}" > /dev/null 2>&1; then
-            echo "Dependencies installed successfully."
+    if [ ${#MISSING_LOGICAL[@]} -gt 0 ]; then
+        echo "Installing missing dependencies: ${MISSING_LOGICAL[*]}"
+        if pkg_install "${MISSING_LOGICAL[@]}"; then
+            _pi_echo "Dependencies installed successfully."
         else
-            echo "Warning: Some dependencies may have failed to install."
+            _pi_echo "Warning: Some dependencies may have failed to install."
         fi
     else
-        echo "All dependencies are installed."
+        _pi_echo "All dependencies are installed."
     fi
     echo ""
 }
@@ -60,16 +72,16 @@ main() {
 
     {
         # Hardcoded separators matching text length
-        echo "======================================================="
+        _pi_echo "======================================================="
         echo "   PI FIRMWARE UPDATE LOG - $(date)"
-        echo "======================================================="
+        _pi_echo "======================================================="
         echo ""
 
         # Ensure dependencies are present
         check_and_install_dependencies
 
         if command -v rpi-eeprom-update > /dev/null 2>&1; then
-            echo "--- Running 'sudo rpi-eeprom-update -a' ---"
+            _pi_echo "--- Running 'sudo rpi-eeprom-update -a' ---"
             # The -a flag applies updates automatically if available
             UPDATE_OUTPUT=$(sudo rpi-eeprom-update -a 2>&1)
             echo "$UPDATE_OUTPUT"
@@ -83,13 +95,13 @@ main() {
             fi
 
         elif command -v fwupdmgr > /dev/null 2>&1; then
-            echo "--- Running 'fwupdmgr' ---"
+            _pi_echo "--- Running 'fwupdmgr' ---"
             # Refresh metadata
-            echo "Refreshing metadata..."
+            _pi_echo "Refreshing metadata..."
             sudo fwupdmgr refresh --force 2>&1
 
             # Newer fwupd uses get-upgrades; keep get-updates as compatibility fallback.
-            echo "Checking for updates..."
+            _pi_echo "Checking for updates..."
             FWUPD_LIST_OUTPUT=""
             FWUPD_CHECK_OK=false
             if FWUPD_LIST_OUTPUT=$(sudo fwupdmgr get-upgrades 2>&1); then
@@ -103,7 +115,7 @@ main() {
             FWUPD_NO_UPDATE_REGEX="No upgrades|No updates|No updatable devices|Devices with no available firmware updates"
             if [ "$FWUPD_CHECK_OK" = true ] &&
                 ! echo "$FWUPD_LIST_OUTPUT" | grep -qiE "$FWUPD_NO_UPDATE_REGEX"; then
-                echo "Updates available. Installing..."
+                _pi_echo "Updates available. Installing..."
                 UPDATE_OUTPUT=$(sudo fwupdmgr update -y --no-reboot 2>&1)
                 echo "$UPDATE_OUTPUT"
 
@@ -118,48 +130,39 @@ main() {
                     REBOOT_NEEDED=false
                 fi
             elif [ "$FWUPD_CHECK_OK" = false ]; then
-                echo "fwupdmgr failed to query update availability. Skipping firmware apply step."
+                _pi_echo "fwupdmgr failed to query update availability. Skipping firmware apply step."
                 REBOOT_NEEDED=false
             else
-                echo "No updates available."
+                _pi_echo "No updates available."
                 REBOOT_NEEDED=false
             fi
             echo ""
         else
-            echo "No supported firmware update tool found (rpi-eeprom-update or fwupdmgr)."
+            _pi_echo "No supported firmware update tool found (rpi-eeprom-update or fwupdmgr)."
             REBOOT_NEEDED=false
         fi
 
         if [ "$REBOOT_NEEDED" = true ]; then
-            echo "--- REBOOT STATUS ---"
-            echo "A firmware update was applied. A reboot is required."
-            echo "The system will reboot shortly after this report is sent."
+            _pi_echo "--- REBOOT STATUS ---"
+            _pi_echo "A firmware update was applied. A reboot is required."
+            _pi_echo "The system will reboot shortly after this report is sent."
         else
-            echo "--- REBOOT STATUS ---"
-            echo "No firmware update was applied or no reboot is required."
+            _pi_echo "--- REBOOT STATUS ---"
+            _pi_echo "No firmware update was applied or no reboot is required."
         fi
 
-        echo "======================================================="
+        _pi_echo "======================================================="
         echo "   Maintenance Finished at $(date)"
-        echo "======================================================="
+        _pi_echo "======================================================="
     } > "$LOG_FILE"
 
-    # --- Send the report ---
-    if command -v ssmtp > /dev/null 2>&1; then
-        ssmtp "$RECIPIENT_EMAIL" << EOF
-To: $RECIPIENT_EMAIL
-Subject: $SUBJECT_LINE
-From: "Raspberry Pi Firmware" <$RECIPIENT_EMAIL>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8bit
-
-$(cat "$LOG_FILE")
-EOF
-    else
-        echo "ssmtp not found, skipping email notification."
+    if ! declare -F send_mail > /dev/null 2>&1; then
+        echo "ERROR: mail helper (lib/mail_send.sh) is not available" >&2
+        return 1
     fi
-
+    if ! send_mail "$RECIPIENT_EMAIL" "$SUBJECT_LINE" "Raspberry Pi Firmware" "$LOG_FILE"; then
+        echo "WARNING: failed to deliver email notification" >&2
+    fi
     # --- Final Action ---
     if [ "$REBOOT_NEEDED" = true ]; then
         rm "$LOG_FILE"

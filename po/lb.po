@@ -1,0 +1,629 @@
+# Raspberry Pi Maintenance Automation Suite
+# Copyright (C) 2026
+# This file is distributed under the same license as the package.
+msgid ""
+msgstr ""
+"Project-Id-Version: pi-maintenance-suite\n"
+"Report-Msgid-Bugs-To: https://github.com/ventura8/Raspberry-Pi-Maintenance-Automation-Suite/issues\n"
+"POT-Creation-Date: 1970-01-01 00:00+0000\n"
+"PO-Revision-Date: 2026-01-01 00:00+0000\n"
+"Last-Translator: AUTO\n"
+"Language-Team: Lëtzebuergesch\n"
+"Language: lb\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+
+msgid "      Raspberry Pi Maintenance Suite Manager"
+msgstr "[Lëtzebuergesch]       Raspberry Pi Maintenance Suite Manager"
+
+msgid "   -------------------"
+msgstr "[Lëtzebuergesch]    -------------------"
+
+msgid "   ----------------------------------------------------------------------------------"
+msgstr "[Lëtzebuergesch]    ----------------------------------------------------------------------------------"
+
+msgid "   0. Exit"
+msgstr "[Lëtzebuergesch]    0. Exit"
+
+msgid "   1. Configure Email Settings"
+msgstr "[Lëtzebuergesch]    1. Configure Email Settings"
+
+msgid "   2. View Current Email Config"
+msgstr "[Lëtzebuergesch]    2. View Current Email Config"
+
+msgid "   3. Manage Tasks & Schedules (Enable/Disable)"
+msgstr "[Lëtzebuergesch]    3. Manage Tasks & Schedules (Enable/Disable)"
+
+msgid "   4. Force Update Scripts (from GitHub)"
+msgstr "[Lëtzebuergesch]    4. Force Update Scripts (from GitHub)"
+
+msgid "   5. Run Enabled Tasks Now"
+msgstr "[Lëtzebuergesch]    5. Run Enabled Tasks Now"
+
+msgid "   6. Uninstall Suite"
+msgstr "[Lëtzebuergesch]    6. Uninstall Suite"
+
+msgid "   Enter ID to toggle/edit, or '0' to return to Main Menu."
+msgstr "[Lëtzebuergesch]    Enter ID to toggle/edit, or '0' to return to Main Menu."
+
+msgid "   RPi Maintenance Suite Uninstaller"
+msgstr "[Lëtzebuergesch]    RPi Maintenance Suite Uninstaller"
+
+msgid "   Task Status Manager"
+msgstr "[Lëtzebuergesch]    Task Status Manager"
+
+msgid "  Failed"
+msgstr "[Lëtzebuergesch]   Failed"
+
+msgid "  Success"
+msgstr "[Lëtzebuergesch]   Success"
+
+msgid "-"
+msgstr "[Lëtzebuergesch] -"
+
+msgid "--- Checking Dependencies ---"
+msgstr "[Lëtzebuergesch] --- Checking Dependencies ---"
+
+msgid "--- Checking for Samsung SSDs via fwupd ---"
+msgstr "[Lëtzebuergesch] --- Checking for Samsung SSDs via fwupd ---"
+
+msgid "--- Checking for Updates ---"
+msgstr "[Lëtzebuergesch] --- Checking for Updates ---"
+
+msgid "--- Current Email Settings ---"
+msgstr "[Lëtzebuergesch] --- Current Email Settings ---"
+
+msgid "--- Email Configuration ---"
+msgstr "[Lëtzebuergesch] --- Email Configuration ---"
+
+msgid "--- Fallback: Samsung Official ISO Update ---"
+msgstr "[Lëtzebuergesch] --- Fallback: Samsung Official ISO Update ---"
+
+msgid "--- REBOOT STATUS ---"
+msgstr "[Lëtzebuergesch] --- REBOOT STATUS ---"
+
+msgid "--- Refreshing Metadata ---"
+msgstr "[Lëtzebuergesch] --- Refreshing Metadata ---"
+
+msgid "--- Run Enabled Tasks Now ---"
+msgstr "[Lëtzebuergesch] --- Run Enabled Tasks Now ---"
+
+msgid "--- Running 'fwupdmgr' ---"
+msgstr "[Lëtzebuergesch] --- Running 'fwupdmgr' ---"
+
+msgid "--- Running 'sudo rpi-eeprom-update -a' ---"
+msgstr "[Lëtzebuergesch] --- Running 'sudo rpi-eeprom-update -a' ---"
+
+msgid "--- Skipping pip3 self-upgrade ---"
+msgstr "[Lëtzebuergesch] --- Skipping pip3 self-upgrade ---"
+
+msgid "--- Step 1: System Prune ---"
+msgstr "[Lëtzebuergesch] --- Step 1: System Prune ---"
+
+msgid "--- Step 2: Builder Prune ---"
+msgstr "[Lëtzebuergesch] --- Step 2: Builder Prune ---"
+
+msgid "--- Updating Pi-Apps and Installed Apps ---"
+msgstr "[Lëtzebuergesch] --- Updating Pi-Apps and Installed Apps ---"
+
+msgid "--- Upgrading outdated pip3 packages ---"
+msgstr "[Lëtzebuergesch] --- Upgrading outdated pip3 packages ---"
+
+msgid "--------------------------------------------"
+msgstr "[Lëtzebuergesch] --------------------------------------------"
+
+msgid "7z required but not installed."
+msgstr "[Lëtzebuergesch] 7z required but not installed."
+
+msgid "============================================"
+msgstr "[Lëtzebuergesch] ============================================"
+
+msgid "===================================================="
+msgstr "[Lëtzebuergesch] ===================================================="
+
+msgid "======================================================="
+msgstr "[Lëtzebuergesch] ======================================================="
+
+msgid "========================================================="
+msgstr "[Lëtzebuergesch] ========================================================="
+
+msgid "==========================================================="
+msgstr "[Lëtzebuergesch] ==========================================================="
+
+msgid "A firmware update was applied. A reboot is required."
+msgstr "[Lëtzebuergesch] A firmware update was applied. A reboot is required."
+
+msgid "A reboot is required to finish applying updates."
+msgstr "[Lëtzebuergesch] A reboot is required to finish applying updates."
+
+msgid "All dependencies are installed."
+msgstr "[Lëtzebuergesch] All dependencies are installed."
+
+msgid "All enabled tasks completed successfully."
+msgstr "[Lëtzebuergesch] All enabled tasks completed successfully."
+
+msgid "All pip3 packages are up-to-date."
+msgstr "[Lëtzebuergesch] All pip3 packages are up-to-date."
+
+msgid "All tasks are ON by default. Space toggles. Enter confirms."
+msgstr "[Lëtzebuergesch] All tasks are ON by default. Space toggles. Enter confirms."
+
+msgid "Are you sure you want to uninstall?"
+msgstr "[Lëtzebuergesch] Are you sure you want to uninstall?"
+
+msgid "Base pip3 is managed by the OS (Debian) to avoid record-file errors."
+msgstr "[Lëtzebuergesch] Base pip3 is managed by the OS (Debian) to avoid record-file errors."
+
+msgid "Buildx not detected. Falling back to legacy builder..."
+msgstr "[Lëtzebuergesch] Buildx not detected. Falling back to legacy builder..."
+
+msgid "Cancel"
+msgstr "[Lëtzebuergesch] Cancel"
+
+msgid "Cancelled: Enabled tasks were not run."
+msgstr "[Lëtzebuergesch] Cancelled: Enabled tasks were not run."
+
+msgid "Checking dependencies..."
+msgstr "[Lëtzebuergesch] Checking dependencies..."
+
+msgid "Checking for updates..."
+msgstr "[Lëtzebuergesch] Checking for updates..."
+
+msgid "Choose Continue to proceed, or Cancel to abort without installing."
+msgstr "[Lëtzebuergesch] Choose Continue to proceed, or Cancel to abort without installing."
+
+msgid "Cleaning up crontabs..."
+msgstr "[Lëtzebuergesch] Cleaning up crontabs..."
+
+msgid "Completed with failures."
+msgstr "[Lëtzebuergesch] Completed with failures."
+
+msgid "Configure Email Settings"
+msgstr "[Lëtzebuergesch] Configure Email Settings"
+
+msgid "Continue"
+msgstr "[Lëtzebuergesch] Continue"
+
+msgid "Could not find fumagician in initrd."
+msgstr "[Lëtzebuergesch] Could not find fumagician in initrd."
+
+msgid "Could not find initrd in ISO."
+msgstr "[Lëtzebuergesch] Could not find initrd in ISO."
+
+msgid "Could not parse remote tag from GitHub response."
+msgstr "[Lëtzebuergesch] Could not parse remote tag from GitHub response."
+
+msgid "Current Email Settings"
+msgstr "[Lëtzebuergesch] Current Email Settings"
+
+msgid "Custom Schedule"
+msgstr "[Lëtzebuergesch] Custom Schedule"
+
+msgid "DISABLED|-"
+msgstr "[Lëtzebuergesch] DISABLED|-"
+
+msgid "Daily @ %s:%s"
+msgstr "[Lëtzebuergesch] Daily @ %s:%s"
+
+msgid "Dependencies installed successfully."
+msgstr "[Lëtzebuergesch] Dependencies installed successfully."
+
+msgid "Docker Cleanup"
+msgstr "[Lëtzebuergesch] Docker Cleanup"
+
+msgid "Dow %s"
+msgstr "[Lëtzebuergesch] Dow %s"
+
+msgid "Download"
+msgstr "[Lëtzebuergesch] Download"
+
+msgid "Download Scripts"
+msgstr "[Lëtzebuergesch] Download Scripts"
+
+msgid "Downloaded file is empty."
+msgstr "[Lëtzebuergesch] Downloaded file is empty."
+
+msgid "Downloading/Updating scripts..."
+msgstr "[Lëtzebuergesch] Downloading/Updating scripts..."
+
+msgid "EOF detected"
+msgstr "[Lëtzebuergesch] EOF detected"
+
+msgid "Edit Schedule"
+msgstr "[Lëtzebuergesch] Edit Schedule"
+
+msgid "Email Configuration"
+msgstr "[Lëtzebuergesch] Email Configuration"
+
+msgid "Email configured successfully."
+msgstr "[Lëtzebuergesch] Email configured successfully."
+
+msgid "Enable Task"
+msgstr "[Lëtzebuergesch] Enable Task"
+
+msgid "Enabled %s"
+msgstr "[Lëtzebuergesch] Enabled %s"
+
+msgid "Enter App Password (16-char):"
+msgstr "[Lëtzebuergesch] Enter App Password (16-char):"
+
+msgid "Enter App Password (16-char, input hidden):"
+msgstr "[Lëtzebuergesch] Enter App Password (16-char, input hidden):"
+
+msgid "Enter Gmail address:"
+msgstr "[Lëtzebuergesch] Enter Gmail address:"
+
+msgid "Enter cron schedule:"
+msgstr "[Lëtzebuergesch] Enter cron schedule:"
+
+msgid "Error downloading %s"
+msgstr "[Lëtzebuergesch] Error downloading %s"
+
+msgid "Error downloading lib/%s"
+msgstr "[Lëtzebuergesch] Error downloading lib/%s"
+
+msgid "Error: This script supports 64-bit systems only."
+msgstr "[Lëtzebuergesch] Error: This script supports 64-bit systems only."
+
+msgid "Error: curl is required but not installed."
+msgstr "[Lëtzebuergesch] Error: curl is required but not installed."
+
+msgid "Error: fwupdmgr (fwupd) is not installed."
+msgstr "[Lëtzebuergesch] Error: fwupdmgr (fwupd) is not installed."
+
+msgid "Esc / Cancel aborts the installer without enabling tasks."
+msgstr "[Lëtzebuergesch] Esc / Cancel aborts the installer without enabling tasks."
+
+msgid "Exit"
+msgstr "[Lëtzebuergesch] Exit"
+
+msgid "Extracting initrd..."
+msgstr "[Lëtzebuergesch] Extracting initrd..."
+
+msgid "Failed to contact GitHub API."
+msgstr "[Lëtzebuergesch] Failed to contact GitHub API."
+
+msgid "Failed to download firmware ISO."
+msgstr "[Lëtzebuergesch] Failed to download firmware ISO."
+
+msgid "Failed to fetch Samsung firmware page."
+msgstr "[Lëtzebuergesch] Failed to fetch Samsung firmware page."
+
+msgid "Failed to mount ISO."
+msgstr "[Lëtzebuergesch] Failed to mount ISO."
+
+msgid "Fetching Samsung firmware page..."
+msgstr "[Lëtzebuergesch] Fetching Samsung firmware page..."
+
+msgid "Finished running enabled tasks.\\nSee terminal output for details."
+msgstr "[Lëtzebuergesch] Finished running enabled tasks.\\nSee terminal output for details."
+
+msgid "Firmware Update"
+msgstr "[Lëtzebuergesch] Firmware Update"
+
+msgid "Firmware is already up to date."
+msgstr "[Lëtzebuergesch] Firmware is already up to date."
+
+msgid "Firmware update applied successfully."
+msgstr "[Lëtzebuergesch] Firmware update applied successfully."
+
+msgid "Firmware update via fumagician failed."
+msgstr "[Lëtzebuergesch] Firmware update via fumagician failed."
+
+msgid "Force Update Scripts (from GitHub)"
+msgstr "[Lëtzebuergesch] Force Update Scripts (from GitHub)"
+
+msgid "Fri"
+msgstr "[Lëtzebuergesch] Fri"
+
+msgid "Installation Cancelled"
+msgstr "[Lëtzebuergesch] Installation Cancelled"
+
+msgid "Installation Complete"
+msgstr "[Lëtzebuergesch] Installation Complete"
+
+msgid "Installation Complete!"
+msgstr "[Lëtzebuergesch] Installation Complete!"
+
+msgid "Installing curl..."
+msgstr "[Lëtzebuergesch] Installing curl..."
+
+msgid "Invalid email address."
+msgstr "[Lëtzebuergesch] Invalid email address."
+
+msgid "Invalid email. returning to menu."
+msgstr "[Lëtzebuergesch] Invalid email. returning to menu."
+
+msgid "Invalid option: '%s'"
+msgstr "[Lëtzebuergesch] Invalid option: '%s'"
+
+msgid "Mail sender not found. Installing mail-transport packages..."
+msgstr "[Lëtzebuergesch] Mail sender not found. Installing mail-transport packages..."
+
+msgid "Mail transport installed successfully."
+msgstr "[Lëtzebuergesch] Mail transport installed successfully."
+
+msgid "Mailer configuration files under /etc/ssmtp/ or /etc/msmtprc were not removed to preserve backups."
+msgstr "[Lëtzebuergesch] Mailer configuration files under /etc/ssmtp/ or /etc/msmtprc were not removed to preserve backups."
+
+msgid "Manage Tasks & Schedules"
+msgstr "[Lëtzebuergesch] Manage Tasks & Schedules"
+
+msgid "Manual update: https://semiconductor.samsung.com/consumer-storage/support/tools/"
+msgstr "[Lëtzebuergesch] Manual update: https://semiconductor.samsung.com/consumer-storage/support/tools/"
+
+msgid "Matrix/non-interactive fresh install."
+msgstr "[Lëtzebuergesch] Matrix/non-interactive fresh install."
+
+msgid "Modern Buildx detected. Pruning build cache..."
+msgstr "[Lëtzebuergesch] Modern Buildx detected. Pruning build cache..."
+
+msgid "Mon"
+msgstr "[Lëtzebuergesch] Mon"
+
+msgid "Monthly %s @ %s:%s"
+msgstr "[Lëtzebuergesch] Monthly %s @ %s:%s"
+
+msgid "Mounting ISO..."
+msgstr "[Lëtzebuergesch] Mounting ISO..."
+
+msgid "New firmware available! Downloading..."
+msgstr "[Lëtzebuergesch] New firmware available! Downloading..."
+
+msgid "No SSMTP configuration found."
+msgstr "[Lëtzebuergesch] No SSMTP configuration found."
+
+msgid "No Samsung SSDs detected by fwupd."
+msgstr "[Lëtzebuergesch] No Samsung SSDs detected by fwupd."
+
+msgid "No Samsung SSDs detected by nvme-cli."
+msgstr "[Lëtzebuergesch] No Samsung SSDs detected by nvme-cli."
+
+msgid "No enabled tasks found."
+msgstr "[Lëtzebuergesch] No enabled tasks found."
+
+msgid "No firmware update was applied or no reboot is required."
+msgstr "[Lëtzebuergesch] No firmware update was applied or no reboot is required."
+
+msgid "No mail recipient configured, skipping email notification."
+msgstr "[Lëtzebuergesch] No mail recipient configured, skipping email notification."
+
+msgid "No mail sender (ssmtp/msmtp) found, skipping email notification."
+msgstr "[Lëtzebuergesch] No mail sender (ssmtp/msmtp) found, skipping email notification."
+
+msgid "No reboot is required at this time."
+msgstr "[Lëtzebuergesch] No reboot is required at this time."
+
+msgid "No supported firmware update tool found (rpi-eeprom-update or fwupdmgr)."
+msgstr "[Lëtzebuergesch] No supported firmware update tool found (rpi-eeprom-update or fwupdmgr)."
+
+msgid "No updates available via LVFS."
+msgstr "[Lëtzebuergesch] No updates available via LVFS."
+
+msgid "No updates available."
+msgstr "[Lëtzebuergesch] No updates available."
+
+msgid "Note: Mail transport packages (ssmtp/mailutils or msmtp/s-nail) were left installed as system packages."
+msgstr "[Lëtzebuergesch] Note: Mail transport packages (ssmtp/mailutils or msmtp/s-nail) were left installed as system packages."
+
+msgid "Password empty. Returning."
+msgstr "[Lëtzebuergesch] Password empty. Returning."
+
+msgid "Password: [HIDDEN/MASKED]"
+msgstr "[Lëtzebuergesch] Password: [HIDDEN/MASKED]"
+
+msgid "Pi Maintenance Update Failed"
+msgstr "[Lëtzebuergesch] Pi Maintenance Update Failed"
+
+msgid "Pi Maintenance: System Up to Date"
+msgstr "[Lëtzebuergesch] Pi Maintenance: System Up to Date"
+
+msgid "Pi-Apps Update"
+msgstr "Pi-Apps Update"
+
+msgid "Python Pip Update"
+msgstr "[Lëtzebuergesch] Python Pip Update"
+
+msgid "Raspberry Pi Maintenance Suite"
+msgstr "[Lëtzebuergesch] Raspberry Pi Maintenance Suite"
+
+msgid "Raspberry Pi Maintenance Suite %s"
+msgstr "[Lëtzebuergesch] Raspberry Pi Maintenance Suite %s"
+
+msgid "Raspberry Pi Maintenance Suite Manager"
+msgstr "[Lëtzebuergesch] Raspberry Pi Maintenance Suite Manager"
+
+msgid "Refreshing metadata..."
+msgstr "[Lëtzebuergesch] Refreshing metadata..."
+
+msgid "Return to Main Menu"
+msgstr "[Lëtzebuergesch] Return to Main Menu"
+
+msgid "Root crontab updated."
+msgstr "[Lëtzebuergesch] Root crontab updated."
+
+msgid "Run Enabled Tasks Now"
+msgstr "[Lëtzebuergesch] Run Enabled Tasks Now"
+
+msgid "Running firmware update..."
+msgstr "[Lëtzebuergesch] Running firmware update..."
+
+msgid "Samsung SSD Firmware Update"
+msgstr "[Lëtzebuergesch] Samsung SSD Firmware Update"
+
+msgid "Samsung SSD detected by fwupd."
+msgstr "[Lëtzebuergesch] Samsung SSD detected by fwupd."
+
+msgid "Sat"
+msgstr "[Lëtzebuergesch] Sat"
+
+msgid "Saving configuration..."
+msgstr "[Lëtzebuergesch] Saving configuration..."
+
+msgid "Schedule updated."
+msgstr "[Lëtzebuergesch] Schedule updated."
+
+msgid "Scripts updated."
+msgstr "[Lëtzebuergesch] Scripts updated."
+
+msgid "Select which tasks to enable. Press Enter to accept default [Y]."
+msgstr "[Lëtzebuergesch] Select which tasks to enable. Press Enter to accept default [Y]."
+
+msgid "Selected tasks use their default weekly schedules."
+msgstr "[Lëtzebuergesch] Selected tasks use their default weekly schedules."
+
+msgid "Self-Update Service"
+msgstr "[Lëtzebuergesch] Self-Update Service"
+
+msgid "Setting up default schedules..."
+msgstr "[Lëtzebuergesch] Setting up default schedules..."
+
+msgid "Skipping update (not installed or wrong path)."
+msgstr "[Lëtzebuergesch] Skipping update (not installed or wrong path)."
+
+msgid "Starting uninstallation process..."
+msgstr "[Lëtzebuergesch] Starting uninstallation process..."
+
+msgid "Suite version: %s"
+msgstr "[Lëtzebuergesch] Suite version: %s"
+
+msgid "Sun"
+msgstr "[Lëtzebuergesch] Sun"
+
+msgid "System OS Update"
+msgstr "[Lëtzebuergesch] System OS Update"
+
+msgid "System is up to date."
+msgstr "[Lëtzebuergesch] System is up to date."
+
+msgid "Task Status Manager"
+msgstr "[Lëtzebuergesch] Task Status Manager"
+
+msgid "Task disabled."
+msgstr "[Lëtzebuergesch] Task disabled."
+
+msgid "Task enabled."
+msgstr "[Lëtzebuergesch] Task enabled."
+
+msgid "Task: %s"
+msgstr "[Lëtzebuergesch] Task: %s"
+
+msgid "The auto-update failed. Reason: %s"
+msgstr "[Lëtzebuergesch] The auto-update failed. Reason: %s"
+
+msgid "The system is running the latest version: %s."
+msgstr "[Lëtzebuergesch] The system is running the latest version: %s."
+
+msgid "The system will reboot shortly after this report is sent."
+msgstr "[Lëtzebuergesch] The system will reboot shortly after this report is sent."
+
+msgid "This wizard configures email, downloads scripts, and schedules maintenance tasks."
+msgstr "[Lëtzebuergesch] This wizard configures email, downloads scripts, and schedules maintenance tasks."
+
+msgid "This wizard will set up your email and default schedules."
+msgstr "[Lëtzebuergesch] This wizard will set up your email and default schedules."
+
+msgid "Thu"
+msgstr "[Lëtzebuergesch] Thu"
+
+msgid "Tue"
+msgstr "[Lëtzebuergesch] Tue"
+
+msgid "Uninstall"
+msgstr "[Lëtzebuergesch] Uninstall"
+
+msgid "Uninstall Suite"
+msgstr "[Lëtzebuergesch] Uninstall Suite"
+
+msgid "Uninstallation complete."
+msgstr "[Lëtzebuergesch] Uninstallation complete."
+
+msgid "Unsupported OS family for system update."
+msgstr "[Lëtzebuergesch] Unsupported OS family for system update."
+
+msgid "Updates available. Installing..."
+msgstr "[Lëtzebuergesch] Updates available. Installing..."
+
+msgid "Updating version tracking..."
+msgstr "[Lëtzebuergesch] Updating version tracking..."
+
+msgid "Version set to: %s"
+msgstr "[Lëtzebuergesch] Version set to: %s"
+
+msgid "Version: %s\\n\\nChoose an option. Enter selects. Esc cancels/exits."
+msgstr "[Lëtzebuergesch] Version: %s\\n\\nChoose an option. Enter selects. Esc cancels/exits."
+
+msgid "View Current Email Config"
+msgstr "[Lëtzebuergesch] View Current Email Config"
+
+msgid "Warning: Failed to install curl."
+msgstr "[Lëtzebuergesch] Warning: Failed to install curl."
+
+msgid "Warning: Failed to install gettext. UI will stay in English."
+msgstr "[Lëtzebuergesch] Warning: Failed to install gettext. UI will stay in English."
+
+msgid "Warning: Failed to install mail transport. Email notifications will be disabled."
+msgstr "[Lëtzebuergesch] Warning: Failed to install mail transport. Email notifications will be disabled."
+
+msgid "Warning: Failed to install whiptail. Falling back to text UI."
+msgstr "[Lëtzebuergesch] Warning: Failed to install whiptail. Falling back to text UI."
+
+msgid "Warning: One or more enabled tasks may reboot the system and terminate this session."
+msgstr "[Lëtzebuergesch] Warning: One or more enabled tasks may reboot the system and terminate this session."
+
+msgid "Warning: Some dependencies may have failed to install."
+msgstr "[Lëtzebuergesch] Warning: Some dependencies may have failed to install."
+
+msgid "Warning: could not read VERSION (local or %s)."
+msgstr "[Lëtzebuergesch] Warning: could not read VERSION (local or %s)."
+
+msgid "Warning: no package mapping for '%s' on this OS family; skipping."
+msgstr "[Lëtzebuergesch] Warning: no package mapping for '%s' on this OS family; skipping."
+
+msgid "Wed"
+msgstr "[Lëtzebuergesch] Wed"
+
+msgid "Weekly %s @ %s:%s"
+msgstr "[Lëtzebuergesch] Weekly %s @ %s:%s"
+
+msgid "Welcome to the One-Line Installer (%s)."
+msgstr "[Lëtzebuergesch] Welcome to the One-Line Installer (%s)."
+
+msgid "Whiptail UI unavailable; switching to text interface."
+msgstr "[Lëtzebuergesch] Whiptail UI unavailable; switching to text interface."
+
+msgid "[1/4] Welcome"
+msgstr "[Lëtzebuergesch] [1/4] Welcome"
+
+msgid "[2/4] Email configuration..."
+msgstr "[Lëtzebuergesch] [2/4] Email configuration..."
+
+msgid "[3/4] Downloading scripts..."
+msgstr "[Lëtzebuergesch] [3/4] Downloading scripts..."
+
+msgid "[4/4] Select maintenance tasks to enable."
+msgstr "[Lëtzebuergesch] [4/4] Select maintenance tasks to enable."
+
+msgid "[4/4] Task selection..."
+msgstr "[Lëtzebuergesch] [4/4] Task selection..."
+
+msgid "fwupdmgr failed to query update availability. Skipping firmware apply step."
+msgstr "[Lëtzebuergesch] fwupdmgr failed to query update availability. Skipping firmware apply step."
+
+msgid "gettext installed successfully."
+msgstr "[Lëtzebuergesch] gettext installed successfully."
+
+msgid "gettext not found. Installing gettext..."
+msgstr "[Lëtzebuergesch] gettext not found. Installing gettext..."
+
+msgid "nvme-cli is not installed and could not be installed automatically."
+msgstr "[Lëtzebuergesch] nvme-cli is not installed and could not be installed automatically."
+
+msgid "whiptail installed successfully."
+msgstr "[Lëtzebuergesch] whiptail installed successfully."
+
+msgid "whiptail not found. Installing whiptail..."
+msgstr "[Lëtzebuergesch] whiptail not found. Installing whiptail..."
+

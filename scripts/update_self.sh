@@ -1,6 +1,5 @@
 #!/bin/bash
 # Description: Checks for updates to the Raspberry Pi Maintenance Suite and applies them.
-export PATH=$PATH:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
 
 # --- Configuration ---
 INSTALL_DIR="${INSTALL_DIR:-$HOME/pi-scripts}"
@@ -20,6 +19,24 @@ fi
 # Ensure logging
 LOG_FILE="${LOG_FILE:-$HOME/maintenance.log}"
 SSMTP_CONF="${SSMTP_CONF:-/etc/ssmtp/ssmtp.conf}"
+MSMTP_CONF="${MSMTP_CONF:-/etc/msmtprc}"
+
+_RPI_HERE="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+if [ -f "$_RPI_HERE/lib/os_pkg.sh" ]; then
+    # shellcheck source=../lib/os_pkg.sh
+    source "$_RPI_HERE/lib/os_pkg.sh"
+    # shellcheck source=../lib/mail_send.sh
+    source "$_RPI_HERE/lib/mail_send.sh"
+    # shellcheck source=../lib/i18n.sh
+    source "$_RPI_HERE/lib/i18n.sh"
+elif [ -f "$_RPI_HERE/../lib/os_pkg.sh" ]; then
+    # shellcheck source=../lib/os_pkg.sh
+    source "$_RPI_HERE/../lib/os_pkg.sh"
+    # shellcheck source=../lib/mail_send.sh
+    source "$_RPI_HERE/../lib/mail_send.sh"
+    # shellcheck source=../lib/i18n.sh
+    source "$_RPI_HERE/../lib/i18n.sh"
+fi
 
 log() {
     echo "[$(date '+%Y-%m-%d %H:%M:%S')] $1"
@@ -28,41 +45,43 @@ log() {
 send_notification() {
     local subject="$1"
     local body="$2"
+    local recipient
+    local body_file
 
-    if command -v ssmtp > /dev/null 2>&1; then
-        RECIPIENT_EMAIL=$(grep "^root=" "$SSMTP_CONF" 2> /dev/null | cut -d= -f2)
-        if [ -n "$RECIPIENT_EMAIL" ]; then
-            log "Sending email to $RECIPIENT_EMAIL..."
-            {
-                echo "Subject: $subject"
-                echo ""
-                echo "$body"
-            } | ssmtp "$RECIPIENT_EMAIL"
-        fi
-    else
-        log "ssmtp not found, skipping email notification."
+    recipient=$(mail_read_recipient_from_config 2> /dev/null || true)
+    if [ -z "$recipient" ]; then
+        log "$(_pi_gettext "No mail recipient configured, skipping email notification.")"
+        return 0
     fi
+    body_file=$(mktemp)
+    printf '%s\n' "$body" > "$body_file"
+    if send_mail "$recipient" "$subject" "Pi Maintenance" "$body_file"; then
+        log "Email notification delivered to $recipient."
+    else
+        log "Failed to deliver email notification to $recipient."
+    fi
+    rm -f "$body_file"
 }
 
 exit_with_failure() {
     local reason="$1"
     log "Error: $reason"
-    send_notification "Pi Maintenance Update Failed" "The auto-update failed. Reason: $reason"
+    send_notification "$(_pi_gettext "Pi Maintenance Update Failed")" "$(_pi_gettextf "The auto-update failed. Reason: %s" "$reason")"
     exit 1
 }
 
 main() {
-    log "Checking for updates..."
+    log "$(_pi_gettext "Checking for updates...")"
 
     if ! command -v curl &> /dev/null; then
         # Can't email if we can't do anything, but try logging
-        log "Error: curl is required but not installed."
+        log "$(_pi_gettext "Error: curl is required but not installed.")"
         exit 1
     fi
 
     # Fetch remote Release JSON
     if ! REMOTE_JSON=$(curl -s -L --max-time 10 "$API_URL"); then
-        exit_with_failure "Failed to contact GitHub API."
+        exit_with_failure "$(_pi_gettext "Failed to contact GitHub API.")"
     fi
 
     # Extract tag_name using grep/sed (avoiding jq dependency)
@@ -72,7 +91,7 @@ main() {
     if [ -z "$REMOTE_TAG" ]; then
         # Fallback: Check if it's a rate limit or other error in JSON
         log "Debug Response: $REMOTE_JSON"
-        exit_with_failure "Could not parse remote tag from GitHub response."
+        exit_with_failure "$(_pi_gettext "Could not parse remote tag from GitHub response.")"
     fi
 
     log "Remote Version: $REMOTE_TAG"
@@ -86,8 +105,9 @@ main() {
 
     # Compare Versions
     if [ "$REMOTE_TAG" == "$LOCAL_TAG" ]; then
-        log "System is up to date."
-        send_notification "Pi Maintenance: System Up to Date" "The system is running the latest version: $LOCAL_TAG."
+        log "$(_pi_gettext "System is up to date.")"
+        send_notification "$(_pi_gettext "Pi Maintenance: System Up to Date")" \
+            "$(_pi_gettextf "The system is running the latest version: %s." "$LOCAL_TAG")"
         exit 0
     else
         log "Update available! ($LOCAL_TAG -> $REMOTE_TAG)"
@@ -99,14 +119,27 @@ main() {
         RAW_URL="https://raw.githubusercontent.com/$GITHUB_USER/$REPO_NAME/$REMOTE_TAG"
 
         log "Downloading installer from $REMOTE_TAG..."
-        if ! curl -sSL "$RAW_URL/install.sh" -o "$INSTALL_SCRIPT"; then
+        if ! curl -fsSL "$RAW_URL/install.sh" -o "$INSTALL_SCRIPT"; then
             exit_with_failure "Failed to download install.sh from $RAW_URL."
         fi
         chmod +x "$INSTALL_SCRIPT"
 
+        # Stage VERSION next to install.sh so download_scripts reads the tagged SSOT file.
+        local staged_version
+        staged_version="$(dirname "$INSTALL_SCRIPT")/VERSION"
+        if ! curl -fsSL "$RAW_URL/VERSION" -o "$staged_version"; then
+            exit_with_failure "Failed to download VERSION from $RAW_URL."
+        fi
+
         if [ "$TEST_MODE" == "true" ]; then
             log "TEST_MODE: Skipping actual execution of install.sh"
-            echo "$REMOTE_TAG" > "$VERSION_FILE"
+            # Prefer staged VERSION contents when present (must match release tag).
+            if [ -f "$staged_version" ]; then
+                tr -d '[:space:]' < "$staged_version" > "$VERSION_FILE"
+                printf '\n' >> "$VERSION_FILE"
+            else
+                echo "$REMOTE_TAG" > "$VERSION_FILE"
+            fi
             # Send Success Email for test verification
             send_notification "Pi Maintenance Suite Updated" "The suite has been updated to version $REMOTE_TAG."
             exit 0
@@ -123,7 +156,7 @@ main() {
             exit_with_failure "Installer execution failed."
         fi
 
-        # Update version file on success
+        # Ensure .version matches the release tag (install.sh also writes from VERSION).
         echo "$REMOTE_TAG" > "$VERSION_FILE"
         log "Update complete. Version updated to $REMOTE_TAG"
 
