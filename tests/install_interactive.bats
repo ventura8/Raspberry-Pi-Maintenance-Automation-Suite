@@ -31,7 +31,9 @@ setup() {
     cp "$repo_root/install.sh" "$TEST_WORKSPACE/"
     mkdir -p "$TEST_WORKSPACE/lib"
     cp "$repo_root/lib/"*.sh "$TEST_WORKSPACE/lib/"
-    cp "$repo_root/VERSION" "$TEST_WORKSPACE/" 2> /dev/null || printf 'v1.1.0\n' > "$TEST_WORKSPACE/VERSION"
+    cp "$repo_root/VERSION" "$TEST_WORKSPACE/" 2> /dev/null || printf 'v0.0.0\n' > "$TEST_WORKSPACE/VERSION"
+    SUITE_VERSION=$(tr -d '[:space:]' < "$TEST_WORKSPACE/VERSION")
+    export SUITE_VERSION
     cd "$TEST_WORKSPACE"
 }
 
@@ -86,11 +88,12 @@ teardown() {
     cat << 'EOF' > "$MOCK_DIR/curl"
 #!/bin/bash
 outfile=""
+args="$*"
 while [[ $# -gt 0 ]]; do
   if [[ "$1" == "-o" ]]; then outfile="$2"; fi
   shift
 done
-if [[ "$outfile" == *"update_pi_firmware.sh"* ]]; then exit 1; fi
+if [[ "$args" == *"update_pi_firmware.sh"* ]]; then exit 1; fi
 touch "$outfile"
 exit 0
 EOF
@@ -112,7 +115,7 @@ EOF
     run bash -c "export PATH=$MOCK_DIR:$PATH; source ./install.sh; run_fresh_install <<< $'Y\ntest@fresh.com\npassword\n\n\n\n\n\n\n\n0'"
     
     [[ "$output" =~ "Welcome to the One-Line Installer" ]]
-    [[ "$output" =~ "v1.1.0" ]]
+    [[ "$output" =~ "$SUITE_VERSION" ]]
     [[ "$output" =~ "Installation Complete" ]]
 }
 
@@ -380,7 +383,7 @@ EOF
     # Pass inputs for fresh install (Y, email, pass, accept tasks..., enter, 0 exit menu)
     run ./install.sh <<< $'Y\ntest@entry.com\npassword\n\n\n\n\n\n\n\n\n0'
     
-    [[ "$output" =~ "Raspberry Pi Maintenance Suite v1.1.0" ]]
+    [[ "$output" =~ "Raspberry Pi Maintenance Suite $SUITE_VERSION" ]]
     [[ "$output" =~ "Welcome to the One-Line Installer" ]]
     [[ "$output" =~ "Installation Complete" ]]
 }

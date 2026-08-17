@@ -5,12 +5,6 @@ ssmtp.conf
 *.log
 tmp.*
 
-# Generated gettext binaries (po/*.po + pot are tracked)
-locale/
-*.mo
-*.pot
-!po/pi-maintenance-suite.pot
-
 # Ignore system files
 .DS_Store
 Thumbs.db

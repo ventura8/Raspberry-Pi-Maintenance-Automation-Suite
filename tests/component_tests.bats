@@ -37,9 +37,16 @@ setup() {
     # Mock Curl (Success)
     cat << 'EOF' > "$MOCK_DIR/curl"
 #!/bin/bash
-if [[ "$3" =~ "scripts/test_script.sh" ]]; then
-    touch "$INSTALL_DIR/test_script.sh"
+outfile=""
+prev=""
+for arg in "$@"; do
+    if [ "$prev" = "-o" ]; then outfile="$arg"; fi
+    prev="$arg"
+done
+if [[ "$*" =~ "scripts/test_script.sh" ]]; then
+    [ -n "$outfile" ] && echo "mock script" > "$outfile"
 fi
+exit 0
 EOF
     chmod +x "$MOCK_DIR/curl"
 
@@ -68,6 +75,37 @@ EOF
     rm -f "test_script.sh"
     
     [[ "$output" =~ "Scripts updated" ]]
+}
+
+@test "Component: Install - Download Scripts rewrites any RECIPIENT_EMAIL" {
+    cat << 'EOF' > "$MOCK_DIR/curl"
+#!/bin/bash
+outfile=""
+prev=""
+for arg in "$@"; do
+    if [ "$prev" = "-o" ]; then outfile="$arg"; fi
+    prev="$arg"
+done
+if [[ "$*" =~ "scripts/test_script.sh" ]]; then
+    [ -n "$outfile" ] && printf '%s\n' 'RECIPIENT_EMAIL="not-the-placeholder@example.com"' > "$outfile"
+fi
+exit 0
+EOF
+    chmod +x "$MOCK_DIR/curl"
+
+    mkdir -p "$(dirname "$SSMTP_CONF")"
+    echo "AuthUser=existing@test.com" > "$SSMTP_CONF"
+    mkdir -p "$INSTALL_DIR"
+
+    run bash -c "export PATH=$MOCK_DIR:$PATH; source \"$MOCK_DIR/install_lib.sh\"; SCRIPTS[1]='test_script.sh'; download_scripts"
+
+    [ "$status" -eq 0 ]
+    [[ "$output" =~ "Scripts updated" ]]
+    grep -q 'RECIPIENT_EMAIL="existing@test.com"' "$INSTALL_DIR/test_script.sh"
+    if grep -q 'not-the-placeholder@example.com' "$INSTALL_DIR/test_script.sh"; then
+        echo "leaked placeholder-mismatch address still present" >&2
+        return 1
+    fi
 }
 
 @test "Component: Install - Get Task Status (Reads Crontab)" {
@@ -491,9 +529,16 @@ EOF
 
     cat << 'EOF' > "$MOCK_DIR/curl"
 #!/bin/bash
+outfile=""
+prev=""
+for arg in "$@"; do
+    if [ "$prev" = "-o" ]; then outfile="$arg"; fi
+    prev="$arg"
+done
 if [[ "$*" =~ "scripts/test_script.sh" ]]; then
-    touch "$INSTALL_DIR/test_script.sh"
+    [ -n "$outfile" ] && echo "mock script" > "$outfile"
 fi
+exit 0
 EOF
     chmod +x "$MOCK_DIR/curl"
 
@@ -543,11 +588,18 @@ EOF
     unset SUITE_VERSION
     cat << 'EOF' > "$MOCK_DIR/curl"
 #!/bin/bash
+outfile=""
+prev=""
+for arg in "$@"; do
+    if [ "$prev" = "-o" ]; then outfile="$arg"; fi
+    prev="$arg"
+done
 if [[ "$*" == *"/VERSION"* ]]; then
     echo "v1.0.2"
+    [ -n "$outfile" ] && printf '%s\n' "v1.0.2" > "$outfile"
     exit 0
 elif [[ "$*" =~ "scripts/test_script.sh" ]]; then
-    touch "$INSTALL_DIR/test_script.sh"
+    [ -n "$outfile" ] && echo "mock script" > "$outfile"
 fi
 exit 0
 EOF

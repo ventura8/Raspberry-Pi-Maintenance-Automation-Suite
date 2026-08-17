@@ -12,10 +12,7 @@ setup() {
     ./tests/setup_mocks.sh > /dev/null
     export PATH="$MOCK_DIR:$PATH"
     
-    # Mock install.sh
-    echo "#!/bin/bash" > "$INSTALL_DIR/../install.sh"
-    echo "echo 'Mock Install Script Ran'" >> "$INSTALL_DIR/../install.sh"
-    chmod +x "$INSTALL_DIR/../install.sh"
+    # Mock install.sh is no longer written next to INSTALL_DIR; staging uses mktemp.
 }
 
 # Shared curl mock helper body: GitHub API + tagged install.sh + VERSION staging.
@@ -42,6 +39,7 @@ if [[ "$@" == *"install.sh"* ]]; then
         cat << 'INSTALLER' > "$out"
 #!/bin/bash
 echo "TAGGED_INSTALLER_EXECUTED"
+echo "RAW_URL=${RAW_URL:-unset}"
 if [[ "$1" == "--update" ]]; then
     echo "INSTALLER_EXECUTED_CORRECTLY"
     exit 0
@@ -49,6 +47,13 @@ fi
 exit 0
 INSTALLER
         chmod +x "$out"
+    fi
+    exit 0
+fi
+
+if [[ "$@" == *"/lib/"* ]]; then
+    if [ -n "$out" ]; then
+        printf '%s\n' "# staged lib stub" > "$out"
     fi
     exit 0
 fi
@@ -113,7 +118,7 @@ EOF
 
     _mock_curl_self_update
 
-    # Pre-seed a local install.sh that must be overwritten by the tagged download.
+    # Pre-seed a stale parent-dir installer that must not be used.
     cat << 'EOF' > "$INSTALL_DIR/../install.sh"
 #!/bin/bash
 echo "STALE_LOCAL_INSTALLER"
@@ -132,6 +137,8 @@ EOF
     [[ "$output" =~ "INSTALLER_EXECUTED_CORRECTLY" ]]
     [[ "$output" =~ "Update complete" ]]
     [[ "$output" =~ "Email notification delivered to mock_admin@test.com" ]]
+    [[ "$output" =~ "RAW_URL=https://raw.githubusercontent.com/ventura8/Raspberry-Pi-Maintenance-Automation-Suite/v1.2.0" ]]
+    [[ ! "$output" =~ "STALE_LOCAL_INSTALLER" ]]
     [[ "$(cat $INSTALL_DIR/.version)" == "v1.2.0" ]]
 }
 
@@ -217,6 +224,33 @@ EOF
     [[ "$output" =~ "Email notification delivered to mock_admin@test.com" ]]
 }
 
+@test "Self Update: install.sh download failure" {
+    echo "v1.0.0" > "$INSTALL_DIR/.version"
+    export TEST_REMOTE_TAG="v1.4.1"
+    unset TEST_MODE
+
+    cat << 'EOF' > "$MOCK_DIR/curl"
+#!/bin/bash
+if [[ "$@" == *"api.github.com"* ]]; then
+    echo "{\"tag_name\": \"$TEST_REMOTE_TAG\"}"
+    exit 0
+elif [[ "$@" == *"install.sh"* ]]; then
+    exit 1
+fi
+exit 1
+EOF
+    chmod +x "$MOCK_DIR/curl"
+
+    export SSMTP_CONF="$MOCK_DIR/ssmtp.conf"
+    echo "root=mock_admin@test.com" > "$SSMTP_CONF"
+
+    run ./scripts/update_self.sh
+
+    [[ "$status" -eq 1 ]]
+    [[ "$output" =~ "Failed to download install.sh" ]]
+    [[ "$output" =~ "Email notification delivered to mock_admin@test.com" ]]
+}
+
 @test "Self Update: API Failure" {
     export TEST_REMOTE_TAG="fail"
 
@@ -257,8 +291,63 @@ EOF
     [[ "$output" =~ "Email notification delivered to mock_admin@test.com" ]]
 }
 
-@test "Self Update: Missing install.sh falls back to ./install.sh" {
+@test "Self Update: Stages installer in mktemp (no parent-dir install.sh required)" {
     rm -f "$INSTALL_DIR/../install.sh"
+    echo "v1.0.0" > "$INSTALL_DIR/.version"
+    export TEST_REMOTE_TAG="v1.5.0"
+    unset TEST_MODE
+    _mock_curl_self_update
+    export SSMTP_CONF="$MOCK_DIR/ssmtp.conf"
+    echo "root=mock_admin@test.com" > "$SSMTP_CONF"
+
+    run ./scripts/update_self.sh
+    [[ "$status" -eq 0 ]]
+    [[ "$output" =~ "INSTALLER_EXECUTED_CORRECTLY" ]]
+    [[ ! -e "$INSTALL_DIR/../install.sh" ]]
+    [[ "$(cat $INSTALL_DIR/.version)" == "v1.5.0" ]]
+}
+
+@test "Self Update: aborts when staged VERSION mismatches release tag" {
+    echo "v1.0.0" > "$INSTALL_DIR/.version"
+    export TEST_REMOTE_TAG="v1.5.0"
+    unset TEST_MODE
+    cat << 'EOF' > "$MOCK_DIR/curl"
+#!/bin/bash
+if [[ "$@" == *"api.github.com"* ]]; then
+    echo "{\"tag_name\": \"$TEST_REMOTE_TAG\"}"
+    exit 0
+fi
+out=""
+prev=""
+for arg in "$@"; do
+    if [ "$prev" = "-o" ]; then out="$arg"; fi
+    prev="$arg"
+done
+if [[ "$@" == *"install.sh"* ]]; then
+    [ -n "$out" ] && printf '%s\n' '#!/bin/bash' > "$out" && chmod +x "$out"
+    exit 0
+fi
+if [[ "$@" == *"/lib/"* ]]; then
+    [ -n "$out" ] && printf '%s\n' '# stub' > "$out"
+    exit 0
+fi
+if [[ "$@" == *VERSION* ]]; then
+    [ -n "$out" ] && printf '%s\n' "v9.9.9" > "$out"
+    exit 0
+fi
+exit 1
+EOF
+    chmod +x "$MOCK_DIR/curl"
+    export SSMTP_CONF="$MOCK_DIR/ssmtp.conf"
+    echo "root=mock_admin@test.com" > "$SSMTP_CONF"
+
+    run ./scripts/update_self.sh
+    [[ "$status" -eq 1 ]]
+    [[ "$output" =~ "does not match release tag" ]]
+    [[ "$(cat $INSTALL_DIR/.version)" == "v1.0.0" ]]
+}
+
+@test "Self Update: sources libs from sibling lib dir (installed layout)" {
     echo "v1.0.0" > "$INSTALL_DIR/.version"
     export TEST_REMOTE_TAG="v1.0.0"
     _mock_curl_self_update

@@ -4,13 +4,13 @@
 
 _RPI_UNINSTALL_ROOT="${PI_UNINSTALL_ROOT_OVERRIDE:-$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)}"
 
-if [ "${PI_I18N_FORCE_INLINE_STUBS:-0}" != "1" ] && [ -f "$_RPI_UNINSTALL_ROOT/lib/i18n_soft.sh" ]; then
-    # shellcheck source=lib/i18n_soft.sh
-    source "$_RPI_UNINSTALL_ROOT/lib/i18n_soft.sh"
-elif [ "${PI_I18N_FORCE_INLINE_STUBS:-0}" != "1" ] && [ -f "${INSTALL_DIR:-$HOME/pi-scripts}/lib/i18n_soft.sh" ]; then
-    # shellcheck source=lib/i18n_soft.sh
-    source "${INSTALL_DIR:-$HOME/pi-scripts}/lib/i18n_soft.sh"
-elif ! declare -F _pi_gettext > /dev/null 2>&1; then
+if [ -f "$_RPI_UNINSTALL_ROOT/lib/ui_msg.sh" ]; then
+    # shellcheck source=lib/ui_msg.sh
+    source "$_RPI_UNINSTALL_ROOT/lib/ui_msg.sh"
+elif [ -f "${INSTALL_DIR:-$HOME/pi-scripts}/lib/ui_msg.sh" ]; then
+    # shellcheck source=lib/ui_msg.sh
+    source "${INSTALL_DIR:-$HOME/pi-scripts}/lib/ui_msg.sh"
+elif ! declare -F _pi_echo > /dev/null 2>&1; then
     _pi_gettext() { printf '%s' "$1"; }
     _pi_gettextf() {
         local format="$1" argument prefix suffix
@@ -32,14 +32,6 @@ elif ! declare -F _pi_gettext > /dev/null 2>&1; then
         format=$(_pi_gettextf "$@")
         printf '%s\n' "$format"
     }
-fi
-
-if [ "${PI_I18N_FORCE_INLINE_STUBS:-0}" != "1" ] && [ -f "${INSTALL_DIR:-$HOME/pi-scripts}/lib/i18n.sh" ]; then
-    # shellcheck source=lib/i18n.sh
-    source "${INSTALL_DIR:-$HOME/pi-scripts}/lib/i18n.sh"
-elif [ "${PI_I18N_FORCE_INLINE_STUBS:-0}" != "1" ] && [ -f "$_RPI_UNINSTALL_ROOT/lib/i18n.sh" ]; then
-    # shellcheck source=lib/i18n.sh
-    source "$_RPI_UNINSTALL_ROOT/lib/i18n.sh"
 fi
 
 main() {

@@ -26,7 +26,7 @@ Review changes without drive-by refactors. Prefer actionable findings tied to re
 1. Distro matrix / Dockerfile / CI sync.
 1. Missing or outdated BATS for behavior changes.
 1. Agent docs (`AGENTS.md`, skills) drift — **markdown must be updated in the same change set**.
-1. Incomplete gettext catalogs after string changes — **all `po/*.po` must be updated** (see AGENTS.md).
+1. Do not reintroduce gettext catalogs or PO lint gates (UI is English-only via `lib/ui_msg.sh`).
 
 ## Output format
 

@@ -163,11 +163,4 @@ if [[ ${#markdown_files[@]} -gt 0 ]]; then
     fi
 fi
 
-# GNU gettext catalog freshness + completeness (Whisper-aligned languages).
-if [[ -f "$ROOT_DIR/scripts/i18n/extract_pot.sh" ]]; then
-    run_check "i18n pot freshness" bash "$ROOT_DIR/scripts/i18n/extract_pot.sh" --check
-    run_check "i18n catalog seed" python3 "$ROOT_DIR/scripts/i18n/seed_whisper_languages.py" --check
-    run_check "i18n catalog quality" python3 "$ROOT_DIR/scripts/i18n/check_catalog_quality.py"
-fi
-
 echo "[lint][done] Lint checks completed."

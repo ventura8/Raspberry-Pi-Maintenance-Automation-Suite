@@ -23,12 +23,12 @@ Mandatory workflow for agents working on this Bash / BATS / Dockerized suite.
 ## Invariants to protect
 
 1. `install.sh --update` remains non-interactive and cron-safe (no stdin pipe).
+1. Maintenance scripts ship `RECIPIENT_EMAIL="your_email@gmail.com"`; `download_scripts` rewrites that assignment to the configured mail user.
 1. Whiptail is default UI; classic text UI is automatic fallback only when whiptail cannot run.
 1. Distro matrix and `lib/os_pkg.sh` stay aligned for apt/dnf/pacman.
 1. **Always update markdown** (`README.md`, `Instructions.md`, `docs/*`, `AGENTS.md`, skills/prompts)
    in the **same change set** as code/test/CI edits — never leave docs for later.
-1. **Always update translations** when changing `_pi_gettext*` strings: extract → sync → fill all
-   `po/*.po` → `check_catalog_quality.py` in the same change set (see `AGENTS.md`).
+1. UI strings are English-only via `lib/ui_msg.sh` — do not add gettext catalogs or PO lints.
 
 ## Authoritative docs
 

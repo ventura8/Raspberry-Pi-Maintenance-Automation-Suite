@@ -1,7 +1,6 @@
 # Prompt Pack
 
-Slash-style prompt templates for recurring workflows. Prefer pairing each prompt with the matching
-skill under `.github/skills/` or `.agents/skills/`.
+Slash-style prompt templates for recurring workflows. Prefer pairing each prompt with the matching skill under `.github/skills/` or `.agents/skills/`.
 
 ## Always-on rules
 

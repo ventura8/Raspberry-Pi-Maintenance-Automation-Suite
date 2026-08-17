@@ -1,13 +1,13 @@
 FROM ubuntu:26.04
 
 ENV DEBIAN_FRONTEND=noninteractive
-# Non-C LANG is required so GNU gettext honors LANGUAGE (C/C.UTF-8 ignores it).
+# Prefer a generated UTF-8 locale for predictable test environments.
 ENV LANG=en_US.UTF-8
 ENV LC_ALL=en_US.UTF-8
 
 RUN apt-get update && apt-get install -y --no-install-recommends \
     bash curl sudo ssmtp mailutils whiptail bats git python3 python3-pip cron \
-    gettext locales \
+    locales \
     procps ca-certificates bc \
     && sed -i 's/^# *en_US.UTF-8 UTF-8/en_US.UTF-8 UTF-8/' /etc/locale.gen \
     && grep -qxF 'en_US.UTF-8 UTF-8' /etc/locale.gen || echo 'en_US.UTF-8 UTF-8' >> /etc/locale.gen \

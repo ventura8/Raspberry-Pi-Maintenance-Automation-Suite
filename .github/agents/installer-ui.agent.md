@@ -26,9 +26,9 @@ Own interactive installer UX and related tests.
 1. Whiptail dialogs for fresh install + manager menu
 1. Explicit Cancel on fresh install (Continue/Cancel, Download/Cancel, Esc on email/checklist)
 1. Automatic text fallback when whiptail cannot run
-1. Dependency install for whiptail/mail/curl/gettext
+1. Dependency install for whiptail/mail/curl
 1. `/dev/tty` behavior for `curl|bash`
-1. Translated UI strings via `lib/i18n.sh` — update all `po/*.po` when marked strings change
+1. English-only UI strings via `lib/ui_msg.sh`
 1. BATS: `tests/install_*.bats`, whiptail mock in `tests/setup_mocks.sh`
 
 ## Validation

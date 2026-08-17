@@ -47,4 +47,4 @@ STRICT_MODE=true ./tests/lint.sh
 1. Keep `install.sh --update` non-interactive and cron-safe.
 1. Whiptail default UI; text UI is automatic fallback only.
 1. **Always update markdown docs** (README, Instructions, docs/\*, AGENTS.md, skills) in the same change set.
-1. **Always update translations** when changing `_pi_gettext*` strings (`.pot` + all `po/*.po`).
+1. UI strings are English-only via `lib/ui_msg.sh` — do not add gettext catalogs.

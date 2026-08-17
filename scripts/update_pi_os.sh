@@ -4,7 +4,7 @@
 # sending the report.
 
 # --- Configuration ---
-RECIPIENT_EMAIL="alexandrescu.sergiu@gmail.com"
+RECIPIENT_EMAIL="your_email@gmail.com"
 # ---------------------
 
 # Prevent ANSI color codes from being generated
@@ -17,15 +17,15 @@ if [ -f "$_RPI_HERE/lib/os_pkg.sh" ]; then
     source "$_RPI_HERE/lib/os_pkg.sh"
     # shellcheck source=../lib/mail_send.sh
     source "$_RPI_HERE/lib/mail_send.sh"
-    # shellcheck source=../lib/i18n.sh
-    source "$_RPI_HERE/lib/i18n.sh"
+    # shellcheck source=../lib/ui_msg.sh
+    source "$_RPI_HERE/lib/ui_msg.sh"
 elif [ -f "$_RPI_HERE/../lib/os_pkg.sh" ]; then
     # shellcheck source=../lib/os_pkg.sh
     source "$_RPI_HERE/../lib/os_pkg.sh"
     # shellcheck source=../lib/mail_send.sh
     source "$_RPI_HERE/../lib/mail_send.sh"
-    # shellcheck source=../lib/i18n.sh
-    source "$_RPI_HERE/../lib/i18n.sh"
+    # shellcheck source=../lib/ui_msg.sh
+    source "$_RPI_HERE/../lib/ui_msg.sh"
 fi
 
 # Allow overriding for testing

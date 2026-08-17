@@ -11,6 +11,7 @@ ______________________________________________________________________
 - `apt-get update` + `full-upgrade` + `autoremove`
 - Uses `DEBIAN_FRONTEND=noninteractive`
 - Checks `/var/run/reboot-required`
+- Ships `RECIPIENT_EMAIL="your_email@gmail.com"`; the installer rewrites that assignment to the user's configured address on download/`--update`
 
 ### `update_pi_firmware.sh`
 
@@ -45,7 +46,10 @@ ______________________________________________________________________
 ### `update_self.sh`
 
 - Compares local `.version` (copy of repo [`VERSION`](../VERSION) written at install time) against latest GitHub release tag via the Releases API
-- On update available: downloads tagged `install.sh` **and** `VERSION`, runs `bash install.sh --update` (non-interactive; safe in cron — no `/dev/tty` access)
+- On update available: stages tagged `install.sh`, `VERSION`, and `lib/` in a `mktemp` directory (fails closed if staging dir or tag/`VERSION` mismatch), exports `RAW_URL` for that tag, then runs `bash "$stage_dir/install.sh" --update` (non-interactive; safe in cron — no `/dev/tty` access)
+- `--update` sources package/mail helpers from `$INSTALL_DIR/lib` when the installer tree has no sibling `lib/` (so a parent-dir copy of `install.sh` still works)
+- `download_scripts` writes scripts via `mktemp` under the destination directory + `mv` so a running `update_self.sh` is not truncated and replace stays same-filesystem
+- `--update` rewrites existing suite crontab lines to `>/dev/null 2>&1` (preserving `@daily`-style macros) so cron MAILTO does not dump logs
 - On success: writes the new release tag to `.version`; sends success email
 - On any failure: sends failure email via `ssmtp`
 - **Cron safety**: installer is invoked directly with no stdin pipe — piping caused `No such device or address` on `/dev/tty` in cron environments
@@ -58,7 +62,7 @@ ______________________________________________________________________
 - **Dependencies**: installs `curl`, `ssmtp`/`mailutils` (or `msmtp` fallback), and `whiptail` via `check_dependencies`
 - **Version**: `download_scripts` writes `$INSTALL_DIR/.version` from the repo-root `VERSION` file (local tree first, else `$RAW_URL/VERSION`); remote fetches use `curl -fsSL` (fail on HTTP errors)
 - **Version display**: interactive UI shows `read_suite_version` in the text header, whiptail welcome, and main menu from the start
-- **`--update`**: non-interactive path used by `update_self.sh` (dependency check + script download only)
+- **`--update`**: non-interactive path used by `update_self.sh` (dependency check + script download + quiet existing cron redirects; fail closed if package helpers are not loaded)
+- **Email injection**: shipped maintenance scripts use `RECIPIENT_EMAIL="your_email@gmail.com"`; `download_scripts` rewrites `RECIPIENT_EMAIL="..."` to the configured ssmtp/msmtp user (not a literal `your_email@gmail.com` string replace), matching `save_email_configuration`
 - **`INSTALL_MATRIX_FRESH=1`**: deterministic CI/matrix fresh install (`MATRIX_EMAIL` / `MATRIX_PASS`) without stdin blank-line protocol or manager menu
-- Single-file installer (no separate `lib/` fetch) so `curl|bash` one-liners keep working; uses `/dev/tty` when stdin is piped
-  (shared `lib/` is still copied/fetched into `$INSTALL_DIR/lib` for maintenance scripts)
+- Single-file installer for `curl|bash`: when no adjacent or installed `lib/` is present, bootstraps `os_pkg.sh` / `mail_send.sh` / `ui_msg.sh` from `$RAW_URL/lib/` into a temp dir before `check_dependencies` so `pkg_install` / `has_mail_sender` exist; uses `/dev/tty` when stdin is piped; shared `lib/` is still copied/fetched into `$INSTALL_DIR/lib` for maintenance scripts
