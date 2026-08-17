@@ -59,7 +59,6 @@ setup() {
     [ "$(resolve_pkg_names fwupd)" = "fwupd" ]
     [ "$(resolve_pkg_names nvme-cli)" = "nvme-cli" ]
     [ "$(resolve_pkg_names ssmtp)" = "ssmtp" ]
-    [ "$(resolve_pkg_names gettext)" = "gettext-base gettext" ]
 
     INSTALL_OS_ID=fedora INSTALL_OS_ID_LIKE=""
     [ "$(resolve_pkg_names whiptail)" = "newt" ]
@@ -67,7 +66,6 @@ setup() {
     [ "$(resolve_pkg_names p7zip)" = "7zip" ]
     [ "$(resolve_pkg_names ssmtp)" = "msmtp" ]
     [ "$(resolve_pkg_names rpi-eeprom)" = "" ]
-    [ "$(resolve_pkg_names gettext)" = "gettext" ]
 
     INSTALL_OS_ID=rocky INSTALL_OS_ID_LIKE=""
     [ "$(resolve_pkg_names p7zip)" = "p7zip" ]
@@ -76,7 +74,6 @@ setup() {
     [ "$(resolve_pkg_names whiptail)" = "libnewt" ]
     [ "$(resolve_pkg_names mail-transport)" = "msmtp s-nail" ]
     [ "$(resolve_pkg_names p7zip)" = "p7zip" ]
-    [ "$(resolve_pkg_names gettext)" = "gettext" ]
 }
 
 @test "os_pkg: logical_is_installed and has_mail_sender" {

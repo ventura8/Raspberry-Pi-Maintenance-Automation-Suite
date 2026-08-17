@@ -2,12 +2,11 @@
 # Mail sending helpers: prefer ssmtp, fall back to msmtp.
 # shellcheck shell=bash
 
-# Soft gettext stubs when lib/i18n.sh is not sourced yet.
-_I18N_SOFT="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/i18n_soft.sh"
-if [ -f "$_I18N_SOFT" ]; then
-    # shellcheck source=lib/i18n_soft.sh
-    source "$_I18N_SOFT"
-elif ! declare -F _pi_gettext > /dev/null 2>&1; then
+_UI_MSG="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/ui_msg.sh"
+if [ -f "$_UI_MSG" ]; then
+    # shellcheck source=lib/ui_msg.sh
+    source "$_UI_MSG"
+elif ! declare -F _pi_echo > /dev/null 2>&1; then
     _pi_gettext() { printf '%s' "$1"; }
     _pi_gettextf() {
         local format="$1" argument prefix suffix
@@ -30,7 +29,7 @@ elif ! declare -F _pi_gettext > /dev/null 2>&1; then
         printf '%s\n' "$format"
     }
 fi
-unset _I18N_SOFT
+unset _UI_MSG
 
 SSMTP_CONF="${SSMTP_CONF:-/etc/ssmtp/ssmtp.conf}"
 REVALIASES="${REVALIASES:-/etc/ssmtp/revaliases}"

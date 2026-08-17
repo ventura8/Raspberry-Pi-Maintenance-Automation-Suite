@@ -8,7 +8,7 @@
 GITHUB_USER="ventura8"
 REPO_NAME="Raspberry-Pi-Maintenance-Automation-Suite"
 BRANCH="main"
-RAW_URL="https://raw.githubusercontent.com/$GITHUB_USER/$REPO_NAME/$BRANCH"
+RAW_URL="${RAW_URL:-https://raw.githubusercontent.com/$GITHUB_USER/$REPO_NAME/$BRANCH}"
 
 INSTALL_DIR="${INSTALL_DIR:-$HOME/pi-scripts}"
 SSMTP_CONF="${SSMTP_CONF:-/etc/ssmtp/ssmtp.conf}"
@@ -17,40 +17,108 @@ MSMTP_CONF="${MSMTP_CONF:-/etc/msmtprc}"
 
 _INSTALL_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
-if [ "${PI_I18N_FORCE_INLINE_STUBS:-0}" != "1" ] && [ -f "$_INSTALL_ROOT/lib/i18n_soft.sh" ]; then
-    # shellcheck source=lib/i18n_soft.sh
-    source "$_INSTALL_ROOT/lib/i18n_soft.sh"
-elif ! declare -F _pi_gettext > /dev/null 2>&1; then
-    _pi_gettext() { printf '%s' "$1"; }
-    _pi_gettextf() {
-        local format="$1" argument prefix suffix
-        shift
-        for argument in "$@"; do
-            case "$format" in
-                *%s*)
-                    prefix=${format%%\%s*}
-                    suffix=${format#*%s}
-                    format="${prefix}${argument}${suffix}"
-                    ;;
-            esac
-        done
-        printf '%s' "$format"
-    }
-    _pi_echo() { printf '%s\n' "$1"; }
-    _pi_echof() {
-        local format
-        format=$(_pi_gettextf "$@")
-        printf '%s\n' "$format"
-    }
+# Prefer libs next to this installer (repo or staged tree); else the installed copy.
+_install_lib_root() {
+    if [ -f "$_INSTALL_ROOT/lib/os_pkg.sh" ]; then
+        printf '%s' "$_INSTALL_ROOT/lib"
+        return 0
+    fi
+    if [ -n "${INSTALL_DIR:-}" ] && [ -f "$INSTALL_DIR/lib/os_pkg.sh" ]; then
+        printf '%s' "$INSTALL_DIR/lib"
+        return 0
+    fi
+    return 1
+}
+
+_source_lib_dir() {
+    local lib_root="$1"
+    [ -n "$lib_root" ] && [ -f "$lib_root/os_pkg.sh" ] || return 1
+    if [ -f "$lib_root/ui_msg.sh" ]; then
+        # shellcheck source=lib/ui_msg.sh
+        source "$lib_root/ui_msg.sh"
+    fi
+    # shellcheck source=lib/os_pkg.sh
+    source "$lib_root/os_pkg.sh"
+    # shellcheck source=lib/mail_send.sh
+    source "$lib_root/mail_send.sh"
+    return 0
+}
+
+# curl|bash has no sibling lib/; fetch package/mail/UI helpers from RAW_URL into a temp dir.
+_fetch_bootstrap_libs() {
+    local dest lib_file tmp
+    command -v curl > /dev/null 2>&1 || return 1
+    dest=$(mktemp -d) || return 1
+    mkdir -p "$dest/lib"
+    for lib_file in os_pkg.sh mail_send.sh ui_msg.sh; do
+        tmp=$(mktemp "$dest/lib/.fetch.XXXXXX") || {
+            rm -rf "$dest"
+            return 1
+        }
+        if curl -fsSL "$RAW_URL/lib/$lib_file" -o "$tmp"; then
+            mv -f "$tmp" "$dest/lib/$lib_file"
+        else
+            rm -f "$tmp"
+            if [ "$lib_file" = "os_pkg.sh" ] || [ "$lib_file" = "mail_send.sh" ]; then
+                rm -rf "$dest"
+                return 1
+            fi
+        fi
+    done
+    printf '%s' "$dest/lib"
+    return 0
+}
+
+_source_install_libs() {
+    local lib_root
+    if lib_root=$(_install_lib_root); then
+        _source_lib_dir "$lib_root"
+        return $?
+    fi
+    lib_root=$(_fetch_bootstrap_libs) || return 1
+    _source_lib_dir "$lib_root"
+}
+
+_ensure_install_helpers() {
+    if declare -F pkg_install > /dev/null 2>&1 && declare -F has_mail_sender > /dev/null 2>&1; then
+        return 0
+    fi
+    _pi_echo "Error: package helpers not loaded. Cannot continue update."
+    return 1
+}
+
+_source_install_libs || true
+if ! declare -F _pi_gettext > /dev/null 2>&1; then
+    # shellcheck source=lib/ui_msg.sh
+    if [ -f "$_INSTALL_ROOT/lib/ui_msg.sh" ]; then
+        source "$_INSTALL_ROOT/lib/ui_msg.sh"
+    else
+        _pi_gettext() { printf '%s' "$1"; }
+        _pi_gettextf() {
+            local format="$1" argument prefix suffix
+            shift
+            for argument in "$@"; do
+                case "$format" in
+                    *%s*)
+                        prefix=${format%%\%s*}
+                        suffix=${format#*%s}
+                        format="${prefix}${argument}${suffix}"
+                        ;;
+                esac
+            done
+            printf '%s' "$format"
+        }
+        _pi_echo() { printf '%s\n' "$1"; }
+        _pi_echof() {
+            local format
+            format=$(_pi_gettextf "$@")
+            printf '%s\n' "$format"
+        }
+    fi
 fi
 
-if [ "${PI_I18N_FORCE_INLINE_STUBS:-0}" != "1" ] && [ -f "$_INSTALL_ROOT/lib/os_pkg.sh" ]; then
-    # shellcheck source=lib/os_pkg.sh
-    source "$_INSTALL_ROOT/lib/os_pkg.sh"
-    # shellcheck source=lib/mail_send.sh
-    source "$_INSTALL_ROOT/lib/mail_send.sh"
-    # shellcheck source=lib/i18n.sh
-    source "$_INSTALL_ROOT/lib/i18n.sh"
+if ! declare -F pkg_install > /dev/null 2>&1 || ! declare -F has_mail_sender > /dev/null 2>&1; then
+    _source_install_libs || true
 fi
 
 # UI mode: whiptail preferred; text fallback when unavailable.
@@ -81,7 +149,7 @@ NAMES[5]="Pi-Apps Update"
 NAMES[6]="Samsung SSD Firmware Update"
 NAMES[7]="Self-Update Service"
 
-# Display name for task id (literals keep msgids extractable for gettext).
+# Display name for task id.
 _pi_task_name() {
     case "$1" in
         1) _pi_gettext "System OS Update" ;;
@@ -185,6 +253,9 @@ task_uses_user_cron() {
 }
 
 check_dependencies() {
+    if ! _ensure_install_helpers; then
+        return 1
+    fi
     _pi_echo "Checking dependencies..."
 
     if ! is_installed curl; then
@@ -210,16 +281,6 @@ check_dependencies() {
             _pi_echo "whiptail installed successfully."
         else
             _pi_echo "Warning: Failed to install whiptail. Falling back to text UI."
-        fi
-    fi
-
-    # Runtime gettext for translated UI (non-fatal: English msgid fallback).
-    if ! is_installed gettext; then
-        _pi_echo "gettext not found. Installing gettext..."
-        if pkg_install gettext; then
-            _pi_echo "gettext installed successfully."
-        else
-            _pi_echo "Warning: Failed to install gettext. UI will stay in English."
         fi
     fi
 }
@@ -504,14 +565,36 @@ apply_task_schedule() {
     if task_uses_user_cron "$script_name"; then
         (
             crontab -l 2> /dev/null | grep -v "$script_name"
-            echo "$sched $INSTALL_DIR/$script_name >/dev/null"
+            echo "$sched $INSTALL_DIR/$script_name >/dev/null 2>&1"
         ) | crontab -
     else
         (
             sudo crontab -l 2> /dev/null | grep -v "$script_name"
-            echo "$sched $INSTALL_DIR/$script_name >/dev/null"
+            echo "$sched $INSTALL_DIR/$script_name >/dev/null 2>&1"
         ) | sudo crontab -
     fi
+}
+
+# Rewrite existing suite crontab lines so cron MAILTO does not dump stdout/stderr.
+quiet_suite_cron_jobs() {
+    local i script_name line sched first
+    for i in {1..7}; do
+        script_name="${SCRIPTS[$i]}"
+        if task_uses_user_cron "$script_name"; then
+            line=$(crontab -l 2> /dev/null | grep -F "$script_name" | head -n 1) || true
+        else
+            line=$(sudo crontab -l 2> /dev/null | grep -F "$script_name" | head -n 1) || true
+        fi
+        [ -n "$line" ] || continue
+        first=$(echo "$line" | awk '{print $1}')
+        if [[ "$first" == @* ]]; then
+            sched="$first"
+        else
+            sched=$(echo "$line" | awk '{print $1, $2, $3, $4, $5}')
+        fi
+        [ -n "$sched" ] || continue
+        apply_task_schedule "$script_name" "$sched"
+    done
 }
 
 remove_task_schedule() {
@@ -668,6 +751,40 @@ show_email_config() {
     show_email_config_text
 }
 
+# Write via temp + mv so a running cron script keeps its old inode.
+_install_atomic_mv() {
+    local tmp="$1"
+    local dest="$2"
+    chmod 600 "$tmp" 2> /dev/null || true
+    mv -f "$tmp" "$dest"
+}
+
+_install_atomic_copy() {
+    local src="$1"
+    local dest="$2"
+    local tmp
+    mkdir -p "$(dirname "$dest")"
+    tmp=$(mktemp "$(dirname "$dest")/.rpi-install.XXXXXX")
+    if ! cat "$src" > "$tmp"; then
+        rm -f "$tmp"
+        return 1
+    fi
+    _install_atomic_mv "$tmp" "$dest"
+}
+
+_install_atomic_curl() {
+    local url="$1"
+    local dest="$2"
+    local tmp
+    mkdir -p "$(dirname "$dest")"
+    tmp=$(mktemp "$(dirname "$dest")/.rpi-install.XXXXXX")
+    if ! curl -fsSL "$url" -o "$tmp"; then
+        rm -f "$tmp"
+        return 1
+    fi
+    _install_atomic_mv "$tmp" "$dest"
+}
+
 download_scripts() {
     _pi_echo "Downloading/Updating scripts..."
     mkdir -p "$INSTALL_DIR" "$INSTALL_DIR/lib"
@@ -680,13 +797,20 @@ download_scripts() {
         email_to_inject=$(sudo grep -E '^user\s+' "$MSMTP_CONF" | awk '{print $2}' | head -n 1)
     fi
 
-    # Shared libraries used by maintenance scripts (apt/dnf/pacman + mail + i18n helpers)
-    local lib_file
-    for lib_file in os_pkg.sh mail_send.sh i18n.sh i18n_soft.sh; do
+    # Shared libraries used by maintenance scripts (apt/dnf/pacman + mail + UI helpers)
+    local lib_file lib_src
+    for lib_file in os_pkg.sh mail_send.sh ui_msg.sh; do
+        lib_src=""
         if [ -f "$_INSTALL_ROOT/lib/$lib_file" ]; then
-            cp "$_INSTALL_ROOT/lib/$lib_file" "$INSTALL_DIR/lib/$lib_file"
+            lib_src="$_INSTALL_ROOT/lib/$lib_file"
+        fi
+        if [ -n "$lib_src" ]; then
+            if ! _install_atomic_copy "$lib_src" "$INSTALL_DIR/lib/$lib_file"; then
+                _pi_echof "Error downloading lib/%s" "$lib_file"
+                continue
+            fi
         else
-            if ! curl -fsSL "$RAW_URL/lib/$lib_file" -o "$INSTALL_DIR/lib/$lib_file"; then
+            if ! _install_atomic_curl "$RAW_URL/lib/$lib_file" "$INSTALL_DIR/lib/$lib_file"; then
                 _pi_echof "Error downloading lib/%s" "$lib_file"
                 continue
             fi
@@ -702,13 +826,13 @@ download_scripts() {
             continue
         fi
 
-        if ! curl -fsSL "$RAW_URL/scripts/$script" -o "$INSTALL_DIR/$script"; then
+        if ! _install_atomic_curl "$RAW_URL/scripts/$script" "$INSTALL_DIR/$script"; then
             _pi_echof "Error downloading %s" "$script"
             continue
         fi
 
         if [ -f "$INSTALL_DIR/$script" ]; then
-            sed -i "s/your_email@gmail.com/$email_to_inject/g" "$INSTALL_DIR/$script"
+            sed -i "s/RECIPIENT_EMAIL=\".*\"/RECIPIENT_EMAIL=\"$email_to_inject\"/" "$INSTALL_DIR/$script"
             chmod +x "$INSTALL_DIR/$script"
         else
             _pi_echof "Error downloading %s" "$script"
@@ -716,45 +840,7 @@ download_scripts() {
     done
     _pi_echo "Scripts updated."
     write_installed_version
-    _install_locale_catalogs
     sleep 1
-}
-
-# Compile tracked po/*.po into $INSTALL_DIR/locale for runtime gettext.
-_install_locale_catalogs() {
-    local po_src language target_dir domain="pi-maintenance-suite"
-    po_src=""
-    if [ -d "$_INSTALL_ROOT/po" ]; then
-        po_src="$_INSTALL_ROOT/po"
-    elif [ -d "$INSTALL_DIR/po" ]; then
-        po_src="$INSTALL_DIR/po"
-    fi
-    [ -n "$po_src" ] || return 0
-    command -v msgfmt > /dev/null 2>&1 || return 0
-    [ -f "$po_src/SUPPORTED_LANGUAGES" ] || return 0
-
-    mkdir -p "$INSTALL_DIR/locale"
-    if [ "$po_src" != "$INSTALL_DIR/po" ]; then
-        mkdir -p "$INSTALL_DIR/po"
-        cp -a "$po_src/." "$INSTALL_DIR/po/" 2> /dev/null || true
-        po_src="$INSTALL_DIR/po"
-    fi
-
-    while IFS= read -r language; do
-        [ -n "$language" ] || continue
-        [ -f "$po_src/$language.po" ] || continue
-        target_dir="$INSTALL_DIR/locale/$language/LC_MESSAGES"
-        mkdir -p "$target_dir"
-        msgfmt --check --check-format \
-            --output-file="$target_dir/$domain.mo" "$po_src/$language.po" 2> /dev/null || true
-    done < "$po_src/SUPPORTED_LANGUAGES"
-
-    if [ -f "$INSTALL_DIR/locale/jw/LC_MESSAGES/$domain.mo" ]; then
-        mkdir -p "$INSTALL_DIR/locale/jv/LC_MESSAGES"
-        cp "$INSTALL_DIR/locale/jw/LC_MESSAGES/$domain.mo" \
-            "$INSTALL_DIR/locale/jv/LC_MESSAGES/$domain.mo"
-    fi
-    export TEXTDOMAINDIR="$INSTALL_DIR/locale"
 }
 
 # Suite version SSOT: root VERSION (next to install.sh), else installed .version, else RAW_URL/VERSION.
@@ -1587,12 +1673,20 @@ run_interactive() {
 }
 
 # --- Entry Point ---
+_require_update_helpers() {
+    _ensure_install_helpers
+}
+
 install_main() {
     # Handle non-interactive update flag
     if [[ "${1:-}" == "--update" ]]; then
         echo "Updating Raspberry Pi Maintenance Suite ($(read_suite_version))..."
+        if ! _require_update_helpers; then
+            return 1
+        fi
         check_dependencies
         download_scripts
+        quiet_suite_cron_jobs
         return 0
     fi
 

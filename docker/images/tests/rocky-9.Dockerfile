@@ -1,13 +1,13 @@
 FROM rockylinux:9
 
-# Non-C LANG is required so GNU gettext honors LANGUAGE (C/C.UTF-8 ignores it).
+# Prefer a generated UTF-8 locale for predictable test environments.
 ENV LANG=en_US.UTF-8
 ENV LC_ALL=en_US.UTF-8
 
 RUN dnf install -y epel-release \
     && dnf install -y --allowerasing \
     bash curl sudo newt msmtp s-nail bats git python3 python3-pip cronie \
-    gettext glibc-langpack-en \
+    glibc-langpack-en \
     procps ca-certificates bc \
     && dnf clean all
 

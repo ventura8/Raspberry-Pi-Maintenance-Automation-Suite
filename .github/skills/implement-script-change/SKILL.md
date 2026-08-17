@@ -16,7 +16,6 @@ Apply Bash behavior changes safely with minimal regressions.
 1. Prefer explicit branching and readable helpers over clever one-liners.
 1. Reflect new behavior in matching BATS tests and mocks.
 1. **Always update markdown** (README / Instructions / docs / AGENTS / skills) in the same change set.
-1. **Always update translations** when changing `_pi_gettext*` strings (`.pot` + all `po/*.po`).
 1. If UI/install behavior changes, follow `.agents/skills/installer-tester`.
 1. Re-run format/lint and targeted tests, then broader suite or Docker full gate.
 
@@ -28,7 +27,7 @@ Apply Bash behavior changes safely with minimal regressions.
 1. Whiptail Cancel must not force text fallback.
 1. Non-Pi must skip Pi-only tasks but keep firmware updates available.
 1. Always update markdown docs in the same change set as code changes.
-1. Always update all-language gettext catalogs when marked strings change.
+1. UI strings stay English-only via `lib/ui_msg.sh` (no gettext catalogs).
 
 ## Validation
 

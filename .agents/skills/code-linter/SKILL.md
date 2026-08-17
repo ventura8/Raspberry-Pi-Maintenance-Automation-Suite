@@ -15,7 +15,7 @@ Use for shell/YAML/Dockerfile/Markdown lint and format work in this repository.
 
 ## Workflow
 
-1. Ensure scripts are executable: `chmod +x scripts/*.sh tests/*.sh lib/*.sh install.sh uninstall.sh`.
+1. Ensure scripts are executable: `chmod +x scripts/*.sh scripts/coverage/*.sh tests/*.sh lib/*.sh install.sh uninstall.sh`.
 1. Run formatters:
 
 ```bash

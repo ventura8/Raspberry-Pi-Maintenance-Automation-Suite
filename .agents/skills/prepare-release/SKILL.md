@@ -12,9 +12,7 @@ Use when the user asks to prepare a release, cut release notes, or finalize the 
 1. Set/confirm the root [`VERSION`](../../../VERSION) file to that version (repo **single source of truth**).
 1. Update project markdown that should mention the new version / release notes link.
 1. Create/update a GitHub release description markdown under `docs/releases/`.
-1. **Amend** the current HEAD commit so its **subject and body** match the release title and description —
-   **only after explicit user confirmation immediately before rewriting HEAD**. Invoking this skill is
-   **not** amend authorization.
+1. **Amend** the current HEAD commit so its **subject and body** match the release title and description — **only after explicit user confirmation immediately before rewriting HEAD**. Invoking this skill is **not** amend authorization.
 
 ## Version from branch
 
@@ -104,16 +102,22 @@ git add -A  # only if the user intends the whole working tree in this release co
 
 Prefer staging explicitly when the tree mixes unrelated WIP. For a dedicated release branch, including the full intended change set is normal.
 
-### 5) Amend HEAD commit title + description (opt-in)
+### 5) Amend HEAD commit title + description (required for release finalize)
 
-Prepare release metadata (VERSION, `docs/releases/…`, synced markdown) **without** amending by default.
-Ask the user to explicitly confirm amend immediately before rewriting HEAD. Skill invocation alone
-is **not** authorization.
+Prepare release metadata (VERSION, `docs/releases/…`, synced markdown) **without** amending by default. Ask the user to explicitly confirm amend immediately before rewriting HEAD. Skill invocation alone is **not** authorization.
+
+When the user confirms release finalize, you **must** rewrite **both** the commit **subject (title)** and **body (description)** so they match the release — not only stage files. Leaving a wrong subject (merge message, “fix: …”, placeholder) with a correct tree is incomplete.
+
+**Required amend outcome:**
+
+1. Subject: `vX.Y.Z: <short why-focused summary>` (same spirit as the `docs/releases/vX.Y.Z.md` H1 / GitHub release title).
+1. Body: multi-line description aligned with the release Summary (and key What Changed bullets when useful).
+1. Staged release artifacts (`VERSION`, `docs/releases/vX.Y.Z.md`, synced docs, and the intended branch change set) are included in that amended commit.
 
 **Amend only when all are true:**
 
 1. User explicitly confirmed amend in this turn (not merely “run prepare-release”).
-1. `HEAD` is the release commit on the current version branch (subject often already starts with `vX.Y.Z` or is a placeholder).
+1. `HEAD` is the release commit on the current version branch (subject often already starts with `vX.Y.Z` or is a placeholder / wrong message to replace).
 1. Amend is used to refresh **message and included files**, not to rewrite unrelated history.
 1. If the branch **was already pushed** and amend rewrites the remote tip, **warn** and only force-push if the user explicitly confirms (`git push --force-with-lease`).
 
@@ -123,6 +127,7 @@ is **not** authorization.
 1. Amend with `--no-verify` unless the user explicitly demands it
 1. Force-push to `main`/`master`
 1. Treat “follow prepare-release skill” as standing amend permission
+1. Amend only the tree while leaving subject/body stale (always set title **and** description together)
 
 If the user declines amend, leave HEAD unchanged and report that they must commit/amend separately before tag/`gh release create`.
 
@@ -143,6 +148,8 @@ Include staged files in the amend (default `git commit --amend` without `--no-ed
 
 If there is **no** suitable HEAD to amend (empty repo / wrong branch / user wants a new commit instead), create a **new** commit with the same message format rather than amending unrelated history — and say so.
 
+**Recovery note:** if HEAD was accidentally amended into a merge/PR message (or other wrong subject) but the tree is correct, soft-reset onto the intended base, recreate a normal commit with the branch change set, then run this step to set the `vX.Y.Z: …` title and matching body before force-with-lease push (only with explicit user OK).
+
 ### 6) Verify
 
 ```bash
@@ -162,7 +169,7 @@ Optional next steps (do **not** do unless asked):
 
 1. Version comes from the **branch name**, normalized to `vMAJOR.MINOR.PATCH`, and is written to root **`VERSION`** (SSOT).
 1. GitHub description path is always `docs/releases/vX.Y.Z.md`.
-1. Amend updates both **title (subject)** and **description (body)** — only after explicit user confirmation.
+1. Amend updates both **title (subject)** and **description (body)** together — only after explicit user confirmation. A correct tree with a stale merge/fix/placeholder subject is incomplete.
 1. Keep release notes accurate to the branch diff; no marketing fluff.
 1. Run or recommend `release-readiness` / `./scripts/build-and-test.sh --full` before tagging if tests were not just validated.
 1. After preparing the release, ensure agent docs that mention release paths stay consistent (`AGENTS.md`, skills, Instructions).

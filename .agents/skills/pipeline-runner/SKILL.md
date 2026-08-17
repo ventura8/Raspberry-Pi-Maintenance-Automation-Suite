@@ -12,8 +12,8 @@ Use before declaring a change done. Matches GitHub Actions locally.
 1. Never suppress lint/test/coverage failures or lower gates.
 1. Tee long runs to `reports/distro-logs/` for live + inspectable logs.
 1. After iterating on a single stage, re-run `--full` before claiming success.
-1. Ensure new `*.sh` are **git-tracked** before declaring lint green (`tests/lint.sh` uses
-   `git ls-files`; untracked local scripts hide CI shellcheck failures).
+1. Ensure new `*.sh` are **git-tracked** before declaring lint green
+   (`tests/lint.sh` uses `git ls-files`; untracked local scripts hide CI shellcheck failures).
 1. Do not ignore `scripts/coverage/` via broad `coverage/` patterns — use root-anchored
    `/coverage/` in `.gitignore` and `.dockerignore`.
 1. GitHub Actions must call `./scripts/build-and-test.sh` stage flags only (`--lints-only`,

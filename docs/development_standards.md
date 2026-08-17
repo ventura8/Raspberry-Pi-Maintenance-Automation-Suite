@@ -55,17 +55,11 @@ The project enforces a multi-layer lint gate:
 1. `actionlint` for GitHub Actions validation
 1. `hadolint` for Dockerfile best practices
 1. `mdformat --check` for Markdown formatting checks
-1. GNU gettext catalog freshness (`scripts/i18n/extract_pot.sh --check`), seed check, and
-   `scripts/i18n/check_catalog_quality.py` (no missing/fuzzy/English-carryover translations)
 1. 140-character maximum line length enforced across shell, YAML, and Dockerfiles
 
 Markdown lint is mandatory in CI strict mode, but markdown files do not have a max line-length requirement.
 
-User-facing strings use `lib/i18n.sh` (`_pi_gettext` / `_pi_gettextf`). Domain:
-`pi-maintenance-suite`. Tracked catalogs live under `po/` (Whisper-aligned 99 languages).
-Generated `.mo` files under `locale/` are not tracked. Lookup uses a non-C base locale
-(`PI_GETTEXT_BASE_LANG`, default `en_US.UTF-8`) so `LANGUAGE` is honored even when the
-session is `C.UTF-8`; CI test images must generate `en_US.UTF-8`.
+User-facing strings use `lib/ui_msg.sh` (`_pi_gettext` / `_pi_gettextf` / `_pi_echo` / `_pi_echof`) as English-only helpers. There are no gettext catalogs or PO lints.
 
 Run all checks locally:
 

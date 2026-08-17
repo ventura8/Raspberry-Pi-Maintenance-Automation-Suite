@@ -27,7 +27,9 @@ setup() {
     cp ./install.sh "$TEST_WORKSPACE/"
     mkdir -p "$TEST_WORKSPACE/lib"
     cp ./lib/*.sh "$TEST_WORKSPACE/lib/"
-    cp ./VERSION "$TEST_WORKSPACE/" 2> /dev/null || printf 'v1.1.0\n' > "$TEST_WORKSPACE/VERSION"
+    cp ./VERSION "$TEST_WORKSPACE/" 2> /dev/null || printf 'v0.0.0\n' > "$TEST_WORKSPACE/VERSION"
+    SUITE_VERSION=$(tr -d '[:space:]' < "$TEST_WORKSPACE/VERSION")
+    export SUITE_VERSION
     cd "$TEST_WORKSPACE"
 }
 
@@ -44,7 +46,7 @@ teardown() {
     run bash -c "export PATH=$MOCK_DIR:\$PATH; export INSTALL_USE_WHIPTAIL=1; \
         source ./install.sh; run_fresh_install"
 
-    [[ "$output" =~ "Suite version: v1.1.0" || "$output" =~ "v1.1.0" ]]
+    [[ "$output" =~ "Suite version: $SUITE_VERSION" || "$output" =~ "$SUITE_VERSION" ]]
     [[ "$output" =~ "Email configured successfully" ]]
     [[ "$output" =~ "Enabled System OS Update" ]]
     [[ "$output" =~ "Enabled Docker Cleanup" ]]

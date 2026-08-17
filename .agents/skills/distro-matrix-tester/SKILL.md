@@ -31,8 +31,7 @@ Local wrapper: `scripts/build-and-test.sh`
 1. CI images validate package-manager paths (apt/dnf/pacman), not physical Pi hardware.
 1. Keep lint image separate: `docker/images/lint/debian-trixie.Dockerfile`.
 1. Shared install/uninstall helpers live in `scripts/matrix_install_flow.sh`.
-1. Test images must provide a generated non-C locale (`en_US.UTF-8`) and gettext so UI
-   catalogs resolve (`LANGUAGE` is ignored under `C`/`C.UTF-8`).
+1. Test images should provide a generated UTF-8 locale (`en_US.UTF-8`) for predictable environments.
 
 ## Commands
 

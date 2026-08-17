@@ -36,7 +36,6 @@ check_dependencies || true
 unset -f is_installed has_mail_sender
 # Restore install.sh helpers (overridden above for dependency-failure branches).
 is_installed() { command -v "$1" > /dev/null 2>&1; }
-has_mail_sender() { command -v ssmtp > /dev/null 2>&1 || command -v msmtp > /dev/null 2>&1; }
 
 # shellcheck source=../../lib/os_pkg.sh
 source ./lib/os_pkg.sh
@@ -122,6 +121,31 @@ echo "0 3 * * 0 $INSTALL_DIR/update_pi_os.sh >/dev/null" > "$MOCK_DIR/root_cron"
 printf '%s\n' "disable" > "$MOCK_DIR/whiptail_input"
 toggle_task_whiptail 1 || true
 
+echo "0 1 * * 0 $INSTALL_DIR/update_self.sh" > "$MOCK_DIR/root_cron"
+echo "0 5 * * 0 $INSTALL_DIR/update_pi_apps.sh >/dev/null" > "$MOCK_DIR/user_cron"
+quiet_suite_cron_jobs || true
+apply_task_schedule update_pi_os.sh "0 3 * * 0" || true
+
+# Cover INSTALL_DIR/lib fallback when installer tree has no lib/
+_INSTALL_ROOT="/tmp/no-install-root-cov-$$"
+_install_lib_root || true
+_source_install_libs || true
+_save_idir=$INSTALL_DIR
+INSTALL_DIR="/tmp/no-pi-scripts-cov-$$"
+_install_lib_root || true
+_source_install_libs || true
+INSTALL_DIR=$_save_idir
+_require_update_helpers || true
+unset -f pkg_install has_mail_sender
+_require_update_helpers || true
+is_installed() { command -v "$1" > /dev/null 2>&1; }
+# shellcheck source=../../lib/os_pkg.sh
+source ./lib/os_pkg.sh
+# shellcheck source=../../lib/mail_send.sh
+source ./lib/mail_send.sh
+_install_atomic_copy "/no/such/src" "$INSTALL_DIR/atomic_copy_fail" || true
+_install_atomic_curl "file:///no/such/rpi-atomic-curl-missing" "$INSTALL_DIR/atomic_curl_fail" || true
+
 echo "0 3 * * 0 $INSTALL_DIR/update_pi_os.sh >/dev/null" > "$MOCK_DIR/root_cron"
 printf '%s\n' "edit" "0 1 * * 0" > "$MOCK_DIR/whiptail_input"
 toggle_task_whiptail 1 || true
@@ -177,7 +201,6 @@ is_installed() { return 1; }
 check_dependencies || true
 unset -f pkg_install is_installed has_mail_sender
 is_installed() { command -v "$1" > /dev/null 2>&1; }
-has_mail_sender() { command -v ssmtp > /dev/null 2>&1 || command -v msmtp > /dev/null 2>&1; }
 # shellcheck source=../../lib/os_pkg.sh
 source ./lib/os_pkg.sh
 # shellcheck source=../../lib/mail_send.sh

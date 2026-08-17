@@ -1,11 +1,6 @@
-#!/usr/bin/env bash
-# Soft gettext stubs used when lib/i18n.sh is not loaded yet.
-# Real implementations in lib/i18n.sh replace these after source.
-# shellcheck shell=bash
-
-if declare -F _pi_gettext > /dev/null 2>&1; then
-    return 0
-fi
+#!/bin/bash
+# English-only UI message helpers (no gettext / no catalogs).
+# Sequential %s substitution matches the former soft-stub contract (not printf formats).
 
 _pi_gettext() {
     printf '%s' "$1"

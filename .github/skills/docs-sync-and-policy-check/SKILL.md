@@ -11,10 +11,7 @@ Prevent documentation and agent-config drift after behavior changes.
 **Mandatory:** if you changed code, tests, CI, or policy, update the matching markdown in the
 **same change set**. Shipping without docs is incomplete.
 
-If you changed marked gettext strings (`_pi_gettext*`), also update `po/pi-maintenance-suite.pot`
-and **every** `po/*.po` in `po/SUPPORTED_LANGUAGES` in the same change set (no empty/fuzzy/
-English-copied non-`en` msgstr). Run `scripts/i18n/extract_pot.sh` → `sync_pos.sh` → fill →
-`check_catalog_quality.py`.
+UI strings are English-only (`lib/ui_msg.sh`); do not add gettext catalogs or PO tooling.
 
 ## Sync targets
 

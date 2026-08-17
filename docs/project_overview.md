@@ -8,7 +8,7 @@ Bash scripts for automating Raspberry Pi maintenance with email reporting via Gm
 
 ```
 ├── scripts/           # Maintenance scripts + Docker CI helpers
-├── lib/               # Shared helpers (os_pkg, mail_send)
+├── lib/               # Shared helpers (os_pkg, mail_send, ui_msg)
 ├── tests/             # Bats tests with kcov coverage
 ├── docker/images/     # Lint + distro test Dockerfiles
 ├── assets/            # Coverage badge + email screenshots
@@ -26,4 +26,4 @@ Bash scripts for automating Raspberry Pi maintenance with email reporting via Gm
 - Email reporting via SSMTP/Gmail
 - Intelligent reboot detection
 - Zero user input during execution
-- **Self-healing auto-update**: repo [`VERSION`](../VERSION) is the SSOT; installed `.version` tracks it; updates via GitHub release tags + `install.sh --update` (cron-safe)
+- **Self-healing auto-update**: repo [`VERSION`](../VERSION) is the SSOT; installed `.version` tracks it; updates via GitHub release tags + staged `install.sh --update` (cron-safe; quiet crontab redirects)

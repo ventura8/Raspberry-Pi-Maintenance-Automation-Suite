@@ -186,3 +186,56 @@ EOF
     run bash -c "export TEST_MODE=false; source ./uninstall.sh; run_interactive echo 'test_interactive'"
     [[ "$output" =~ "test_interactive" ]]
 }
+
+@test "Uninstall: prefers INSTALL_DIR ui_msg helpers" {
+    local tmp root
+    tmp=$(mktemp -d)
+    root=$(mktemp -d)
+    mkdir -p "$tmp/lib" "$root"
+    cp ./lib/ui_msg.sh "$tmp/lib/"
+    run bash -c "
+        export PI_UNINSTALL_ROOT_OVERRIDE='$root'
+        export INSTALL_DIR='$tmp'
+        export TEST_MODE=true
+        source ./uninstall.sh
+        printf '%s\n' \"\$(_pi_gettextf 'Hello %s' 'world')\"
+        _pi_echof 'Bye %s' 'now'
+    "
+    [[ "$output" =~ "Hello world" ]]
+    [[ "$output" =~ "Bye now" ]]
+    rm -rf "$tmp" "$root"
+}
+
+@test "Uninstall: inline stubs when ui_msg missing" {
+    local tmp root
+    tmp=$(mktemp -d)
+    root=$(mktemp -d)
+    mkdir -p "$tmp" "$root"
+    run bash -c "
+        export PI_UNINSTALL_ROOT_OVERRIDE='$root'
+        export INSTALL_DIR='$tmp'
+        export TEST_MODE=true
+        source ./uninstall.sh
+        printf '%s\n' \"\$(_pi_gettext 'plain')\"
+        printf '%s\n' \"\$(_pi_gettextf 'Hi %s' 'there')\"
+        _pi_echo 'line'
+        _pi_echof 'Fmt %s' 'x'
+    "
+    [[ "$output" =~ "plain" ]]
+    [[ "$output" =~ "Hi there" ]]
+    [[ "$output" =~ "line" ]]
+    [[ "$output" =~ "Fmt x" ]]
+    rm -rf "$tmp" "$root"
+}
+
+@test "Uninstall: mktemp failure aborts crontab cleanup" {
+    run bash -c '
+        export TEST_MODE=true PATH='"$MOCK_DIR"':$PATH INSTALL_DIR='"$INSTALL_DIR"'
+        mktemp() { return 1; }
+        export -f mktemp
+        source ./uninstall.sh
+        main
+        echo RC=$?
+    '
+    [[ "$output" =~ "RC=1" ]]
+}

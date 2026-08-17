@@ -73,7 +73,6 @@ KCOV_INCLUDE_PATH="$PWD/install.sh,$PWD/uninstall.sh"
 KCOV_INCLUDE_PATH+=",$PWD/scripts/update_pi_os.sh,$PWD/scripts/update_pi_firmware.sh,$PWD/scripts/update_pip.sh"
 KCOV_INCLUDE_PATH+=",$PWD/scripts/docker_cleanup.sh,$PWD/scripts/update_pi_apps.sh,$PWD/scripts/update_samsung_ssd.sh"
 KCOV_INCLUDE_PATH+=",$PWD/scripts/update_self.sh"
-KCOV_INCLUDE_PATH+=",$PWD/lib/i18n.sh,$PWD/lib/i18n_soft.sh"
 KCOV_INCLUDE_PATH+=",$PWD/scripts/coverage/kcov_install_entry.sh,$PWD/scripts/coverage/kcov_install_driver.sh"
 KCOV_EXCLUDE_PATTERN="/usr/lib,/tmp,$PWD/tests,$PWD/coverage,.git,.github,$MOCK_DIR,.ps1,.bashrc,.profile,"
 KCOV_EXCLUDE_PATTERN+=".bash_logout,install_lib.sh,pi-apps/updater,lib/os_pkg.sh,lib/mail_send.sh,/lib/os_pkg.sh,/lib/mail_send.sh"
@@ -142,13 +141,11 @@ if [ "$MODE" = "all" ] || [ "$MODE" = "maintenance" ]; then
         kcov "${KCOV_ARGS[@]}" "$COVERAGE_OUTPUT_DIR/component_tests_samsung" bats tests/component_tests_samsung.bats
         kcov "${KCOV_ARGS[@]}" "$COVERAGE_OUTPUT_DIR/component_tests_self_update" bats tests/component_tests_self_update.bats
         kcov "${KCOV_ARGS[@]}" "$COVERAGE_OUTPUT_DIR/component_tests_os_pkg" bats tests/component_tests_os_pkg.bats
-        kcov "${KCOV_ARGS[@]}" "$COVERAGE_OUTPUT_DIR/component_tests_i18n" bats tests/component_tests_i18n.bats
     else
         bats tests/component_tests.bats
         bats tests/component_tests_samsung.bats
         bats tests/component_tests_self_update.bats
         bats tests/component_tests_os_pkg.bats
-        bats tests/component_tests_i18n.bats
     fi
 fi
 
@@ -348,7 +345,6 @@ if [ "$COVERAGE_ENABLED" = "1" ]; then
             "$COVERAGE_OUTPUT_DIR/component_tests_samsung" \
             "$COVERAGE_OUTPUT_DIR/component_tests_self_update" \
             "$COVERAGE_OUTPUT_DIR/component_tests_os_pkg" \
-            "$COVERAGE_OUTPUT_DIR/component_tests_i18n" \
             "$COVERAGE_OUTPUT_DIR/install_interactive" \
             "$COVERAGE_OUTPUT_DIR/install_extended" \
             "$COVERAGE_OUTPUT_DIR/install_whiptail" \

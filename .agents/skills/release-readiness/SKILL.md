@@ -21,7 +21,7 @@ Decide go/no-go for merge or tagged release.
 1. Installer: whiptail default, text fallback, `--update` cron-safe.
 1. Self-update + Samsung invariants still hold.
 1. README / Instructions / docs / AGENTS / skills updated for this change.
-1. Gettext catalogs complete (`po/*.po` for all Whisper languages; quality check green) when UI strings changed.
+1. UI remains English-only (`lib/ui_msg.sh`); no gettext catalog requirements.
 
 ## Release-only checklist (N/A in pre-merge)
 

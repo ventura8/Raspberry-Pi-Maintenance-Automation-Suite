@@ -9,13 +9,6 @@ REPO_NAME="Raspberry-Pi-Maintenance-Automation-Suite"
 # API URL for fetching the latest release
 API_URL="https://api.github.com/repos/$GITHUB_USER/$REPO_NAME/releases/latest"
 
-# Source the install script to verify we can find it (for re-downloading)
-INSTALL_SCRIPT="$INSTALL_DIR/../install.sh"
-# If install.sh is not in parent (dev mode), try current dir
-if [ ! -f "$INSTALL_SCRIPT" ]; then
-    INSTALL_SCRIPT="./install.sh"
-fi
-
 # Ensure logging
 LOG_FILE="${LOG_FILE:-$HOME/maintenance.log}"
 SSMTP_CONF="${SSMTP_CONF:-/etc/ssmtp/ssmtp.conf}"
@@ -27,15 +20,15 @@ if [ -f "$_RPI_HERE/lib/os_pkg.sh" ]; then
     source "$_RPI_HERE/lib/os_pkg.sh"
     # shellcheck source=../lib/mail_send.sh
     source "$_RPI_HERE/lib/mail_send.sh"
-    # shellcheck source=../lib/i18n.sh
-    source "$_RPI_HERE/lib/i18n.sh"
+    # shellcheck source=../lib/ui_msg.sh
+    source "$_RPI_HERE/lib/ui_msg.sh"
 elif [ -f "$_RPI_HERE/../lib/os_pkg.sh" ]; then
     # shellcheck source=../lib/os_pkg.sh
     source "$_RPI_HERE/../lib/os_pkg.sh"
     # shellcheck source=../lib/mail_send.sh
     source "$_RPI_HERE/../lib/mail_send.sh"
-    # shellcheck source=../lib/i18n.sh
-    source "$_RPI_HERE/../lib/i18n.sh"
+    # shellcheck source=../lib/ui_msg.sh
+    source "$_RPI_HERE/../lib/ui_msg.sh"
 fi
 
 log() {
@@ -68,6 +61,30 @@ exit_with_failure() {
     log "Error: $reason"
     send_notification "$(_pi_gettext "Pi Maintenance Update Failed")" "$(_pi_gettextf "The auto-update failed. Reason: %s" "$reason")"
     exit 1
+}
+
+# Stage tagged installer + VERSION + lib/ into dest (mktemp tree). Lib fetch is best-effort.
+stage_release_tree() {
+    local raw_url="$1"
+    local dest="$2"
+    local lib_file tmp
+    mkdir -p "$dest/lib"
+    if ! curl -fsSL "$raw_url/install.sh" -o "$dest/install.sh"; then
+        return 1
+    fi
+    chmod +x "$dest/install.sh"
+    if ! curl -fsSL "$raw_url/VERSION" -o "$dest/VERSION"; then
+        return 2
+    fi
+    for lib_file in os_pkg.sh mail_send.sh ui_msg.sh; do
+        tmp=$(mktemp "$dest/lib/.lib.XXXXXX") || continue
+        if curl -fsSL "$raw_url/lib/$lib_file" -o "$tmp"; then
+            mv -f "$tmp" "$dest/lib/$lib_file"
+        else
+            rm -f "$tmp"
+        fi
+    done
+    return 0
 }
 
 main() {
@@ -112,23 +129,31 @@ main() {
     else
         log "Update available! ($LOCAL_TAG -> $REMOTE_TAG)"
 
-        # Determine URL for install.sh based on the TAG
-        # Construct raw URL: .../tag_name/install.sh? No, raw objects are usually by commit or branch.
-        # But for releases, we can use the tag in the raw URL structure:
-        # https://raw.githubusercontent.com/user/repo/TAG/install.sh
+        # Tagged raw tree (install.sh + VERSION + lib/) — not $INSTALL_DIR/../install.sh.
         RAW_URL="https://raw.githubusercontent.com/$GITHUB_USER/$REPO_NAME/$REMOTE_TAG"
 
+        local stage_dir stage_rc staged_version staged_tag
+        stage_dir=$(mktemp -d) || stage_dir=""
+        if [ -z "$stage_dir" ] || [ ! -d "$stage_dir" ]; then
+            exit_with_failure "Failed to create staging directory."
+        fi
+
         log "Downloading installer from $REMOTE_TAG..."
-        if ! curl -fsSL "$RAW_URL/install.sh" -o "$INSTALL_SCRIPT"; then
+        stage_release_tree "$RAW_URL" "$stage_dir"
+        stage_rc=$?
+        if [ "$stage_rc" -eq 1 ]; then
+            rm -rf "$stage_dir"
             exit_with_failure "Failed to download install.sh from $RAW_URL."
         fi
-        chmod +x "$INSTALL_SCRIPT"
-
-        # Stage VERSION next to install.sh so download_scripts reads the tagged SSOT file.
-        local staged_version
-        staged_version="$(dirname "$INSTALL_SCRIPT")/VERSION"
-        if ! curl -fsSL "$RAW_URL/VERSION" -o "$staged_version"; then
+        if [ "$stage_rc" -eq 2 ]; then
+            rm -rf "$stage_dir"
             exit_with_failure "Failed to download VERSION from $RAW_URL."
+        fi
+        staged_version="$stage_dir/VERSION"
+        staged_tag=$(tr -d '[:space:]' < "$staged_version" 2> /dev/null || true)
+        if [ -z "$staged_tag" ] || [ "$staged_tag" != "$REMOTE_TAG" ]; then
+            rm -rf "$stage_dir"
+            exit_with_failure "Staged VERSION ($staged_tag) does not match release tag ($REMOTE_TAG)."
         fi
 
         if [ "$TEST_MODE" == "true" ]; then
@@ -140,6 +165,7 @@ main() {
             else
                 echo "$REMOTE_TAG" > "$VERSION_FILE"
             fi
+            rm -rf "$stage_dir"
             # Send Success Email for test verification
             send_notification "Pi Maintenance Suite Updated" "The suite has been updated to version $REMOTE_TAG."
             exit 0
@@ -152,9 +178,13 @@ main() {
         # with no interactive prompts. Do NOT pipe fake input here: piping makes bash
         # treat stdin as non-terminal, which causes install.sh to attempt a /dev/tty
         # redirect that does not exist in a cron environment.
-        if ! bash "$INSTALL_SCRIPT" --update; then
+        export RAW_URL
+        export INSTALL_DIR
+        if ! bash "$stage_dir/install.sh" --update; then
+            rm -rf "$stage_dir"
             exit_with_failure "Installer execution failed."
         fi
+        rm -rf "$stage_dir"
 
         # Ensure .version matches the release tag (install.sh also writes from VERSION).
         echo "$REMOTE_TAG" > "$VERSION_FILE"

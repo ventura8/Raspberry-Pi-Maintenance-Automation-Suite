@@ -107,3 +107,18 @@ setup() {
     [ "$status" -eq 0 ]
     [[ "$output" == "debian" || "$output" == "redhat" || "$output" == "arch" ]]
 }
+
+@test "Unit: Maintenance scripts ship RECIPIENT_EMAIL placeholder only" {
+    local script found=0
+    for script in scripts/*.sh; do
+        [ -f "$script" ] || continue
+        grep -q '^RECIPIENT_EMAIL=' "$script" || continue
+        found=1
+        grep -q '^RECIPIENT_EMAIL="your_email@gmail.com"$' "$script" || {
+            echo "unexpected RECIPIENT_EMAIL in $script" >&2
+            grep '^RECIPIENT_EMAIL=' "$script" >&2
+            return 1
+        }
+    done
+    [ "$found" -eq 1 ]
+}

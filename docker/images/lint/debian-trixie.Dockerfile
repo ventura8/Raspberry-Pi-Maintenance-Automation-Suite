@@ -8,7 +8,6 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     curl \
     ca-certificates \
     git \
-    gettext \
     python3 \
     python3-pip \
     shellcheck \
@@ -36,7 +35,7 @@ RUN curl -fsSL "https://github.com/hadolint/hadolint/releases/download/${HADOLIN
 
 WORKDIR /workspace
 COPY . .
-RUN bash -c 'shopt -s nullglob; files=(tests/*.sh scripts/*.sh scripts/coverage/*.sh install.sh uninstall.sh); \
+RUN bash -c 'shopt -s nullglob; files=(tests/*.sh scripts/*.sh scripts/coverage/*.sh install.sh uninstall.sh lib/*.sh); \
     ((${#files[@]})) || exit 1; chmod +x "${files[@]}"'
 
 CMD ["bash", "-lc", "STRICT_MODE=true ./tests/lint.sh"]

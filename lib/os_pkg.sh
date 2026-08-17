@@ -5,12 +5,11 @@
 # Cron-friendly PATH seed. Skip when MOCK_DIR is set so BATS path_hiding stays effective
 # (re-appending /usr/bin would resurrect real host binaries such as Fedora's 7z).
 
-# Soft gettext stubs when lib/i18n.sh is not sourced yet.
-_I18N_SOFT="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/i18n_soft.sh"
-if [ -f "$_I18N_SOFT" ]; then
-    # shellcheck source=lib/i18n_soft.sh
-    source "$_I18N_SOFT"
-elif ! declare -F _pi_gettext > /dev/null 2>&1; then
+_UI_MSG="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/ui_msg.sh"
+if [ -f "$_UI_MSG" ]; then
+    # shellcheck source=lib/ui_msg.sh
+    source "$_UI_MSG"
+elif ! declare -F _pi_echo > /dev/null 2>&1; then
     _pi_gettext() { printf '%s' "$1"; }
     _pi_gettextf() {
         local format="$1" argument prefix suffix
@@ -33,7 +32,7 @@ elif ! declare -F _pi_gettext > /dev/null 2>&1; then
         printf '%s\n' "$format"
     }
 fi
-unset _I18N_SOFT
+unset _UI_MSG
 
 rpi_ensure_cron_path() {
     if [ -n "${MOCK_DIR:-}" ]; then
@@ -153,10 +152,6 @@ resolve_pkg_names() {
         arch:mail-transport) echo "msmtp s-nail" ;;
         debian:ssmtp) echo "ssmtp" ;;
         redhat:ssmtp | arch:ssmtp) echo "msmtp" ;;
-        # Runtime gettext binary (gettext-base on Debian); msgfmt needs full gettext.
-        debian:gettext) echo "gettext-base gettext" ;;
-        redhat:gettext) echo "gettext" ;;
-        arch:gettext) echo "gettext" ;;
         *:fwupd) echo "fwupd" ;;
         *:nvme-cli) echo "nvme-cli" ;;
         debian:p7zip) echo "p7zip-full" ;;
@@ -189,7 +184,6 @@ _logical_cmd() {
                 echo "msmtp"
             fi
             ;;
-        gettext) echo "gettext" ;;
         fwupd) echo "fwupdmgr" ;;
         nvme-cli) echo "nvme" ;;
         p7zip) echo "7z" ;;
