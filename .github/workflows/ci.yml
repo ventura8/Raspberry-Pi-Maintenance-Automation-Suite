@@ -21,7 +21,7 @@ jobs:
       - uses: actions/checkout@v7.0.1
 
       - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v4.2.0
+        uses: docker/setup-buildx-action@v4.3.0
 
       - name: Run lint gates (same as local --lints-only)
         run: |
@@ -46,7 +46,7 @@ jobs:
       - uses: actions/checkout@v7.0.1
 
       - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v4.2.0
+        uses: docker/setup-buildx-action@v4.3.0
 
       - name: Run coverage gate (same as local --coverage-only)
         run: |
@@ -83,7 +83,7 @@ jobs:
       - uses: actions/checkout@v7.0.1
 
       - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v4.2.0
+        uses: docker/setup-buildx-action@v4.3.0
 
       - name: Set matrix log slug
         run: |
