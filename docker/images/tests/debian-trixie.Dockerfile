@@ -7,7 +7,7 @@ ENV LANG=en_US.UTF-8
 ENV LC_ALL=en_US.UTF-8
 
 RUN apt-get update && apt-get install -y --no-install-recommends \
-    bash curl sudo ssmtp mailutils whiptail bats git python3 python3-pip cron \
+    bash curl sudo msmtp ssmtp mailutils whiptail bats git python3 python3-pip cron \
     locales \
     procps cmake make g++ pkg-config libcurl4-openssl-dev libelf-dev libdw-dev \
     binutils-dev libiberty-dev zlib1g-dev bc ca-certificates \

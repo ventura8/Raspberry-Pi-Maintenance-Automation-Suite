@@ -11,10 +11,12 @@ ______________________________________________________________________
 1. Upload useful logs/artifacts on failure (`reports/distro-logs/`, coverage).
 1. Pass `yamllint` and `actionlint` via Docker/host lint gates.
 1. Line length ≤ 140 for YAML.
-1. Workflow jobs must invoke `./scripts/build-and-test.sh` stage flags only
+1. Test/CI workflow jobs (`ci.yml`) must invoke `./scripts/build-and-test.sh` stage flags only
    (`--lints-only`, `--coverage-only`, `--distro <image>`), matching local
    `./scripts/build-and-test.sh --full`. Do not call raw `lint-in-docker.sh` /
    `run_docker_matrix.sh` or ad-hoc `chmod` lists from the workflow — executable prep is
-   `scripts/ensure_exec.sh` inside the entrypoint.
+   `scripts/ensure_exec.sh` inside the entrypoint. Tag-triggered `release.yml` validates the
+   tag (ancestor of the default branch), root `VERSION`, and `docs/releases/vX.Y.Z.md` (including
+   a required H1 `# …` title) before publishing the GitHub Release from that notes file.
 1. Distro/coverage containers must use host-UID bind-mount parity (`CI_UID`/`CI_GID` image
    build args + `docker run --user $(id -u):$(id -g)` via `run_docker_matrix.sh`).

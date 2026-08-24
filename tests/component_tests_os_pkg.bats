@@ -53,7 +53,7 @@ setup() {
     INSTALL_OS_ID=debian INSTALL_OS_ID_LIKE=""
     [ "$(resolve_pkg_names curl)" = "curl" ]
     [ "$(resolve_pkg_names whiptail)" = "whiptail" ]
-    [ "$(resolve_pkg_names mail-transport)" = "ssmtp mailutils" ]
+    [ "$(resolve_pkg_names mail-transport)" = "msmtp mailutils" ]
     [ "$(resolve_pkg_names p7zip)" = "p7zip-full" ]
     [ "$(resolve_pkg_names rpi-eeprom)" = "rpi-eeprom" ]
     [ "$(resolve_pkg_names fwupd)" = "fwupd" ]
@@ -158,7 +158,9 @@ EOF
     export SSMTP_CONF="$MOCK_FS/etc/ssmtp/ssmtp.conf"
     export REVALIASES="$MOCK_FS/etc/ssmtp/revaliases"
     export MSMTP_CONF="$MOCK_FS/etc/msmtprc"
-    mkdir -p "$(dirname "$SSMTP_CONF")"
+    mkdir -p "$(dirname "$SSMTP_CONF")" "$(dirname "$MSMTP_CONF")"
+    # Ensure ssmtp-only read is not shadowed by a leftover msmtp default account (msmtp is preferred).
+    rm -f "$MSMTP_CONF" "${MSMTP_CONF}.pre-migration"
 
     run write_mail_config_ssmtp "user@gmail.com" "secret"
     [ "$status" -eq 0 ]
@@ -174,4 +176,45 @@ EOF
 
     run write_mail_config "user@gmail.com" "secret"
     [ "$status" -eq 0 ]
+}
+
+
+@test "sudo mock: preserves -n/-u/-g forms and rejects unsupported options" {
+    local wrap args_file
+    # Keep recorder under MOCK_DIR; use real chmod (PATH mock is a no-op).
+    wrap="$MOCK_DIR/sudo_opt_probe"
+    rm -rf "$wrap"
+    mkdir -p "$wrap"
+    args_file="$wrap/args.txt"
+    # Rewrite mock sudo to invoke the recorder via bash (avoids exec-bit surprises).
+    sed "s|/usr/bin/sudo|bash $wrap/real_sudo|g" "$MOCK_DIR/sudo" > "$wrap/sudo"
+    cat << EOF > "$wrap/real_sudo"
+#!/bin/bash
+printf '%s\n' "\$@" > "$args_file"
+EOF
+    /usr/bin/chmod +x "$wrap/real_sudo"
+
+    bash "$wrap/sudo" -n -H -u nobody -g nogroup /bin/true
+    grep -qx -- '-n' "$args_file"
+    grep -qx -- '-H' "$args_file"
+    grep -qx -- '-u' "$args_file"
+    grep -qx -- 'nobody' "$args_file"
+    grep -qx -- '-g' "$args_file"
+    grep -qx -- 'nogroup' "$args_file"
+
+    bash "$wrap/sudo" -unobody -gnogroup /bin/true
+    grep -qx -- '-u' "$args_file"
+    grep -qx -- 'nobody' "$args_file"
+    grep -qx -- '-g' "$args_file"
+    grep -qx -- 'nogroup' "$args_file"
+
+    run bash "$wrap/sudo" --bad /bin/true
+    [ "$status" -ne 0 ]
+    [[ "$output" == *"unsupported option"* ]]
+
+    run bash "$wrap/sudo" -u -n /bin/true
+    [ "$status" -ne 0 ]
+    [[ "$output" == *"-u requires a user"* ]]
+
+    rm -rf "$wrap"
 }

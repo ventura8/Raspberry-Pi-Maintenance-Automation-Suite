@@ -1,5 +1,32 @@
 #!/usr/bin/env bats
 
+# Build a PATH that keeps MOCK_DIR first while hiding named binaries without dropping
+# whole directories (hosts often ship fwupdmgr alongside mktemp/date/etc. in /usr/bin).
+path_hiding_cmds() {
+    local filter_dir dir f base skip h
+    filter_dir="${MOCK_DIR}/pathhide.$$"
+    rm -rf "$filter_dir"
+    mkdir -p "$filter_dir"
+    for dir in /usr/local/sbin /usr/local/bin /usr/sbin /usr/bin /sbin /bin; do
+        [ -d "$dir" ] || continue
+        for f in "$dir"/*; do
+            [ -e "$f" ] || [ -L "$f" ] || continue
+            base="${f##*/}"
+            skip=0
+            for h in "$@"; do
+                if [ "$base" = "$h" ]; then
+                    skip=1
+                    break
+                fi
+            done
+            [ "$skip" -eq 1 ] && continue
+            [ -e "$filter_dir/$base" ] && continue
+            ln -s "$f" "$filter_dir/$base" 2> /dev/null || true
+        done
+    done
+    printf '%s' "${MOCK_DIR}:${filter_dir}"
+}
+
 setup() {
     # Use shared mock setup first to define MOCK_DIR
     source ./tests/setup_mocks.sh
@@ -10,6 +37,7 @@ setup() {
 
     # Point system files to writable mock locations
     export SSMTP_CONF="$MOCK_DIR/ssmtp.conf"
+    export MSMTP_CONF="$MOCK_DIR/msmtprc"
     export REVALIASES="$MOCK_DIR/revaliases"
     export REBOOT_REQUIRED_FILE="$MOCK_DIR/reboot-required"
 
@@ -302,12 +330,14 @@ echo "cli-yes"
 EOF
     /usr/bin/chmod +x "$pi_apps_home/pi-apps/updater"
 
-    cat << 'EOF' > "$MOCK_DIR/ssmtp"
+    cat << 'EOF' > "$MOCK_DIR/msmtp"
 #!/bin/bash
 echo "EMAIL_SENT_HEADER"
 cat
 EOF
-    chmod +x "$MOCK_DIR/ssmtp"
+    chmod +x "$MOCK_DIR/msmtp"
+    # mail_sender_cmd only selects msmtp when MSMTP_CONF has a usable "account default" block.
+    printf 'account default\nhost smtp.gmail.com\nuser test@test.com\n' > "$MSMTP_CONF"
 
     run bash -c "export PATH=$MOCK_DIR:\$PATH HOME=$pi_apps_home; ./scripts/update_pi_apps.sh"
     [[ "$output" =~ "cli-yes" ]]
@@ -459,6 +489,8 @@ EOF
     # Ensure neither rpi-eeprom-update nor fwupdmgr are in PATH/MOCK_DIR
     rm -f "$MOCK_DIR/rpi-eeprom-update"
     rm -f "$MOCK_DIR/fwupdmgr"
+    local hidden_path
+    hidden_path=$(path_hiding_cmds fwupdmgr rpi-eeprom-update)
 
     # Force non-Pi detection via a temporary grep ahead of mocks (do not clobber MOCK_DIR/grep).
     local grephome
@@ -487,7 +519,7 @@ EOF
         /usr/bin/chmod +x "$MOCK_DIR/$mgr"
     done
 
-    run bash -c "export PATH=$grephome:$MOCK_DIR:\$PATH; ./scripts/update_pi_firmware.sh"
+    run bash -c "export PATH=$grephome:$hidden_path; ./scripts/update_pi_firmware.sh"
     rm -rf "$grephome"
 
     [[ "$output" =~ "Dependencies installed successfully" ]]
@@ -498,14 +530,8 @@ EOF
     # Ensure neither rpi-eeprom-update nor fwupdmgr are in PATH/MOCK_DIR
     rm -f "$MOCK_DIR/rpi-eeprom-update"
     rm -f "$MOCK_DIR/fwupdmgr"
-    local clean_path=""
-    local dir
-    IFS=':' read -r -a _path_parts <<< "$PATH"
-    for dir in "${_path_parts[@]}"; do
-        [ -x "${dir}/fwupdmgr" ] && continue
-        [ -x "${dir}/rpi-eeprom-update" ] && continue
-        clean_path="${clean_path:+$clean_path:}$dir"
-    done
+    local hidden_path
+    hidden_path=$(path_hiding_cmds fwupdmgr rpi-eeprom-update)
 
     # Mock package-manager install failure for all families
     for mgr in apt-get dnf yum pacman; do
@@ -519,7 +545,7 @@ EOF
         /usr/bin/chmod +x "$MOCK_DIR/$mgr"
     done
 
-    run bash -c "export PATH=$MOCK_DIR:$clean_path; ./scripts/update_pi_firmware.sh"
+    run bash -c "export PATH=$hidden_path; ./scripts/update_pi_firmware.sh"
 
     [[ "$output" =~ "Warning: Some dependencies may have failed to install" || "$output" =~ "no package mapping" || "$output" =~ "No package mapping" ]]
 }

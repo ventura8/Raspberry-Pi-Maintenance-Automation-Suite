@@ -7,8 +7,10 @@ setup() {
     export INSTALL_DIR="/tmp/scripts_boost"
     rm -rf "$INSTALL_DIR"
     export SSMTP_CONF="/tmp/ssmtp_boost.conf"
+    export MSMTP_CONF="/tmp/msmtprc_boost.conf"
     export REVALIASES="/tmp/revaliases_boost"
-    
+    rm -f "$SSMTP_CONF" "$MSMTP_CONF" "$REVALIASES"
+
     # Always ensure clean shared mocks
     ./tests/setup_mocks.sh > /dev/null
     export PATH="$MOCK_DIR:$PATH"
@@ -16,6 +18,12 @@ setup() {
     unset INSTALL_USE_WHIPTAIL || true
     export INSTALL_FORCE_TEXT_UI="0"
     export INSTALL_UI_MODE=""
+}
+
+# Pass isolated mail paths into bash -c children (setup exports are not inherited by default).
+_install_env() {
+    printf 'PATH=%q SSMTP_CONF=%q MSMTP_CONF=%q REVALIASES=%q INSTALL_DIR=%q' \
+        "$MOCK_DIR:$PATH" "$SSMTP_CONF" "$MSMTP_CONF" "$REVALIASES" "$INSTALL_DIR"
 }
 
 @test "Install: Manage Tasks UI - Return to Menu" {
@@ -36,8 +44,8 @@ setup() {
 }
 
 @test "Install: Show Email Config - Missing File" {
-    run bash -c "export PATH=$MOCK_DIR:$PATH; source ./install.sh; SSMTP_CONF=\"/tmp/nonexistent_ssmtp\"; show_email_config <<< ''"
-    [[ "$output" =~ "No SSMTP configuration found" ]]
+    run bash -c "export $(_install_env); source ./install.sh; show_email_config <<< ''"
+    [[ "$output" =~ "No mail configuration found" ]]
 }
 
 @test "Install: Download Scripts - All Success" {
@@ -48,12 +56,12 @@ setup() {
 }
 
 @test "Install: Main Menu - View Email Config (Missing)" {
-    run bash -c "export PATH=$MOCK_DIR:$PATH; source ./install.sh; SSMTP_CONF=\"/tmp/nonexistent_ssmtp\"; main_menu <<< $'2\n\n0'"
-    [[ "$output" =~ "No SSMTP configuration found" ]]
+    run bash -c "export $(_install_env); source ./install.sh; main_menu <<< \$'2\n\n0'"
+    [[ "$output" =~ "No mail configuration found" ]]
 }
 
 @test "Install: Main Menu - Manage Tasks" {
-    run bash -c "export PATH=$MOCK_DIR:$PATH; source ./install.sh; main_menu <<< $'3\n0\n0'"
+    run bash -c "export $(_install_env); source ./install.sh; main_menu <<< \$'3\n0\n0'"
     [[ "$output" =~ "Task Status Manager" ]]
 }
 
@@ -79,7 +87,7 @@ EOF
     cp ./install.sh "$TD/"
     cd "$TD"
     
-    run bash -c "export PATH=$MOCK_DIR:$PATH; export RAW_URL='http://mock'; source ./install.sh; main_menu <<< $'6\ny'"
+    run bash -c "export $(_install_env) RAW_URL='http://mock'; source ./install.sh; main_menu <<< \$'6\ny'"
     
     cd - > /dev/null
     rm -rf "$TD"

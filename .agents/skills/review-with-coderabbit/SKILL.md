@@ -8,9 +8,9 @@ User-gated only. Use when the user explicitly asks for a CodeRabbit review or to
 
 ## Modes
 
-| Mode | When |
+| Mode         | When                                                                     |
 | ------------ | ------------------------------------------------------------------------ |
-| Review | Run CodeRabbit CLI, present findings, optionally fix after confirmation |
+| Review       | Run CodeRabbit CLI, present findings, optionally fix after confirmation  |
 | Findings fix | User pastes findings or points at a report — verify each, fix valid ones |
 
 ## Hard rules

@@ -272,6 +272,13 @@ check_dependencies() {
         else
             _pi_echo "Warning: Failed to install mail transport. Email notifications will be disabled."
         fi
+    elif ! command -v msmtp > /dev/null 2>&1; then
+        # Legacy ssmtp-only install: install msmtp (+ mailutils/s-nail) without msmtp-mta so
+        # the MTA conflict cannot remove ssmtp before credentials are migrated.
+        pkg_install mail-transport > /dev/null 2>&1 || true
+    fi
+    if declare -F migrate_mail_config_to_msmtp > /dev/null 2>&1; then
+        migrate_mail_config_to_msmtp || true
     fi
 
     # Whiptail powers the default interactive UI; failure is non-fatal (text fallback).
@@ -500,6 +507,17 @@ save_email_configuration() {
         write_mail_config "$user_email" "$app_pass"
     else
         # KCOV_EXCL_START
+        # lib/mail_send.sh (and its _mail_tls_ca_bundle helper) is not available here; resolve
+        # the readable CA bundle the same way it does (Debian/Arch vs. RHEL/Fedora/Rocky).
+        # NOTE: TLS_CA_File below is best-effort only, not a verified fix — Debian/Ubuntu's
+        # packaged ssmtp (2.65) does not recognize this directive (or any "AllowSelfSigned"-style
+        # toggle) at all and performs no certificate validation on that build regardless of this
+        # file's contents. This bootstrap fallback exists only for the rare case lib/mail_send.sh
+        # itself couldn't be fetched; msmtp is the only mailer treated as capable of verified TLS.
+        local ca_bundle="/etc/ssl/certs/ca-certificates.crt"
+        if [ ! -r "$ca_bundle" ] && [ -r /etc/pki/tls/certs/ca-bundle.crt ]; then
+            ca_bundle="/etc/pki/tls/certs/ca-bundle.crt"
+        fi
         # Pre-create with restrictive mode before writing secrets (TOCTOU).
         sudo mkdir -p "$(dirname "$SSMTP_CONF")"
         sudo touch "$SSMTP_CONF"
@@ -511,6 +529,7 @@ AuthUser=$user_email
 AuthPass=$app_pass
 UseSTARTTLS=YES
 UseTLS=YES
+TLS_CA_File=$ca_bundle
 FromLineOverride=YES
 hostname=$(hostname)
 EOF
@@ -549,13 +568,31 @@ EOF
 }
 
 get_current_email_user() {
-    if [ -f "$SSMTP_CONF" ]; then
-        sudo grep "^AuthUser=" "$SSMTP_CONF" | cut -d= -f2
+    local user hub
+    if _msmtp_user_host user hub; then
+        printf '%s\n' "$user"
         return 0
     fi
-    if [ -f "$MSMTP_CONF" ]; then
-        sudo grep -E '^user\s+' "$MSMTP_CONF" | awk '{print $2}' | head -n 1
+    if [ -f "$SSMTP_CONF" ]; then
+        sudo grep "^AuthUser=" "$SSMTP_CONF" | cut -d= -f2
     fi
+}
+
+# Resolve msmtp default-account user+host into the caller's namerefs; fail if either is missing.
+_msmtp_user_host() {
+    local -n _msmtp_uh_user="$1" _msmtp_uh_host="$2"
+    local msmtp_content
+    declare -F _msmtp_resolve_default_field > /dev/null 2>&1 || return 1
+    [ -f "$MSMTP_CONF" ] || return 1
+    if [ -r "$MSMTP_CONF" ]; then
+        msmtp_content=$(cat "$MSMTP_CONF" 2> /dev/null) || return 1
+    else
+        command -v sudo > /dev/null 2>&1 || return 1
+        msmtp_content=$(sudo -n cat "$MSMTP_CONF" 2> /dev/null) || return 1
+    fi
+    _msmtp_uh_user=$(printf '%s' "$msmtp_content" | _msmtp_resolve_default_field user)
+    _msmtp_uh_host=$(printf '%s' "$msmtp_content" | _msmtp_resolve_default_field host)
+    [ -n "$_msmtp_uh_user" ] && [ -n "$_msmtp_uh_host" ]
 }
 
 apply_task_schedule() {
@@ -614,8 +651,8 @@ configure_email_text() {
     _pi_echo "--- Email Configuration ---"
 
     local current_user=""
-    if [ -f "$SSMTP_CONF" ]; then
-        current_user=$(get_current_email_user)
+    current_user=$(get_current_email_user)
+    if [ -n "$current_user" ]; then
         echo "Current Configured Email: $current_user"
         read_input "Do you want to reconfigure email? [y/N]: " confirm
         confirm=$(echo "$confirm" | tr '[:upper:]' '[:lower:]')
@@ -650,8 +687,8 @@ configure_email_text() {
 configure_email_whiptail() {
     local current_user="" confirm_rc=0 user_email="" app_pass=""
 
-    if [ -f "$SSMTP_CONF" ] && [ -s "$SSMTP_CONF" ]; then
-        current_user=$(get_current_email_user)
+    current_user=$(get_current_email_user)
+    if [ -n "$current_user" ]; then
         wt_yesno "$(_pi_gettext "Email Configuration")" \
             "Current email: ${current_user:-unknown}\n\nReconfigure email settings?" 10 70
         confirm_rc=$?
@@ -706,30 +743,46 @@ configure_email_interactive() {
     configure_email_text
 }
 
-show_email_config_text() {
-    print_header
-    _pi_echo "--- Current Email Settings ---"
+# Print User/Server lines from whichever mailer config is active (msmtp preferred, ssmtp fallback).
+_email_config_summary() {
+    local user hub
+    if _msmtp_user_host user hub; then
+        printf 'User:     %s\nServer:   %s\n' "$user" "$hub"
+        return 0
+    fi
     if [ -f "$SSMTP_CONF" ]; then
         user=$(sudo grep "^AuthUser=" "$SSMTP_CONF" | cut -d= -f2)
         hub=$(sudo grep "^mailhub=" "$SSMTP_CONF" | cut -d= -f2)
-        echo "User:     $user"
-        echo "Server:   $hub"
+        [ -n "$user" ] && [ -n "$hub" ] && {
+            printf 'User:     %s\nServer:   %s\n' "$user" "$hub"
+            return 0
+        }
+    fi
+    return 1
+}
+
+show_email_config_text() {
+    print_header
+    _pi_echo "--- Current Email Settings ---"
+    local summary
+    if summary=$(_email_config_summary) && [ -n "$summary" ]; then
+        printf '%s\n' "$summary"
         _pi_echo "Password: [HIDDEN/MASKED]"
     else
-        _pi_echo "No SSMTP configuration found."
+        _pi_echo "No mail configuration found."
     fi
     echo ""
     read_input "Press Enter to return..." _
 }
 
 show_email_config_whiptail() {
-    local message
-    if [ -f "$SSMTP_CONF" ]; then
-        user=$(sudo grep "^AuthUser=" "$SSMTP_CONF" | cut -d= -f2)
-        hub=$(sudo grep "^mailhub=" "$SSMTP_CONF" | cut -d= -f2)
-        message="User:     $user\nServer:   $hub\nPassword: [HIDDEN/MASKED]"
+    local message summary
+    if summary=$(_email_config_summary) && [ -n "$summary" ]; then
+        # $() strips the trailing newline _email_config_summary prints after the summary, so
+        # add the \n back explicitly before appending the password line.
+        message="${summary//$'\n'/\\n}\\nPassword: [HIDDEN/MASKED]"
     else
-        message="No SSMTP configuration found."
+        message="No mail configuration found."
     fi
     wt_msgbox "$(_pi_gettext "Current Email Settings")" "$message" 12 60
     local rc=$?
@@ -791,10 +844,13 @@ download_scripts() {
 
     # Get email for injection
     local email_to_inject="your_email@gmail.com"
-    if [ -f "$SSMTP_CONF" ]; then
-        email_to_inject=$(sudo grep "^AuthUser=" "$SSMTP_CONF" | cut -d= -f2)
-    elif [ -f "$MSMTP_CONF" ]; then
-        email_to_inject=$(sudo grep -E '^user\s+' "$MSMTP_CONF" | awk '{print $2}' | head -n 1)
+    local msmtp_user="" msmtp_host=""
+    if _msmtp_user_host msmtp_user msmtp_host && [ -n "$msmtp_host" ]; then
+        email_to_inject="$msmtp_user"
+    elif [ -f "$SSMTP_CONF" ]; then
+        local ssmtp_user
+        ssmtp_user=$(sudo grep "^AuthUser=" "$SSMTP_CONF" 2> /dev/null | cut -d= -f2)
+        [ -n "$ssmtp_user" ] && email_to_inject="$ssmtp_user"
     fi
 
     # Shared libraries used by maintenance scripts (apt/dnf/pacman + mail + UI helpers)

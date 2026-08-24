@@ -18,12 +18,12 @@ Use when the user asks to prepare a release, cut release notes, or finalize the 
 
 Parse `git branch --show-current`:
 
-| Branch example | Version |
+| Branch example   | Version                          |
 | ---------------- | -------------------------------- |
-| `feature/v1.1.0` | `v1.1.0` |
-| `release/v1.1.0` | `v1.1.0` |
-| `v1.1.0` | `v1.1.0` |
-| `feature/1.1.0` | `v1.1.0` (normalize leading `v`) |
+| `feature/v1.1.0` | `v1.1.0`                         |
+| `release/v1.1.0` | `v1.1.0`                         |
+| `v1.1.0`         | `v1.1.0`                         |
+| `feature/1.1.0`  | `v1.1.0` (normalize leading `v`) |
 
 Rules:
 
@@ -79,7 +79,7 @@ VERSION                    # exactly vX.Y.Z + newline
 docs/releases/vX.Y.Z.md
 ```
 
-The `VERSION` file **is** the suite version SSOT. The release markdown **is** the GitHub Release description source (paste/body for `gh release create`).
+The `VERSION` file **is** the suite version SSOT. The release markdown **is** the GitHub Release description source: [`.github/workflows/release.yml`](../../../.github/workflows/release.yml) publishes it as the release body (H1 → release title) when tag `vX.Y.Z` is pushed.
 
 Also sync references when they exist / are relevant:
 
@@ -161,9 +161,9 @@ test "$(tr -d '[:space:]' < VERSION)" = "vX.Y.Z"
 
 Optional next steps (do **not** do unless asked):
 
-1. `gh release create vX.Y.Z --title "…" --notes-file docs/releases/vX.Y.Z.md`
-1. Tag `vX.Y.Z` and push
-1. Open/update PR
+1. Open/update PR and merge to the default branch
+1. Tag `vX.Y.Z` on that merge commit and push the tag — CI `release.yml` creates the GitHub Release from `docs/releases/vX.Y.Z.md` (no manual `gh release create` needed)
+1. Only if the workflow cannot run: `gh release create vX.Y.Z --title "…" --notes-file docs/releases/vX.Y.Z.md`
 
 ## Hard rules
 
@@ -181,7 +181,7 @@ Optional next steps (do **not** do unless asked):
 1. Path of the release markdown written
 1. Other markdown files updated
 1. New `git log -1` subject/body
-1. Whether push/`gh release create` is still pending
+1. Whether push / merge / tag (auto GitHub Release via `release.yml`) is still pending
 1. Force-push warning if HEAD was already on the remote
 
 ## Additional resources

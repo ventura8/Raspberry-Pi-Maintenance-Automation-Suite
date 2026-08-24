@@ -42,4 +42,4 @@ When behavior or standards change, update:
 1. `docs/*` as needed
 1. `AGENTS.md` and affected `.agents/skills/**` / `.github/**` agent configs
 1. `.agent/instructions.md` when the mandatory agent workflow changes
-1. `docs/releases/vX.Y.Z.md` when preparing a versioned release
+1. `docs/releases/vX.Y.Z.md` when preparing a versioned release (published by `.github/workflows/release.yml` on tag push after the release commit is merged into the default branch)

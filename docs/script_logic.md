@@ -51,7 +51,7 @@ ______________________________________________________________________
 - `download_scripts` writes scripts via `mktemp` under the destination directory + `mv` so a running `update_self.sh` is not truncated and replace stays same-filesystem
 - `--update` rewrites existing suite crontab lines to `>/dev/null 2>&1` (preserving `@daily`-style macros) so cron MAILTO does not dump logs
 - On success: writes the new release tag to `.version`; sends success email
-- On any failure: sends failure email via `ssmtp`
+- On any failure: sends failure email via `send_mail` (`msmtp` preferred; `ssmtp` as legacy fallback)
 - **Cron safety**: installer is invoked directly with no stdin pipe — piping caused `No such device or address` on `/dev/tty` in cron environments
 
 ### `install.sh`
@@ -59,7 +59,7 @@ ______________________________________________________________________
 - **Default UI**: whiptail dialogs (checklist / menu / inputbox / passwordbox / yesno / msgbox) for fresh install and manager menu
 - **Cancel**: fresh wizard exposes Continue/Cancel and Download/Cancel buttons; Esc on email/checklist aborts with an "Installation cancelled…" message (does not fall back to text UI)
 - **Fallback UI**: classic text prompts when whiptail is missing, fails to install, or cannot run (automatic — no `--legacy` flag)
-- **Dependencies**: installs `curl`, `ssmtp`/`mailutils` (or `msmtp` fallback), and `whiptail` via `check_dependencies`
+- **Dependencies**: installs `curl`, `msmtp`/`mailutils` (or family equivalent; `ssmtp` only as legacy fallback), and `whiptail` via `check_dependencies`
 - **Version**: `download_scripts` writes `$INSTALL_DIR/.version` from the repo-root `VERSION` file (local tree first, else `$RAW_URL/VERSION`); remote fetches use `curl -fsSL` (fail on HTTP errors)
 - **Version display**: interactive UI shows `read_suite_version` in the text header, whiptail welcome, and main menu from the start
 - **`--update`**: non-interactive path used by `update_self.sh` (dependency check + script download + quiet existing cron redirects; fail closed if package helpers are not loaded)

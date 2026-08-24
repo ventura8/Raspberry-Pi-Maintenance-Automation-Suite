@@ -9,7 +9,7 @@
 A collection of Bash scripts for **Debian Trixie, Ubuntu 26.04, Fedora, Rocky Linux, Arch, and Raspberry Pi OS** to automate system updates, application management, firmware maintenance, and Docker maintenance with automated email reporting via Gmail.
 
 > [!IMPORTANT]\
-> This project requires a mail transport configured with a Google App Password to send email reports (`ssmtp`/`mailutils` on Debian/Ubuntu/Raspberry Pi OS; `msmtp` fallback on Fedora, Rocky, and Arch). Standard Gmail passwords will not work due to Google's security policies.
+> This project requires a mail transport configured with a Google App Password to send email reports (`msmtp` is preferred on every supported OS, including Debian/Ubuntu/Raspberry Pi OS; `ssmtp` is only used as a legacy fallback when `msmtp` is unavailable or has no usable default account). Standard Gmail passwords will not work due to Google's security policies.
 
 ## **🚀 Quick Install (One-Liner)**
 
@@ -22,7 +22,7 @@ wget -qO- https://raw.githubusercontent.com/ventura8/Raspberry-Pi-Maintenance-Au
 
 ## **📸 Screenshots**
 
-| OS Update | Firmware Update | Docker Cleanup | Pip Update | Pi-Apps Update |
+| OS Update                                      | Firmware Update                                            | Docker Cleanup                                           | Pip Update                                       | Pi-Apps Update                                           |
 | :--------------------------------------------- | :--------------------------------------------------------- | :------------------------------------------------------- | :----------------------------------------------- | :------------------------------------------------------- |
 | ![OS Update Email](assets/os_update_email.png) | ![Firmware Update Email](assets/firmware_update_email.png) | ![Docker Cleanup Email](assets/docker_cleanup_email.png) | ![Pip Update Email](assets/pip_update_email.png) | ![Pi-Apps Update Email](assets/pi_apps_update_email.png) |
 
@@ -31,7 +31,7 @@ wget -qO- https://raw.githubusercontent.com/ventura8/Raspberry-Pi-Maintenance-Au
 - **Interactive Manager UI:** Default UI is **whiptail** (checklist/menu dialogs). The classic text menu is used automatically when whiptail cannot run. Run the installer anytime to view status, toggle tasks, or change schedules. UI strings are English-only via `lib/ui_msg.sh` helpers.
 - **Customizable Scheduling**: Interactively choose which tasks to run and when (keep defaults or set custom cron times). Space toggles checklist items; Enter confirms; Esc cancels.
 - **Re-Run Capable**: Run the installer again at any time to update scripts, reconfigure email, or change your schedule.
-- **Automated Email Reporting**: Receive detailed logs of every maintenance task via `ssmtp`/`mailutils`, or `msmtp` when ssmtp is unavailable (Fedora/Rocky/Arch).
+- **Automated Email Reporting**: Receive detailed logs of every maintenance task via `msmtp` (preferred on every OS, paired with `mailutils` on Debian-family systems or `s-nail` on Fedora/RHEL/Rocky/Arch), with `ssmtp` as a legacy fallback when `msmtp` is unavailable or has no usable default account.
 - **Intelligent Reboot Detection**: Automatically detects when OS or Firmware updates require a system restart and schedules it safely.
 - **Full Distribution Updates**: Uses `full-upgrade` to intelligently handle kernel and firmware dependency changes for maximum stability.
 - **Modern Python Support**: Bypasses PEP 668 "Externally Managed Environment" restrictions safely for global package updates.
@@ -41,7 +41,7 @@ wget -qO- https://raw.githubusercontent.com/ventura8/Raspberry-Pi-Maintenance-Au
 - **Samsung SSD Firmware Updates**: Automatically detects Samsung NVMe SSDs and updates firmware using LVFS or Samsung's official firmware images.
 - **Automatic Dependency Installation**: Critical update scripts automatically check for and install missing system dependencies (like `rpi-eeprom-update`, `fwupd`, `nvme-cli`, and mail transport) to ensure zero-touch maintenance across different environments. The installer also installs `whiptail` for the default setup wizard UI (with automatic text fallback if install fails).
 - **Self-Healing Updates**: The suite tracks its own version from the repo `VERSION` file (copied to `.version` on install) and automatically updates all local scripts when a new GitHub release tag is published.
-- **Automated Configuration**: The installer handles dependency installation (including `curl`, `ssmtp`/`mailutils` or `msmtp` fallback, and `whiptail`), mail configuration, and user aliasing (revaliases) automatically.
+- **Automated Configuration**: The installer handles dependency installation (including `curl`, `msmtp` with `mailutils` (Debian-family) or `s-nail` (Fedora/RHEL/Rocky/Arch) — `ssmtp` only as a legacy fallback when `msmtp` is unavailable or has no usable default account — and `whiptail`), mail configuration, and user aliasing automatically.
 
 ## **📄 Script Descriptions**
 
@@ -126,7 +126,7 @@ Before running the installer, you need to generate a Google App Password:
 
 ### **One-Line Installer**
 
-The installer handles dependency installation (`curl`, `ssmtp`, `mailutils`, `whiptail`), email configuration, script setup, and crontab scheduling. Run the following command and follow the prompts:
+The installer handles dependency installation (`curl`, `msmtp` with `mailutils` on Debian-family systems or `s-nail` on Fedora/RHEL/Rocky/Arch, and `whiptail` — `ssmtp` only as a legacy fallback when `msmtp` is unavailable or has no usable default account), email configuration, script setup, and crontab scheduling. Run the following command and follow the prompts:
 
 1. Run the installer:
 
@@ -141,7 +141,9 @@ curl -sSL https://raw.githubusercontent.com/ventura8/Raspberry-Pi-Maintenance-Au
    - Enter your **Gmail Address** and **App Password**.
    - If whiptail is unavailable, the installer automatically falls back to the classic text prompts.
 
-*The script will automatically configure `/etc/ssmtp/ssmtp.conf` and `/etc/ssmtp/revaliases` to ensure emails are sent correctly and securely.*
+*The script will automatically configure `/etc/msmtprc` (or `/etc/ssmtp/ssmtp.conf` /
+`/etc/ssmtp/revaliases` as a legacy fallback if `msmtp` can't be installed or has no usable
+default account) to ensure emails are sent correctly and securely.*
 
 ### **Changing Settings**
 
@@ -188,16 +190,47 @@ curl -sSL https://raw.githubusercontent.com/ventura8/Raspberry-Pi-Maintenance-Au
 
 ### **1. Install Mail Utilities**
 
-Run the following commands to install the necessary packages:
+The suite prefers `msmtp` on every OS family because it reliably verifies the SMTP server's TLS
+certificate. `ssmtp` does not, and cannot be configured to: Debian/Ubuntu's packaged `ssmtp`
+(2.65) doesn't even recognize the `TLS_CA_File` directive shown in the
+[legacy fallback section](#legacy--fallback-ssmtp) below, and the binary performs no certificate
+validation at all regardless of configuration — there is no `ssmtp.conf` setting that fixes this
+on that build. `ssmtp` is unmaintained, and this suite treats `msmtp` as the only mailer capable
+of verified TLS, full stop. `tls_trust_file` (used below) has been supported by `msmtp` for a
+very long time, but if you're on an unusual/very old build, check `msmtp --version` first.
+Install `msmtp` with the command for your distro:
 
 ```bash
-sudo apt-get update  
-sudo apt-get install ssmtp mailutils
+# Debian / Ubuntu / Raspberry Pi OS
+sudo apt-get update
+sudo apt-get install msmtp mailutils
+
+# Fedora / RHEL / Rocky Linux
+sudo dnf install msmtp s-nail
+
+# Arch Linux
+sudo pacman -S msmtp s-nail
 ```
 
-### **2. 🔑 Configuration Requirement: Configure SSMTP & Gmail**
+The suite calls `msmtp` directly and does not install `msmtp-mta` automatically (on Debian/Arch that
+package Conflicts with `ssmtp`'s sendmail provider and would remove a working legacy MTA before
+credentials can be migrated). If you need a sendmail-compatible `/usr/sbin/sendmail` after msmtp
+is configured, install it separately:
 
-To allow your Raspberry Pi to send emails, you must configure the `ssmtp.conf` file and set up a Google App Password.
+```bash
+# Debian / Ubuntu / Raspberry Pi OS (optional, post-migration)
+sudo apt-get install msmtp-mta
+
+# Arch Linux (optional, post-migration)
+sudo pacman -S msmtp-mta
+```
+
+### **2. 🔑 Configuration Requirement: Configure msmtp & Gmail**
+
+To allow your Raspberry Pi to send emails, you must configure `/etc/msmtprc` and set up a Google
+App Password. The suite's own detection, migration, and "View Current Email Config" logic only
+ever inspect `/etc/msmtprc` — a per-user `~/.msmtprc` is not recognized by the suite, even though
+a bare `msmtp` invocation outside the suite would fall back to it on its own.
 
 #### **A. Generate a Google App Password**
 
@@ -208,9 +241,94 @@ To allow your Raspberry Pi to send emails, you must configure the `ssmtp.conf` f
 1. Select **Mail** for the app and **Other (Custom name)** for the device (e.g., "Raspberry Pi").
 1. Copy the generated **16-character code**.
 
-> [!TIP] Refer to `config/examples/ssmtp.conf.example` for the template
+> [!IMPORTANT]
+> Use the 16-character code as the `password` value below, not your normal Gmail password.
 
-> [!IMPORTANT] Ensure `AuthPass` is your 16-character code.
+#### **B. Edit the msmtp Configuration File**
+
+Open (or create) the `msmtp` configuration file:
+
+```bash
+sudo nano /etc/msmtprc
+```
+
+Use the following configuration, replacing the placeholders with your actual details. `tls_trust_file`
+is the system CA bundle, and its path depends on your distro:
+
+- Debian / Ubuntu / Raspberry Pi OS / Arch: `/etc/ssl/certs/ca-certificates.crt` (shown below)
+- Fedora / RHEL / Rocky Linux: `/etc/pki/tls/certs/ca-bundle.crt`
+
+```bash
+defaults
+auth           on
+tls            on
+tls_trust_file /etc/ssl/certs/ca-certificates.crt
+syslog         LOG_MAIL
+
+account        default
+host           smtp.gmail.com
+port           587
+from           your_email@gmail.com
+user           your_email@gmail.com
+password       your_16_character_app_password
+```
+
+> [!TIP]\
+> `syslog LOG_MAIL` routes msmtp's log through the system logger instead of a dedicated
+> `/var/log/msmtp.log`, which avoids write-permission issues for non-root invocations and keeps
+> recipient/connection details under the same access controls as the rest of the system log.
+> Prefer the portable check `journalctl -t msmtp`; on some Debian-family hosts you may also see
+> entries under `/var/log/mail.log`, but that path is not guaranteed on every supported OS.
+
+#### **C. Set Secure Permissions**
+
+Since this file contains your app password, it is critical to restrict access:
+
+```bash
+# Set ownership to root and the mail group, and add your local user to that group
+sudo chown root:mail /etc/msmtprc
+sudo chmod 640 /etc/msmtprc
+sudo usermod -a -G mail $(whoami)
+```
+
+> [!TIP]\
+> You may need to log out and back in for the group changes to take effect.
+
+#### **D. Test the msmtp Configuration**
+
+Verify that the email system is working by sending a test message:
+
+```bash
+echo "Test text from Raspberry Pi" | msmtp your_email@gmail.com
+```
+
+### **Legacy / Fallback: ssmtp**
+
+`ssmtp` is unmaintained and, in its legacy default configuration, does not verify the SMTP
+server's TLS certificate at all. It is only kept as a fallback for environments where `msmtp`
+cannot be installed or has no usable default account. The suite auto-migrates a legacy
+`ssmtp.conf` to `msmtp` on the next mail send, but only when it still holds live credentials
+(`AuthUser`/`AuthPass`) and no usable msmtp `account default` already exists — it does not touch
+every existing `ssmtp` setup unconditionally. Use `ssmtp` only if `msmtp` is unavailable or has no
+usable default account, and don't rely on it for verified delivery: Debian/Ubuntu's packaged
+`ssmtp` (2.65) doesn't even recognize `TLS_CA_File` and performs no certificate validation at
+all, regardless of configuration — there is no `ssmtp.conf` setting that fixes this on that
+build. Reliable certificate-chain-and-hostname verification requires `msmtp`.
+
+#### **A. Install**
+
+`ssmtp` is only packaged on Debian-family systems. On Fedora/RHEL/Rocky and Arch, the suite's
+`ssmtp` logical dependency maps to `msmtp` — use the [msmtp install commands](#1-install-mail-utilities)
+above instead of trying to install `ssmtp` there.
+
+```bash
+# Debian / Ubuntu / Raspberry Pi OS only
+sudo apt-get update
+sudo apt-get install ssmtp mailutils
+```
+
+> [!TIP]
+> Refer to `config/examples/ssmtp.conf.example` for the template
 
 #### **B. Edit the Configuration File**
 
@@ -219,42 +337,6 @@ Open the `ssmtp` configuration file:
 ```bash
 sudo nano /etc/ssmtp/ssmtp.conf
 ```
-
-## **🧪 Developer Quality Gate**
-
-Run these local validation commands in order before opening a PR:
-
-```bash
-./scripts/build-and-test.sh --full
-
-# Host fallback (optional):
-./tests/format.sh
-STRICT_MODE=true ./tests/lint.sh
-./tests/run_suite.sh
-```
-
-The CI pipeline enforces the same gate sequence in strict mode.
-
-Coverage policy in CI requires both:
-
-- At least 90% overall merged coverage.
-- At least 90% coverage for each covered script file.
-- Overall complexity must be \<= 15.
-- Per-file complexity must be \<= 15.
-
-## **🤖 Agent and Skills Customization**
-
-This repository includes workspace-level Copilot customization for implementation, review, and documentation workflows.
-
-- Global agent guidance: `AGENTS.md` and `.github/copilot-instructions.md`
-- Scoped instructions: `.github/instructions/`
-- Custom agents: `.github/agents/`
-- Reusable skills: `.github/skills/`
-- Prompt templates: `.github/prompts/`
-
-For release-ready GitHub description text, see:
-
-- `docs/releases/v1.1.1.md` (prepare with the `prepare-release` skill)
 
 Use the following configuration, replacing the placeholders with your actual details:
 
@@ -265,9 +347,19 @@ AuthUser=your_email@gmail.com
 AuthPass=your_16_character_app_password  
 UseSTARTTLS=YES  
 UseTLS=YES  
+TLS_CA_File=/etc/ssl/certs/ca-certificates.crt  
 FromLineOverride=YES  
 hostname=raspberrypi
 ```
+
+> [!IMPORTANT]\
+> `ssmtp` completes STARTTLS without validating the peer at all, and your app password can be
+> intercepted by anyone able to intercept the connection. `TLS_CA_File` is written above for
+> ssmtp builds/forks that recognize it, but it is **not a verified fix**: Debian/Ubuntu's
+> packaged `ssmtp` (2.65) doesn't recognize `TLS_CA_File` at all and performs no certificate
+> validation whatsoever, regardless of configuration. There is no `ssmtp.conf` setting that
+> fixes this on that build — use `msmtp` (above) whenever verified delivery matters, which is
+> effectively always.
 
 ### **C. Edit the Revaliases File**
 
@@ -323,6 +415,47 @@ Clone this repo and make the scripts executable:
 ```bash
 chmod +x *.sh
 ```
+
+## **🧪 Developer Quality Gate**
+
+Run these local validation commands in order before opening a PR:
+
+```bash
+./scripts/build-and-test.sh --full
+
+# Host fallback (optional):
+./tests/format.sh
+STRICT_MODE=true ./tests/lint.sh
+./tests/run_suite.sh
+```
+
+The CI pipeline enforces the same gate sequence in strict mode.
+
+Coverage policy in CI requires both:
+
+- At least 90% overall merged coverage.
+- At least 90% coverage for each covered script file.
+- Overall complexity must be \<= 15.
+- Per-file complexity must be \<= 15.
+
+## **🤖 Agent and Skills Customization**
+
+This repository includes workspace-level Copilot customization for implementation, review, and documentation workflows.
+
+- Global agent guidance: `AGENTS.md` and `.github/copilot-instructions.md`
+- Scoped instructions: `.github/instructions/`
+- Custom agents: `.github/agents/`
+- Reusable skills: `.github/skills/`
+- Prompt templates: `.github/prompts/`
+
+For release-ready GitHub description text, see:
+
+- `docs/releases/v1.1.2.md` — current example for this release (prepare with the `prepare-release` skill)
+- Future releases: `docs/releases/vX.Y.Z.md` must match the pushed tag / root `VERSION` exactly
+
+Pushing tag `vX.Y.Z` (matching root `VERSION`, after merge to the default branch) runs
+`.github/workflows/release.yml`, which creates the GitHub Release using `docs/releases/vX.Y.Z.md`
+as the body and that file’s H1 as the title.
 
 ## **📅 Manual Automation (Cron Jobs)**
 

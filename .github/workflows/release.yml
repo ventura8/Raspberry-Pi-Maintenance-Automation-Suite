@@ -1,0 +1,101 @@
+---
+name: "GitHub Release"
+
+# Publish a GitHub Release when a version tag is pushed. Body comes from
+# docs/releases/vX.Y.Z.md (prepare-release skill), not auto-generated notes.
+on:
+  push:
+    tags:
+      - "v*"
+
+concurrency:
+  group: github-release
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+jobs:
+  github-release:
+    name: Create GitHub Release
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v7.0.1
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: Verify tag commit is ancestor of default branch
+        env:
+          DEFAULT_BRANCH: ${{ github.event.repository.default_branch }}
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          git fetch --no-tags \
+            "https://x-access-token:${GH_TOKEN}@github.com/${{ github.repository }}.git" \
+            "refs/heads/${DEFAULT_BRANCH}:refs/remotes/origin/${DEFAULT_BRANCH}"
+          if ! git merge-base --is-ancestor "${GITHUB_SHA}" \
+              "origin/${DEFAULT_BRANCH}"; then
+            echo \
+              "Tag commit ${GITHUB_SHA} is not an ancestor of origin/${DEFAULT_BRANCH}" \
+              >&2
+            exit 1
+          fi
+
+      - name: Validate VERSION and release notes
+        id: meta
+        run: |
+          set -euo pipefail
+          TAG="${GITHUB_REF_NAME}"
+          # Reject leading zeroes (e.g. v01.0.0) while keeping vMAJOR.MINOR.PATCH.
+          if [[ ! "$TAG" =~ ^v(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)$ ]]; then
+            echo "Tag ${TAG} must match vMAJOR.MINOR.PATCH without leading zeroes" \
+              "(no prerelease/incomplete)" >&2
+            exit 1
+          fi
+          if [ ! -f VERSION ]; then
+            echo "Root VERSION file is missing; cannot validate tag ${TAG}" >&2
+            exit 1
+          fi
+          FILE_VERSION="$(tr -d '[:space:]' < VERSION)"
+          if [ "$FILE_VERSION" != "$TAG" ]; then
+            echo "Tag ${TAG} does not match VERSION file ${FILE_VERSION}" >&2
+            exit 1
+          fi
+          NOTES="docs/releases/${TAG}.md"
+          if [ ! -f "$NOTES" ]; then
+            echo "Missing GitHub release description: ${NOTES}" >&2
+            exit 1
+          fi
+          TITLE=""
+          first_line="$(sed -n '1p' "$NOTES")"
+          # Require a real H1: "# title" (space after #). Reject "## …", "#title", bare "#".
+          if [[ "$first_line" =~ ^#[[:space:]]+([^[:space:]].*)$ ]]; then
+            TITLE="${BASH_REMATCH[1]}"
+          fi
+          if [ -z "$TITLE" ]; then
+            echo "First line of ${NOTES} must be an H1 title (# ...)" >&2
+            exit 1
+          fi
+          if [[ "$TITLE" != "${TAG}:"* ]]; then
+            echo "Title of ${NOTES} (\"${TITLE}\") must begin with \"${TAG}:\"" >&2
+            exit 1
+          fi
+          {
+            echo "tag=${TAG}"
+            echo "notes_path=${NOTES}"
+            echo "title<<EOF"
+            printf '%s\n' "$TITLE"
+            echo "EOF"
+          } >> "$GITHUB_OUTPUT"
+          echo "Validated tag ${TAG}; notes ${NOTES}; title: ${TITLE}"
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@3d0d9888cb7fd7b750713d6e236d1fcb99157228  # v3.0.2
+        with:
+          name: ${{ steps.meta.outputs.title }}
+          body_path: ${{ steps.meta.outputs.notes_path }}
+          draft: false
+          prerelease: false

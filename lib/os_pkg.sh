@@ -147,9 +147,13 @@ resolve_pkg_names() {
         debian:whiptail) echo "whiptail" ;;
         redhat:whiptail) echo "newt" ;;
         arch:whiptail) echo "libnewt" ;;
-        debian:mail-transport) echo "ssmtp mailutils" ;;
+        # Intentionally omit msmtp-mta: on Debian/Arch it Conflicts with ssmtp's sendmail
+        # provider and apt/pacman would remove a working ssmtp before migration can finish.
+        # The suite calls msmtp/ssmtp directly; sendmail compatibility is optional for users.
+        debian:mail-transport) echo "msmtp mailutils" ;;
         redhat:mail-transport) echo "msmtp s-nail" ;;
         arch:mail-transport) echo "msmtp s-nail" ;;
+        *:msmtp) echo "msmtp" ;;
         debian:ssmtp) echo "ssmtp" ;;
         redhat:ssmtp | arch:ssmtp) echo "msmtp" ;;
         *:fwupd) echo "fwupd" ;;
@@ -177,7 +181,8 @@ _logical_cmd() {
     case "$1" in
         curl) echo "curl" ;;
         whiptail) echo "whiptail" ;;
-        mail-transport | ssmtp)
+        mail-transport) echo "msmtp" ;;
+        ssmtp)
             if command -v ssmtp > /dev/null 2>&1; then
                 echo "ssmtp"
             else
