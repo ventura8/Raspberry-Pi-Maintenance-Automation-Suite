@@ -8,14 +8,14 @@ Technical guidance for AI agents and developers working on this project.
 
 ## Agent layout
 
-| Path | Role |
+| Path                                           | Role                              |
 | ---------------------------------------------- | --------------------------------- |
-| [AGENTS.md](AGENTS.md) | Always-on project law |
-| [.agents/skills/](.agents/skills/) | Domain + quality + process skills |
-| [.github/agents/](.github/agents/) | Copilot/agent personas |
-| [.github/skills/](.github/skills/) | Copilot workflow skills |
-| [.github/prompts/](.github/prompts/) | Chat prompt templates |
-| [.github/instructions/](.github/instructions/) | Path-scoped coding rules |
+| [AGENTS.md](AGENTS.md)                         | Always-on project law             |
+| [.agents/skills/](.agents/skills/)             | Domain + quality + process skills |
+| [.github/agents/](.github/agents/)             | Copilot/agent personas            |
+| [.github/skills/](.github/skills/)             | Copilot workflow skills           |
+| [.github/prompts/](.github/prompts/)           | Chat prompt templates             |
+| [.github/instructions/](.github/instructions/) | Path-scoped coding rules          |
 
 ## Coverage Requirement
 
@@ -44,7 +44,7 @@ Stages: Docker lint → coverage on `debian:trixie` → parallel distro matrix (
 
 ## Automatic Dependency Installation
 
-Scripts use `lib/os_pkg.sh` to install dependencies via `apt`, `dnf`, or `pacman`. Mail uses `ssmtp` on Debian-family systems and `msmtp` on Fedora/Rocky/Arch when `ssmtp` is unavailable.
+Scripts use `lib/os_pkg.sh` to install dependencies via `apt`, `dnf`, or `pacman`. `msmtp` (which verifies the SMTP server's TLS certificate) is the preferred mailer on every OS family, including Debian-family systems; `ssmtp` is only installed/used as a fallback when `msmtp` is unavailable or has no usable default account.
 
 The interactive installer (`install.sh`) installs UI/runtime dependencies up front: `curl`, mail-transport, and `whiptail`. For `curl|bash` with no adjacent or installed `lib/`, it fetches `os_pkg.sh` / `mail_send.sh` / `ui_msg.sh` from `$RAW_URL/lib/` before `check_dependencies`. The suite version from root `VERSION` is shown from the start (text header and whiptail welcome/menu). Whiptail fresh install offers **Continue/Cancel** and **Download/Cancel** (plus Esc on email/checklist) so the user can abort without completing setup. If whiptail cannot be installed or cannot run, the installer automatically uses the classic text UI. `install.sh --update` remains non-interactive and cron-safe.
 
@@ -67,6 +67,7 @@ The `update_samsung_ssd.sh` script dynamically scrapes Samsung's official firmwa
 The suite includes a self-healing capability (`scripts/update_self.sh`) that ensures installations stay current.
 
 - **Version SSOT**: repo-root [`VERSION`](VERSION) file (`vMAJOR.MINOR.PATCH`). GitHub release tags must match it.
+- **Automated GitHub Release**: pushing tag `vX.Y.Z` runs [`.github/workflows/release.yml`](.github/workflows/release.yml), which publishes [`docs/releases/vX.Y.Z.md`](docs/releases/) as the release body (H1 = title). Tag commit must be an ancestor of the default branch.
 - **Installed copy**: `install.sh` writes `$INSTALL_DIR/.version` from local `VERSION` (or `$RAW_URL/VERSION`).
 - **Update Logic**:
   1. `update_self.sh` checks the GitHub API (`releases/latest`).
@@ -81,5 +82,5 @@ The suite includes a self-healing capability (`scripts/update_self.sh`) that ens
 - [Project Overview & Directory Structure](docs/project_overview.md)
 - [Script Logic & Functionality](docs/script_logic.md)
 - [Development & Standards](docs/development_standards.md)
-- [Release Notes (GitHub description)](docs/releases/v1.1.1.md) — prepare via `.agents/skills/prepare-release`
+- [Release Notes (GitHub description)](docs/releases/v1.1.2.md) — prepare via `.agents/skills/prepare-release`; published automatically by `.github/workflows/release.yml` when the matching tag is pushed
 - [Prompt Templates for Chat Workflows](.github/prompts/README.md)

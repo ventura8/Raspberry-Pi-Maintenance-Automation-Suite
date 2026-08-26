@@ -60,7 +60,7 @@ mkdir -p reports/distro-logs
 
 ## OS family checks inside images
 
-1. Debian/Ubuntu: `ssmtp`/`mailutils`/`whiptail`/`cron`
+1. Debian/Ubuntu: `msmtp`/`mailutils`/`whiptail`/`cron` (images may also ship `ssmtp` for legacy fallback coverage)
 1. Fedora/Rocky: `newt`/`msmtp`/`cronie` (via `lib/os_pkg.sh` mappings); Rocky images install `curl`
    with `dnf --allowerasing` so `curl-minimal` on the base image does not conflict
 1. Arch: `libnewt`/`msmtp`/`cronie`

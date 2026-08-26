@@ -161,7 +161,15 @@ if [ "$MODE" = "all" ] || [ "$MODE" = "installer" ]; then
     mkdir -p "${MOCK_FS}/etc/ssmtp"
     export SSMTP_CONF="${MOCK_FS}/etc/ssmtp/ssmtp.conf"
     export REVALIASES="${MOCK_FS}/etc/ssmtp/revaliases"
-    # Empty existing conf makes the fresh wizard ask "reconfigure?" so the leading "Y" input is valid.
+    export MSMTP_CONF="${MOCK_FS}/etc/msmtprc"
+    # Seed a usable existing mail conf so the fresh wizard asks "reconfigure?" and the leading
+    # "Y" input is consumed there (empty files do not count as configured).
+    cat << 'EOF' > "$MSMTP_CONF"
+account default
+host smtp.gmail.com
+user seed@test.com
+password seed
+EOF
     : > "$SSMTP_CONF"
     : > "$REVALIASES"
 
@@ -261,17 +269,30 @@ if [ "$MODE" = "all" ] || [ "$MODE" = "installer" ]; then
         ) | ./install.sh
     fi
     echo "--- [VERIFY] Checking Phase 1 State ---"
-    # Prefer the mock filesystem path; fall back only if mocks were not initialized.
-    TARGET_CONF="${MOCK_FS:-/tmp/mocks/fs}/etc/ssmtp/ssmtp.conf"
-    if [ ! -f "$TARGET_CONF" ]; then
-        TARGET_CONF="/etc/ssmtp/ssmtp.conf"
-    fi
-    if /usr/bin/grep -q "AuthUser=test@final.com" "$TARGET_CONF" 2> /dev/null; then
+    # msmtp is preferred whenever installed; ssmtp is only the fallback. Check whichever the
+    # installer actually wrote to — MSMTP_CONF/SSMTP_CONF are already pinned to the mock
+    # filesystem above, so use them directly rather than falling back to real host paths
+    # (which could mask a mock-write failure or leak into the real filesystem).
+    MSMTP_TARGET_CONF="$MSMTP_CONF"
+    SSMTP_TARGET_CONF="$SSMTP_CONF"
+
+    if command -v msmtp > /dev/null 2>&1; then
+        if /usr/bin/grep -Eq '^user[[:space:]]+test@final\.com$' "$MSMTP_TARGET_CONF" 2> /dev/null; then
+            echo "✅ msmtp: Configured correctly to test@final.com"
+        else
+            echo "❌ Mail transport: Config failed (Expected test@final.com in msmtp)"
+            echo "   Checked: $MSMTP_TARGET_CONF (size=$(wc -c < "$MSMTP_TARGET_CONF" 2> /dev/null || echo 0))"
+            /usr/bin/grep -E '^(user|host)[[:space:]]' "$MSMTP_TARGET_CONF" 2> /dev/null || true
+            exit 1
+        fi
+    elif /usr/bin/grep -Eq '^AuthUser=test@final\.com$' "$SSMTP_TARGET_CONF" 2> /dev/null; then
         echo "✅ SSMTP: Configured correctly to test@final.com"
     else
-        echo "❌ SSMTP: Config failed (Expected test@final.com)"
-        echo "   Checked: $TARGET_CONF (size=$(wc -c < "$TARGET_CONF" 2> /dev/null || echo 0))"
-        /usr/bin/grep -E '^(AuthUser|mailhub)=' "$TARGET_CONF" 2> /dev/null || true
+        echo "❌ Mail transport: Config failed (Expected test@final.com)"
+        echo "   Checked: $MSMTP_TARGET_CONF (size=$(wc -c < "$MSMTP_TARGET_CONF" 2> /dev/null || echo 0))"
+        echo "   Checked: $SSMTP_TARGET_CONF (size=$(wc -c < "$SSMTP_TARGET_CONF" 2> /dev/null || echo 0))"
+        /usr/bin/grep -E '^(user|host)[[:space:]]' "$MSMTP_TARGET_CONF" 2> /dev/null || true
+        /usr/bin/grep -E '^(AuthUser|mailhub)=' "$SSMTP_TARGET_CONF" 2> /dev/null || true
         exit 1
     fi
 

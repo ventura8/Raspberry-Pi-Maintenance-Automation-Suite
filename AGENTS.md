@@ -12,17 +12,17 @@ Bash scripts that automate Raspberry Pi (and compatible Debian/Ubuntu/Fedora/Roc
 
 ## Agent Config Layout
 
-| Path | Role |
+| Path                                                                 | Role                                     |
 | -------------------------------------------------------------------- | ---------------------------------------- |
-| [`AGENTS.md`](AGENTS.md) | Always-on project law (this file) |
-| [`.agents/skills/`](.agents/skills/) | On-demand task playbooks (`SKILL.md`) |
-| [`.github/agents/`](.github/agents/) | Copilot/agent personas |
-| [`.github/skills/`](.github/skills/) | Copilot skills (mirrors workflow skills) |
-| [`.github/prompts/`](.github/prompts/) | Chat prompt templates |
-| [`.github/instructions/`](.github/instructions/) | Path-scoped coding rules (`applyTo`) |
-| [`.github/copilot-instructions.md`](.github/copilot-instructions.md) | Repo-wide Copilot context |
-| [`.agent/instructions.md`](.agent/instructions.md) | Mandatory fix-lints-and-tests workflow |
-| [`Instructions.md`](Instructions.md) | Human/AI technical handbook |
+| [`AGENTS.md`](AGENTS.md)                                             | Always-on project law (this file)        |
+| [`.agents/skills/`](.agents/skills/)                                 | On-demand task playbooks (`SKILL.md`)    |
+| [`.github/agents/`](.github/agents/)                                 | Copilot/agent personas                   |
+| [`.github/skills/`](.github/skills/)                                 | Copilot skills (mirrors workflow skills) |
+| [`.github/prompts/`](.github/prompts/)                               | Chat prompt templates                    |
+| [`.github/instructions/`](.github/instructions/)                     | Path-scoped coding rules (`applyTo`)     |
+| [`.github/copilot-instructions.md`](.github/copilot-instructions.md) | Repo-wide Copilot context                |
+| [`.agent/instructions.md`](.agent/instructions.md)                   | Mandatory fix-lints-and-tests workflow   |
+| [`Instructions.md`](Instructions.md)                                 | Human/AI technical handbook              |
 
 When behavior or policy changes, update **this file** and any affected skills/prompts/instructions in the **same change set**.
 
@@ -101,7 +101,7 @@ Live logs: tee long runs under `reports/distro-logs/` when iterating on matrix/p
 1. Classic **text UI** is the automatic fallback when whiptail is missing, fails to install, or cannot run.
 1. User Cancel (whiptail rc 1/255) aborts or returns to menu — it does **not** force text fallback.
 1. Fresh whiptail install offers explicit **Continue/Cancel** (welcome) and **Download/Cancel** before mutating `$INSTALL_DIR`, plus Esc/Cancel on email and task checklist steps.
-1. `check_dependencies` installs `curl`, mail-transport (`ssmtp`/`mailutils` or `msmtp`), and `whiptail`/`newt`/`libnewt`.
+1. `check_dependencies` installs `curl`, mail-transport (`msmtp`/`mailutils` or family equivalent; `ssmtp` only as legacy fallback), and `whiptail`/`newt`/`libnewt`.
 1. Piped one-liner (`curl|bash`) must still prompt via `/dev/tty` when a TTY exists.
 1. Fresh `curl|bash` with no adjacent/installed `lib/` bootstraps `os_pkg.sh` / `mail_send.sh` / `ui_msg.sh` from `$RAW_URL/lib/` before `check_dependencies` so `pkg_install` / `has_mail_sender` are defined.
 1. `install.sh --update` must stay **non-interactive** (deps + download + quiet cron redirects) for cron via `update_self.sh`.
@@ -119,7 +119,7 @@ Live logs: tee long runs under `reports/distro-logs/` when iterating on matrix/p
 ## Package Manager Portability (`lib/os_pkg.sh`)
 
 1. Families: `debian` (apt), `redhat` (dnf/yum), `arch` (pacman).
-1. Logical deps map to OS packages (`whiptail` → `whiptail` / `newt` / `libnewt`; mail → ssmtp or msmtp).
+1. Logical deps map to OS packages (`whiptail` → `whiptail` / `newt` / `libnewt`; mail → `msmtp` + `mailutils`/`s-nail`, without `msmtp-mta` so Debian/Arch cannot yank an existing `ssmtp` MTA mid-migration).
 1. Scripts that need packages must go through `pkg_install` / `logical_is_installed` — do not hardcode apt-only install paths in maintenance scripts.
 1. `rpi_ensure_cron_path` (sourced with this lib) seeds a cron-friendly PATH unless `MOCK_DIR` is set, so BATS `path_hiding_cmds` is not undone by re-appending `/usr/bin`.
 1. Keep `tests/component_tests_os_pkg.bats` aligned with mapping changes.
@@ -128,6 +128,7 @@ Live logs: tee long runs under `reports/distro-logs/` when iterating on matrix/p
 
 1. **Repo version SSOT** is the root [`VERSION`](VERSION) file (`vMAJOR.MINOR.PATCH`).
 1. GitHub release tags **must match** `VERSION` exactly (e.g. `v1.1.0`).
+1. Pushing a `v*` tag on a commit that is an ancestor of the default branch runs [`.github/workflows/release.yml`](.github/workflows/release.yml): it requires `docs/releases/vX.Y.Z.md`, uses that file as the GitHub Release body, and sets the release title from the file’s H1. Do not rely on auto-generated release notes.
 1. Installed copy is `$INSTALL_DIR/.version`, written by `install.sh` from `VERSION` (local tree or `$RAW_URL/VERSION`).
 1. Fetch latest tag via Releases API; on mismatch stage tagged `install.sh`, `VERSION`, and `lib/` in a `mktemp` directory, export `RAW_URL` for that tag, then run `bash "$stage_dir/install.sh" --update` — **never** pipe installer stdin for this path.
 1. `--update` must source `$INSTALL_DIR/lib` when the installer tree has no sibling `lib/`, fail closed if `pkg_install` / `has_mail_sender` are undefined, and replace scripts via `mktemp` + `mv`.
@@ -170,25 +171,25 @@ Dockerfiles live under `docker/images/tests/`. Matrix orchestration: `scripts/ru
 
 ## Skills Index (`.agents/skills/`)
 
-| Skill | Use when |
-| ------------------------- | --------------------------------------------------------------------- |
-| `code-linter` | Format/lint autofix then strict lint |
-| `test-runner` | BATS + coverage/complexity gates |
-| `pipeline-runner` | Full Docker CI parity until green |
-| `installer-tester` | install.sh UI, fallback, `--update` |
-| `distro-matrix-tester` | Distro Docker lanes / Dockerfiles |
-| `samsung-firmware-tester` | Samsung SSD update paths |
-| `self-update-tester` | Cron-safe self-update |
-| `resolve-pr-comments` | Close every PR review thread via `gh` |
-| `review-with-coderabbit` | User-gated CodeRabbit review/fix loop |
-| `prepare-release` | Version from branch, `docs/releases/vX.Y.Z.md`, amend HEAD title/body |
-| `release-readiness` | Go/no-go checklist before tag/merge |
+| Skill                     | Use when                                                                                                                |
+| ------------------------- | ----------------------------------------------------------------------------------------------------------------------- |
+| `code-linter`             | Format/lint autofix then strict lint                                                                                    |
+| `test-runner`             | BATS + coverage/complexity gates                                                                                        |
+| `pipeline-runner`         | Full Docker CI parity until green                                                                                       |
+| `installer-tester`        | install.sh UI, fallback, `--update`                                                                                     |
+| `distro-matrix-tester`    | Distro Docker lanes / Dockerfiles                                                                                       |
+| `samsung-firmware-tester` | Samsung SSD update paths                                                                                                |
+| `self-update-tester`      | Cron-safe self-update                                                                                                   |
+| `resolve-pr-comments`     | Close every PR review thread via `gh`                                                                                   |
+| `review-with-coderabbit`  | User-gated CodeRabbit review/fix loop                                                                                   |
+| `prepare-release`         | Version from branch, `docs/releases/vX.Y.Z.md`; amend HEAD title/body only after explicit confirmation (not by default) |
+| `release-readiness`       | Go/no-go checklist before tag/merge                                                                                     |
 
 ## Files That Usually Need Coordinated Updates
 
 1. Script logic: `scripts/*.sh`, `install.sh`, `uninstall.sh`, `lib/*.sh`
 1. Tests: `tests/*.bats`, `tests/e2e/`, `tests/run_suite.sh`, `tests/setup_mocks.sh`, drivers
-1. CI/Docker: `.github/workflows/ci.yml`, `docker/images/**`, `scripts/build-and-test.sh`, `scripts/run_docker_matrix.sh`, `scripts/lint-in-docker.sh`
+1. CI/Docker: `.github/workflows/ci.yml`, `.github/workflows/release.yml`, `docker/images/**`, `scripts/build-and-test.sh`, `scripts/run_docker_matrix.sh`, `scripts/lint-in-docker.sh`
 1. Docs: `README.md`, `Instructions.md`, `docs/*.md`, **and agent files** (`AGENTS.md`, skills, prompts)
 
 ## PR Readiness Checklist
@@ -198,4 +199,5 @@ Dockerfiles live under `docker/images/tests/`. Matrix orchestration: `scripts/ru
 1. Distro matrix lanes pass (compat + e2e), including real install/uninstall in both stages.
 1. Installer whiptail + text-fallback tests still pass; `--update` remains cron-safe.
 1. **Markdown docs and agent skills/instructions updated in the same change** (never defer).
-1. On versioned release branches: `prepare-release` wrote `docs/releases/vX.Y.Z.md` and amended HEAD title/body.
+1. On versioned release branches: `prepare-release` wrote `docs/releases/vX.Y.Z.md`; amend HEAD title/body only after explicit confirmation.
+1. After merge to the default branch, pushing tag `vX.Y.Z` (matching `VERSION`) lets `release.yml` publish the GitHub Release from that notes file.

@@ -5,6 +5,28 @@ set -e
 export MOCK_DIR="${MOCK_DIR:-/tmp/mocks}"
 mkdir -p "$MOCK_DIR"
 
+# MOCK_DIR is a real directory that can persist across separate script invocations sharing the
+# same default path (e.g. CI's "full" mode runs a mocked ./tests/run_suite.sh, then real-dependency
+# compat/e2e stages, in the SAME container). Purge any mock/stub executables a PRIOR invocation may
+# have left here before this script (or PATH resolution below) can reference any of them by bare
+# name — bash caches a command's resolved path the first time it's looked up, so even removing a
+# stale mock later in this same script would not undo an earlier, now-cached bad resolution. This
+# also matters beyond "which binary runs": the sudo mock below treats any command with a matching
+# executable in MOCK_DIR as already-mocked and runs it directly, WITHOUT real elevation — so a
+# stale mock chmod/chown/tee/etc. silently strips privilege from every `sudo <cmd>` call too (e.g.
+# writing a config file as the caller instead of root). Unconditional (not just under REAL_DEPS=1):
+# a stale mock can just as easily corrupt a plain mocked run started fresh in a reused MOCK_DIR.
+rm -f "$MOCK_DIR"/apt-get "$MOCK_DIR"/dnf "$MOCK_DIR"/yum "$MOCK_DIR"/pacman \
+    "$MOCK_DIR"/msmtp "$MOCK_DIR"/ssmtp "$MOCK_DIR"/curl "$MOCK_DIR"/pip3 \
+    "$MOCK_DIR"/hostname "$MOCK_DIR"/clear "$MOCK_DIR"/tput \
+    "$MOCK_DIR"/chmod "$MOCK_DIR"/chown "$MOCK_DIR"/usermod \
+    "$MOCK_DIR"/mkdir "$MOCK_DIR"/touch "$MOCK_DIR"/tee "$MOCK_DIR"/grep \
+    "$MOCK_DIR"/redirect_etc.sh \
+    "$MOCK_DIR"/mount "$MOCK_DIR"/umount "$MOCK_DIR"/cpio "$MOCK_DIR"/7z \
+    "$MOCK_DIR"/file "$MOCK_DIR"/gzip "$MOCK_DIR"/fwupdmgr "$MOCK_DIR"/nvme \
+    "$MOCK_DIR"/whiptail "$MOCK_DIR"/sudo 2> /dev/null || true
+hash -r
+
 # Add MOCK_DIR and system sbin to PATH
 export PATH="$MOCK_DIR:/usr/sbin:$PATH"
 
@@ -15,20 +37,64 @@ echo "Raspberry Pi 5 Model B Rev 1.0" > "$MOCK_FS/proc/device-tree/model"
 echo "Model : Raspberry Pi 5 Model B Rev 1.0" > "$MOCK_FS/proc/cpuinfo"
 
 # 1. Smart Sudo Mock
+# Preserve -n / -H / -u / -g (separate or attached forms) for the real-sudo fallback. Strip those
+# flags only when dispatching to a MOCK_DIR command so mocks still see the bare command argv.
+# Unsupported option forms fail closed instead of being silently dropped.
 cat << EOF > "$MOCK_DIR/sudo"
 #!/bin/bash
 MOCK_DIR="\${MOCK_DIR:-$MOCK_DIR}"
-ORIG_ARGS=("\$@")
+SUDO_OPTS=()
 while [[ "\$1" == -* ]]; do
-    if [[ "\$1" == "-u" ]]; then shift; shift; else shift; fi
+    case "\$1" in
+        -n | --non-interactive)
+            SUDO_OPTS+=(-n)
+            shift
+            ;;
+        -H | --set-home)
+            SUDO_OPTS+=(-H)
+            shift
+            ;;
+        -u)
+            if [ -z "\${2:-}" ] || [[ "\$2" == -* ]]; then
+                echo "sudo mock: -u requires a user argument" >&2
+                exit 1
+            fi
+            SUDO_OPTS+=(-u "\$2")
+            shift 2
+            ;;
+        -u*)
+            SUDO_OPTS+=(-u "\${1#-u}")
+            shift
+            ;;
+        -g)
+            if [ -z "\${2:-}" ] || [[ "\$2" == -* ]]; then
+                echo "sudo mock: -g requires a group argument" >&2
+                exit 1
+            fi
+            SUDO_OPTS+=(-g "\$2")
+            shift 2
+            ;;
+        -g*)
+            SUDO_OPTS+=(-g "\${1#-g}")
+            shift
+            ;;
+        --)
+            shift
+            break
+            ;;
+        *)
+            echo "sudo mock: unsupported option: \$1" >&2
+            exit 1
+            ;;
+    esac
 done
 CMD_NAME="\$1"
 if [ -n "\$CMD_NAME" ] && [ -x "\$MOCK_DIR/\$CMD_NAME" ]; then
     export IS_MOCKED_SUDO=true
-    shift 
+    shift
     "\$MOCK_DIR/\$CMD_NAME" "\$@"
 else
-    /usr/bin/sudo env PATH="\$MOCK_DIR:\$PATH" MOCK_DIR="\$MOCK_DIR" "\${ORIG_ARGS[@]}"
+    /usr/bin/sudo "\${SUDO_OPTS[@]}" env PATH="\$MOCK_DIR:\$PATH" MOCK_DIR="\$MOCK_DIR" "\$@"
 fi
 EOF
 chmod +x "$MOCK_DIR/sudo"

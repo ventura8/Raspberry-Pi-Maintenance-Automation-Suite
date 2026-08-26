@@ -31,7 +31,8 @@ RUN curl -fsSL "https://github.com/hadolint/hadolint/releases/download/${HADOLIN
     && mv /tmp/actionlint /usr/local/bin/actionlint \
     && chmod +x /usr/local/bin/actionlint \
     && rm -f /tmp/actionlint.tar.gz \
-    && python3 -m pip install --break-system-packages --no-cache-dir mdformat lizard
+    && python3 -m pip install --break-system-packages --no-cache-dir \
+        'mdformat==1.0.0' 'mdformat-gfm==1.0.0' lizard
 
 WORKDIR /workspace
 COPY . .

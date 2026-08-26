@@ -4,7 +4,7 @@
 
 - **OS**: Raspberry Pi OS (Debian-based)
 - **Shell**: Bash
-- **Runtime**: `ssmtp`, `mailutils`
+- **Runtime**: `msmtp` (preferred) / `mailutils` or `s-nail`; `ssmtp` only as legacy fallback
 - **Testing**: `bats-core`, `kcov`
 
 ## Testing & Coverage
@@ -86,4 +86,5 @@ with `--user $(id -u):$(id -g)` so repo-root writes succeed on Actions runners.
 - Update `AGENTS.md` and affected agent skills/prompts/instructions whenever behavior or policy changes
 - **Always** do markdown updates in the **same change set** as the code — never defer docs
 - Suite version SSOT is the root `VERSION` file; keep GitHub release tags identical to its contents
-- Add or update release description markdown in `docs/releases/vX.Y.Z.md` when preparing a tagged release (use the `prepare-release` skill; amend HEAD title/body to match)
+- Add or update release description markdown in `docs/releases/vX.Y.Z.md` when preparing a tagged release (use the `prepare-release` skill; amend HEAD title/body only after explicit confirmation, not by default)
+- Pushing tag `vX.Y.Z` (after merge to the default branch) runs `.github/workflows/release.yml`, which creates the GitHub Release using that markdown as the body and its H1 as the title

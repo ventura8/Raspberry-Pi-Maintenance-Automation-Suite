@@ -11,9 +11,11 @@ setup() {
     export MOCK_DIR="$TEST_WORKSPACE/mocks"
     export INSTALL_DIR="$TEST_WORKSPACE/scripts"
     export SSMTP_CONF="$TEST_WORKSPACE/ssmtp.conf"
+    export MSMTP_CONF="$TEST_WORKSPACE/msmtprc"
     export REVALIASES="$TEST_WORKSPACE/revaliases"
     mkdir -p "$MOCK_DIR" "$INSTALL_DIR"
     : > "$SSMTP_CONF"
+    : > "$MSMTP_CONF"
     : > "$REVALIASES"
 
     export TEST_MODE="true"
@@ -48,7 +50,9 @@ teardown() {
 }
 
 @test "Install: Configure Email - Valid Config (New)" {
-    run bash -c "export PATH=$MOCK_DIR:$PATH; source ./install.sh; configure_email_interactive <<< $'Y\ntest@test.com\npassword'"
+    # No prior valid config exists (SSMTP_CONF/MSMTP_CONF are empty placeholders), so the
+    # reconfigure-confirm prompt does not fire and the first line is the email directly.
+    run bash -c "export PATH=$MOCK_DIR:$PATH; source ./install.sh; configure_email_interactive <<< $'test@test.com\npassword'"
     [[ "$output" =~ "Email configured successfully" ]]
     
     # Verify MAILTO was written to mock crontab
@@ -61,6 +65,30 @@ teardown() {
     run bash -c "export PATH=$MOCK_DIR:$PATH; source ./install.sh; configure_email_interactive <<< $'n'"
     # Should return early without asking for email
     [[ ! "$output" =~ "Enter Gmail address" ]]
+}
+
+@test "Install: Configure Email (text) - msmtp-only config shows current address" {
+    rm -f "$SSMTP_CONF"
+    printf 'account default\nhost smtp.gmail.com\nuser msmtp-only@test.com\n' > "$MSMTP_CONF"
+    run bash -c "export PATH=$MOCK_DIR:\$PATH INSTALL_FORCE_TEXT_UI=1; source ./install.sh; configure_email_text <<< $'n'"
+    [[ "$output" =~ "Current Configured Email: msmtp-only@test.com" ]]
+    [[ ! "$output" =~ "Enter Gmail address" ]]
+}
+
+@test "Install: Configure Email (whiptail) - msmtp-only config honors reconfigure prompt" {
+    # The mocked whiptail doesn't echo dialog text, so assert behaviorally: answering "no" to
+    # reconfigure must be honored (proving the msmtp-only config was recognized and the prompt
+    # actually fired) rather than falling through and overwriting with the queued replacement.
+    rm -f "$SSMTP_CONF"
+    printf 'account default\nhost smtp.gmail.com\nuser msmtp-only@test.com\n' > "$MSMTP_CONF"
+    printf '%s\n' "no" > "$MOCK_DIR/whiptail_yesno"
+    printf 'new@test.com\nnewpass\n' > "$MOCK_DIR/whiptail_input"
+    run bash -c \
+        "export PATH=$MOCK_DIR:\$PATH INSTALL_USE_WHIPTAIL=1; source ./install.sh; \
+configure_email_whiptail; grep -E '^user[[:space:]]+' \"$MSMTP_CONF\""
+    [[ "$status" -eq 0 ]]
+    [[ "$output" =~ "msmtp-only@test.com" ]]
+    [[ ! "$output" =~ "new@test.com" ]]
 }
 
 @test "Install: Toggle Task - Enable Disabled Task" {
@@ -126,14 +154,14 @@ EOF
 }
 
 @test "Install: Configure Email - Empty Password" {
-    run bash -c "export PATH=$MOCK_DIR:$PATH; source ./install.sh; configure_email_interactive <<< $'Y\ntest@test.com\n\n'"
+    run bash -c "export PATH=$MOCK_DIR:$PATH; source ./install.sh; configure_email_interactive <<< $'test@test.com\n\n'"
     [[ "$output" =~ "Password empty" ]]
 }
 
 @test "Install: Show Email Config - Missing File" {
-    rm -f "$SSMTP_CONF"
+    rm -f "$SSMTP_CONF" "$MSMTP_CONF"
     run bash -c "export PATH=$MOCK_DIR:$PATH; source ./install.sh; show_email_config <<< $''"
-    [[ "$output" =~ "No SSMTP configuration found" ]]
+    [[ "$output" =~ "No mail configuration found" ]]
 }
 
 @test "Install: Fresh Install - Opt out of Task" {
@@ -263,8 +291,66 @@ EOF
     echo "mailhub=smtp.test.com" >> "$SSMTP_CONF"
     
     run bash -c "export PATH=$MOCK_DIR:$PATH; source ./install.sh; show_email_config <<< $''"
-    
+
     [[ "$output" =~ "User:     test@test.com" ]]
+}
+
+@test "Install: get_current_email_user and download_scripts use msmtp after migrate-then-reconfigure" {
+    echo "AuthUser=old@test.com" > "$SSMTP_CONF"
+    echo "AuthPass=oldpass" >> "$SSMTP_CONF"
+    echo "mailhub=smtp.gmail.com:587" >> "$SSMTP_CONF"
+    rm -f "$MSMTP_CONF"
+    mkdir -p "$INSTALL_DIR"
+
+    # Stale SSMTP_CONF (old@test.com) is intentionally left in place after migration+reconfigure
+    # to prove MSMTP_CONF (new@test.com) takes precedence, matching send_mail's own preference.
+    cat << 'EOF' > "$MOCK_DIR/curl"
+#!/bin/bash
+outfile=""
+prev=""
+for arg in "$@"; do
+    if [ "$prev" = "-o" ]; then outfile="$arg"; fi
+    prev="$arg"
+done
+if [[ "$*" =~ "scripts/test_script.sh" ]]; then
+    [ -n "$outfile" ] && printf '%s\n' 'RECIPIENT_EMAIL="placeholder@example.com"' > "$outfile"
+fi
+exit 0
+EOF
+    chmod +x "$MOCK_DIR/curl"
+
+    run bash -c "
+        export PATH=$MOCK_DIR:\$PATH INSTALL_DIR=$INSTALL_DIR
+        source ./install.sh
+        migrate_mail_config_to_msmtp
+        write_mail_config 'new@test.com' 'newpass'
+        get_current_email_user
+        SCRIPTS[1]='test_script.sh'
+        download_scripts > /dev/null
+        cat \"$INSTALL_DIR/test_script.sh\"
+    "
+    [[ "$status" -eq 0 ]]
+    [[ "$output" =~ "new@test.com" ]]
+    [[ "$output" != *"old@test.com"* ]]
+}
+
+@test "Install: get_current_email_user resolves default account via inheritance" {
+    rm -f "$SSMTP_CONF"
+    cat << 'EOF' > "$MSMTP_CONF"
+defaults
+auth on
+tls on
+
+account personal
+host smtp.gmail.com
+user inherited@test.com
+password secret
+
+account default : personal
+EOF
+    run bash -c "export PATH=$MOCK_DIR:\$PATH; source ./install.sh; get_current_email_user"
+    [[ "$status" -eq 0 ]]
+    [[ "$output" == "inherited@test.com" ]]
 }
 
 @test "Install: Uninstall - Local Script" {
@@ -391,27 +477,27 @@ EOF
     # Define an email and password with spaces and CRs
     # In bash $'...' strings, \r correctly inserts a carriage return
     # We want to verify that " test@test.com  " and " pass word " become "test@test.com" and "password"
-    run bash -c "export PATH=$MOCK_DIR:$PATH; source ./install.sh; configure_email_interactive <<< $'Y\n test@test.com \r\n pass word \r'"
+    run bash -c "export PATH=$MOCK_DIR:$PATH; source ./install.sh; configure_email_interactive <<< $' test@test.com \r\n pass word \r'"
     
     # Verify via show_email_config or checking the file directly
     [[ "$output" =~ "Email configured successfully" ]]
-    
-    # Check the actual config file
-    run grep "^AuthUser=" "$SSMTP_CONF"
-    [[ "$output" == "AuthUser=test@test.com" ]]
-    
-    run grep "^AuthPass=" "$SSMTP_CONF"
-    [[ "$output" == "AuthPass=password" ]]
+
+    # Check the actual config file (msmtp is preferred over ssmtp)
+    run grep "^user" "$MSMTP_CONF"
+    [[ "$output" == "user           test@test.com" ]]
+
+    run grep "^password" "$MSMTP_CONF"
+    [[ "$output" == "password       password" ]]
 }
 @test "Install: Configure Email - Strips Internal Spaces from App Password" {
     # Test internal spaces removal (Google format: 'aaaa bbbb cccc dddd')
-    run bash -c "export PATH=$MOCK_DIR:$PATH; source ./install.sh; configure_email_interactive <<< $'Y\ntest@test.com\naaaa bbbb cccc dddd'"
+    run bash -c "export PATH=$MOCK_DIR:$PATH; source ./install.sh; configure_email_interactive <<< $'test@test.com\naaaa bbbb cccc dddd'"
     
     [[ "$output" =~ "Email configured successfully" ]]
     
-    # Check that AuthPass has no spaces
-    run grep "^AuthPass=" "$SSMTP_CONF"
-    [[ "$output" == "AuthPass=aaaabbbbccccdddd" ]]
+    # Check that password has no spaces
+    run grep "^password" "$MSMTP_CONF"
+    [[ "$output" == "password       aaaabbbbccccdddd" ]]
 }
 
 @test "Install: MATRIX_FRESH non-interactive install" {

@@ -3,27 +3,30 @@
 # Whiptail UI path + text-fallback coverage for install.sh
 
 setup() {
-    export MOCK_DIR="/tmp/mocks"
-    export INSTALL_DIR="/tmp/scripts_whiptail"
-    rm -rf "$INSTALL_DIR"
-    export SSMTP_CONF="/tmp/ssmtp_whiptail.conf"
-    export REVALIASES="/tmp/revaliases_whiptail"
     export TEST_MODE="true"
     export INSTALL_USE_WHIPTAIL="1"
     export INSTALL_FORCE_TEXT_UI="0"
+
+    export TEST_WORKSPACE
+    TEST_WORKSPACE=$(mktemp -d)
+    export MOCK_DIR="$TEST_WORKSPACE/mocks"
+    export INSTALL_DIR="$TEST_WORKSPACE/scripts"
+    rm -rf "$INSTALL_DIR"
+    export SSMTP_CONF="$TEST_WORKSPACE/ssmtp.conf"
+    export MSMTP_CONF="$TEST_WORKSPACE/msmtprc"
+    export REVALIASES="$TEST_WORKSPACE/revaliases"
 
     ./tests/setup_mocks.sh > /dev/null
     export PATH="$MOCK_DIR:$PATH"
 
     > "$SSMTP_CONF"
+    > "$MSMTP_CONF"
     > "$REVALIASES"
     echo "auto" > "$MOCK_DIR/whiptail_mode"
     echo "yes" > "$MOCK_DIR/whiptail_yesno"
     : > "$MOCK_DIR/whiptail_input"
     : > "$MOCK_DIR/whiptail_checklist"
 
-    export TEST_WORKSPACE
-    TEST_WORKSPACE=$(mktemp -d)
     cp ./install.sh "$TEST_WORKSPACE/"
     mkdir -p "$TEST_WORKSPACE/lib"
     cp ./lib/*.sh "$TEST_WORKSPACE/lib/"
@@ -118,8 +121,8 @@ teardown() {
         source ./install.sh; main_menu"
 
     [[ "$output" =~ "Email configured successfully" ]]
-    run grep "^AuthUser=" "$SSMTP_CONF"
-    [[ "$output" == "AuthUser=menu@test.com" ]]
+    run grep "^user" "$MSMTP_CONF"
+    [[ "$output" == "user           menu@test.com" ]]
 }
 
 @test "Whiptail: Hard dialog failure falls back to text UI" {
@@ -151,7 +154,7 @@ teardown() {
 
     run bash -c "export PATH=$MOCK_DIR:\$PATH; export INSTALL_USE_WHIPTAIL=1; \
         export INSTALL_FORCE_TEXT_UI=1; \
-        source ./install.sh; configure_email_interactive <<< $'Y\ntext@test.com\npassword'"
+        source ./install.sh; configure_email_interactive <<< $'text@test.com\npassword'"
 
     [[ "$output" =~ "Enter Gmail address" ]]
     [[ "$output" =~ "Email configured successfully" ]]

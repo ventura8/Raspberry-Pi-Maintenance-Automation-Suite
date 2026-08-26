@@ -22,15 +22,15 @@ Use when changing `install.sh`, `uninstall.sh`, installer mocks, or installer BA
 
 ## What to exercise
 
-| Path | How |
-| ---------------------- | ---------------------------------------------------------- |
-| Whiptail fresh install | `tests/install_whiptail.bats` + mock checklist/menu inputs |
-| Text fallback | Force \`whiptail_mode=missing |
-| Email configure | Valid/invalid email, reconfigure yes/no |
-| Task enable/schedules | Defaults ON; custom cron edits via manager |
-| `--update` | No TTY prompts; used by `update_self.sh` |
-| Pi / non-Pi | \`MOCK_IS_PI=true |
-| Uninstall | `tests/uninstall.bats` + menu option path |
+| Path                   | How                                                                                                                                 |
+| ---------------------- | ----------------------------------------------------------------------------------------------------------------------------------- |
+| Whiptail fresh install | `tests/install_whiptail.bats` + mock checklist/menu inputs                                                                          |
+| Text fallback          | Force `whiptail_mode=missing`                                                                                                       |
+| Email configure        | Valid/invalid email, reconfigure yes/no, msmtp-only recognition (no `SSMTP_CONF`), ssmtp-to-msmtp migration, `MSMTP_CONF` isolation |
+| Task enable/schedules  | Defaults ON; custom cron edits via manager                                                                                          |
+| `--update`             | No TTY prompts; used by `update_self.sh`                                                                                            |
+| Pi / non-Pi            | `MOCK_IS_PI=true`                                                                                                                   |
+| Uninstall              | `tests/uninstall.bats` + menu option path                                                                                           |
 
 ## Commands
 
@@ -49,7 +49,7 @@ Docker e2e lane (text forced for noninteractive containers):
 ## Mock notes
 
 1. Whiptail mock state files under `/tmp/mocks/` (`whiptail_mode`, `whiptail_yesno`, `whiptail_input`, `whiptail_checklist`) — see `tests/setup_mocks.sh`.
-1. Isolate `INSTALL_DIR` / `SSMTP_CONF` / `REVALIASES` per test.
+1. Isolate `INSTALL_DIR` / `SSMTP_CONF` / `REVALIASES` / `MSMTP_CONF` per test.
 1. Cancel (rc 1/255) must not silently switch to text UI.
 1. Fresh install Cancel (welcome Continue/Cancel, download Download/Cancel, Esc on email/checklist) must abort with an "Installation cancelled…" message and non-zero status.
 

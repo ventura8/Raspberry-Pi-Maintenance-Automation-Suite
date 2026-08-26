@@ -25,7 +25,10 @@ Decide go/no-go for merge or tagged release.
 ## Release-only checklist (N/A in pre-merge)
 
 1. Root `VERSION` equals `vX.Y.Z` and matches the branch / planned GitHub tag.
-1. Release notes exist at `docs/releases/vX.Y.Z.md` (from `prepare-release`).
+1. Release notes exist at `docs/releases/vX.Y.Z.md` (from `prepare-release`); first line must be an H1
+   (`# …`) matching `.github/workflows/release.yml` title validation; tagging publishes that file.
+1. Push the release tag only after the release commit has been merged into the default branch
+   (`release.yml` requires the tag commit to be an ancestor of the default branch).
 1. HEAD commit subject/body match the release title/description (amend only after explicit confirmation).
 
 ## Related skill

@@ -2,11 +2,11 @@
 
 ## Branch → version
 
-| Branch | Version |
+| Branch                   | Version                       |
 | ------------------------ | ----------------------------- |
-| `feature/v1.1.0` | `v1.1.0` |
-| `release/v1.2.0` | `v1.2.0` |
-| `v1.0.4` | `v1.0.4` |
+| `feature/v1.1.0`         | `v1.1.0`                      |
+| `release/v1.2.0`         | `v1.2.0`                      |
+| `v1.0.4`                 | `v1.0.4`                      |
 | `feature/1.1.0-whiptail` | `v1.1.0` (first semver token) |
 
 ## Commit subject

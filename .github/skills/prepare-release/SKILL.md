@@ -16,4 +16,4 @@ Follow the full playbook:
 1. Sync README / Instructions / standards links to that path.
 1. Stage release docs (+ `VERSION` + intended release files).
 1. Ask for explicit amend confirmation immediately before rewriting HEAD (skill invocation alone is **not** authorization). On confirm: `git commit --amend` must update **both** subject (title `vX.Y.Z: …`) **and** body (description) to match `docs/releases/vX.Y.Z.md` — never leave a merge/PR/placeholder subject with a correct tree.
-1. Show `git log -1` and note if push / `gh release create` is still needed (do not push unless asked).
+1. Show `git log -1` and note if merge / tag push is still needed — tag `vX.Y.Z` only after the tagged commit has been merged into the default branch; pushing that tag triggers `.github/workflows/release.yml` to publish `docs/releases/vX.Y.Z.md` (do not push unless asked).

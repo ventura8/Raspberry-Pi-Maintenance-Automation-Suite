@@ -13,4 +13,4 @@ Follow `.agents/skills/prepare-release` (and the Copilot mirror under `.github/s
 1. Update markdown + write `docs/releases/vX.Y.Z.md` for the GitHub Release body.
 1. Prepare release metadata **without** amending by default. Rewrite HEAD only when the user
    explicitly confirms amend immediately beforehand (skill invocation alone is not authorization).
-1. Report remaining tag/push/`gh release create` steps (do not push unless asked).
+1. Report remaining merge/tag-push steps — `release.yml` publishes the GitHub Release from the notes file (do not push unless asked).
