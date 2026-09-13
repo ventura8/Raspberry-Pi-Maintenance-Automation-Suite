@@ -19,6 +19,10 @@ ______________________________________________________________________
 - Checks for `rpi-eeprom-update -a` first (Pi specific).
 - Falls back to `fwupdmgr` (Standard Linux) if Pi tool missing.
 - Refreshes metadata, checks updates, installs, and parses output for reboot requirements.
+- `fwupdmgr` update detection keys on the release block (`New version:` / `Release ID:`) rather than
+  the absence of a "no updates" phrase — modern fwupd always prints a
+  `Devices with no available firmware updates:` section for current devices even when another
+  device (e.g. UEFI dbx) has a pending release.
 
 ### `update_pip.sh`
 

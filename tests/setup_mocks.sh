@@ -319,8 +319,10 @@ case "\$1" in
         fi
         exit 0
         ;;
-    "get-updates")
+    "get-updates"|"get-upgrades")
         if [ "\$KEEP" = "update-avail" ]; then
+            echo "Devices with no available firmware updates:"
+            echo " • System Firmware"
             echo "Samsung SSD 970 EVO Plus 1TB"
             echo "New version: 2B2QEXM7"
         else
