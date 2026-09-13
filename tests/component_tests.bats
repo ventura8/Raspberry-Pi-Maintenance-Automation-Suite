@@ -485,6 +485,87 @@ EOF
     [[ ! "$output" =~ "FAIL_SHOULD_NOT_REBOOT" ]]
 }
 
+@test "Component: Firmware - fwupd mixed output (up-to-date list + pending dbx release) installs" {
+    # Regression: modern fwupd prints "Devices with no available firmware updates:" for current
+    # devices and THEN a release block for upgradable ones. The old check matched the header and
+    # wrongly reported "No updates available" (seen on an ASUS NUC with a pending UEFI dbx update).
+    rm -f "$MOCK_DIR/rpi-eeprom-update"
+
+    cat << 'EOF' > "$MOCK_DIR/fwupdmgr"
+#!/bin/bash
+if [[ "$1" == "refresh" ]]; then
+    exit 0
+elif [[ "$1" == "get-upgrades" ]]; then
+    cat << 'OUT'
+Devices with no available firmware updates:
+ • Internal SPI Controller (BIOS)
+ • System Firmware
+Devices with the latest available firmware version:
+ • UEFI CA
+ASUSTeK COMPUTER INC. NUC15CRSU7
+│
+└─UEFI dbx:
+  │   Current version:    20260402
+  └─Secure Boot dbx Configuration Update:
+        New version:      20260707
+        Remote ID:        lvfs
+        Release ID:       150556
+        Urgency:          High
+OUT
+    exit 0
+elif [[ "$1" == "update" ]]; then
+    echo "Successfully installed firmware"
+    echo "Reboot required"
+    exit 0
+fi
+EOF
+    /bin/chmod +x "$MOCK_DIR/fwupdmgr"
+
+    cat << 'EOF' > "$MOCK_DIR/shutdown"
+#!/bin/bash
+echo "SHUTDOWN_SCHEDULED"
+EOF
+    /bin/chmod +x "$MOCK_DIR/shutdown"
+
+    run bash -c "export PATH=$MOCK_DIR:$PATH; ./scripts/update_pi_firmware.sh"
+    [[ "$output" =~ "Updates available. Installing" ]]
+    [[ "$output" =~ "Successfully installed firmware" ]]
+    [[ "$output" =~ "A firmware update was applied. A reboot is required" ]]
+    [[ "$output" =~ "SHUTDOWN_SCHEDULED" ]]
+    [[ ! "$output" =~ "No updates available." ]]
+}
+
+@test "Component: Firmware - fwupd all devices current (no release block) does not install" {
+    rm -f "$MOCK_DIR/rpi-eeprom-update"
+
+    cat << 'EOF' > "$MOCK_DIR/fwupdmgr"
+#!/bin/bash
+if [[ "$1" == "refresh" ]]; then
+    exit 0
+elif [[ "$1" == "get-upgrades" ]]; then
+    echo "Devices with no available firmware updates:"
+    echo " • System Firmware"
+    echo "No updates available"
+    exit 0
+elif [[ "$1" == "update" ]]; then
+    echo "FAIL_SHOULD_NOT_UPDATE"
+    exit 0
+fi
+EOF
+    /bin/chmod +x "$MOCK_DIR/fwupdmgr"
+
+    cat << 'EOF' > "$MOCK_DIR/shutdown"
+#!/bin/bash
+echo "FAIL_SHOULD_NOT_REBOOT"
+EOF
+    /bin/chmod +x "$MOCK_DIR/shutdown"
+
+    run bash -c "export PATH=$MOCK_DIR:$PATH; ./scripts/update_pi_firmware.sh"
+    [[ "$output" =~ "No updates available." ]]
+    [[ ! "$output" =~ "FAIL_SHOULD_NOT_UPDATE" ]]
+    [[ ! "$output" =~ "FAIL_SHOULD_NOT_REBOOT" ]]
+}
+
 @test "Component: Firmware - Automatic Dependency Installation" {
     # Ensure neither rpi-eeprom-update nor fwupdmgr are in PATH/MOCK_DIR
     rm -f "$MOCK_DIR/rpi-eeprom-update"

@@ -112,9 +112,22 @@ main() {
 
             echo "$FWUPD_LIST_OUTPUT"
 
-            FWUPD_NO_UPDATE_REGEX="No upgrades|No updates|No updatable devices|Devices with no available firmware updates"
-            if [ "$FWUPD_CHECK_OK" = true ] &&
-                ! echo "$FWUPD_LIST_OUTPUT" | grep -qiE "$FWUPD_NO_UPDATE_REGEX"; then
+            # Modern fwupd always prints a "Devices with no available firmware updates:" section
+            # for up-to-date devices, *followed* by a release block for anything upgradable
+            # (e.g. UEFI dbx). Treat that block ("New version:" / "Release ID:") as the positive
+            # signal; only fall back to "No upgrades/updates" phrasing when no block is present.
+            FWUPD_HAS_UPDATE_REGEX="New version:|Release ID:"
+            FWUPD_NO_UPDATE_REGEX="No upgrades|No updates|No updatable devices"
+            FWUPD_UPDATE_AVAILABLE=false
+            if [ "$FWUPD_CHECK_OK" = true ]; then
+                if echo "$FWUPD_LIST_OUTPUT" | grep -qE "$FWUPD_HAS_UPDATE_REGEX"; then
+                    FWUPD_UPDATE_AVAILABLE=true
+                elif ! echo "$FWUPD_LIST_OUTPUT" | grep -qiE "$FWUPD_NO_UPDATE_REGEX"; then
+                    FWUPD_UPDATE_AVAILABLE=true
+                fi
+            fi
+
+            if [ "$FWUPD_UPDATE_AVAILABLE" = true ]; then
                 _pi_echo "Updates available. Installing..."
                 UPDATE_OUTPUT=$(sudo fwupdmgr update -y --no-reboot 2>&1)
                 echo "$UPDATE_OUTPUT"

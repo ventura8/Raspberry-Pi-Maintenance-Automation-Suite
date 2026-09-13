@@ -82,5 +82,5 @@ The suite includes a self-healing capability (`scripts/update_self.sh`) that ens
 - [Project Overview & Directory Structure](docs/project_overview.md)
 - [Script Logic & Functionality](docs/script_logic.md)
 - [Development & Standards](docs/development_standards.md)
-- [Release Notes (GitHub description)](docs/releases/v1.1.2.md) — prepare via `.agents/skills/prepare-release`; published automatically by `.github/workflows/release.yml` when the matching tag is pushed
+- [Release Notes (GitHub description)](docs/releases/v1.1.3.md) — prepare via `.agents/skills/prepare-release`; published automatically by `.github/workflows/release.yml` when the matching tag is pushed
 - [Prompt Templates for Chat Workflows](.github/prompts/README.md)
