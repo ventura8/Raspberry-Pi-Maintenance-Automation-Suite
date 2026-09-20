@@ -845,3 +845,51 @@ EOF
     # It stops here because Fallback only runs if detection fails
 }
 
+
+@test "Samsung SSD: LVFS Update Available installs with fwupd 2.x-compatible flags" {
+    # Uses the shared fwupdmgr mock in "update-avail" mode, which rejects unknown options the way
+    # real fwupd 2.x does (regression: "--no-reboot" used to break the install step).
+    echo "update-avail" > "$MOCK_DIR/fwupd_mode"
+
+    cat << 'EOF2' > "$MOCK_DIR/sudo"
+#!/bin/bash
+CMD="$1"
+shift
+if [[ "$CMD" == "fwupdmgr" ]]; then "$MOCK_DIR/fwupdmgr" "$@"; exit $?; fi
+if command -v "$CMD" >/dev/null; then "$CMD" "$@"; else echo "[MOCK_SUDO] $CMD $@"; fi
+EOF2
+    chmod +x "$MOCK_DIR/sudo"
+
+    run bash -c "export PATH='$PATH'; export TEST_MODE=true; export MOCK_ARCH='x86_64'; export MOCK_FWUPD_DEVICES='Samsung SSD 970 EVO Plus'; source ./scripts/update_samsung_ssd.sh; main"
+    echo "DEBUG: $output"
+    echo "$output" | grep -q "Updates available. Installing"
+    echo "$output" | grep -q "Successfully installed firmware"
+    ! echo "$output" | grep -q "Unknown option"
+    ! echo "$output" | grep -q "fwupdmgr update' failed"
+    echo "$output" | grep -q "A firmware update was applied. A reboot is required"
+}
+
+@test "Samsung SSD: LVFS update failure is reported and does not reboot" {
+    cat << 'EOF2' > "$MOCK_DIR/fwupdmgr"
+#!/bin/bash
+if [[ "$1" == "get-updates" ]]; then echo "Samsung SSD 970 EVO Plus"; echo "New version: 2B2QEXM7"; exit 0; fi
+if [[ "$1" == "update" ]]; then echo "Failed to parse arguments: Unknown option --bogus"; exit 1; fi
+exit 0
+EOF2
+    chmod +x "$MOCK_DIR/fwupdmgr"
+
+    cat << 'EOF2' > "$MOCK_DIR/sudo"
+#!/bin/bash
+CMD="$1"
+shift
+if [[ "$CMD" == "fwupdmgr" ]]; then "$MOCK_DIR/fwupdmgr" "$@"; exit $?; fi
+if command -v "$CMD" >/dev/null; then "$CMD" "$@"; else echo "[MOCK_SUDO] $CMD $@"; fi
+EOF2
+    chmod +x "$MOCK_DIR/sudo"
+
+    run bash -c "export PATH='$PATH'; export TEST_MODE=true; export MOCK_ARCH='x86_64'; export MOCK_FWUPD_DEVICES='Samsung SSD 970 EVO Plus'; source ./scripts/update_samsung_ssd.sh; main"
+    echo "DEBUG: $output"
+    echo "$output" | grep -q "ERROR: 'fwupdmgr update' failed (exit code 1). Firmware was NOT updated."
+    echo "$output" | grep -q "No firmware update was applied or no reboot is required"
+    ! echo "$output" | grep -q "A firmware update was applied"
+}

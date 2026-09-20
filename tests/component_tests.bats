@@ -514,6 +514,13 @@ ASUSTeK COMPUTER INC. NUC15CRSU7
 OUT
     exit 0
 elif [[ "$1" == "update" ]]; then
+    # fwupd 2.x rejects unknown options outright ("--no-reboot" is not a real flag).
+    for arg in "${@:2}"; do
+        case "$arg" in
+            -y|--assume-yes|--no-reboot-check) ;;
+            -*) echo "Failed to parse arguments: Unknown option $arg"; exit 1 ;;
+        esac
+    done
     echo "Successfully installed firmware"
     echo "Reboot required"
     exit 0
@@ -533,6 +540,37 @@ EOF
     [[ "$output" =~ "A firmware update was applied. A reboot is required" ]]
     [[ "$output" =~ "SHUTDOWN_SCHEDULED" ]]
     [[ ! "$output" =~ "No updates available." ]]
+}
+
+@test "Component: Firmware - fwupdmgr update failure is reported and does not reboot" {
+    rm -f "$MOCK_DIR/rpi-eeprom-update"
+
+    cat << 'EOF' > "$MOCK_DIR/fwupdmgr"
+#!/bin/bash
+if [[ "$1" == "refresh" ]]; then
+    exit 0
+elif [[ "$1" == "get-upgrades" ]]; then
+    echo "Device X"
+    echo "New version:      2"
+    exit 0
+elif [[ "$1" == "update" ]]; then
+    echo "Failed to parse arguments: Unknown option --bogus"
+    exit 1
+fi
+EOF
+    /bin/chmod +x "$MOCK_DIR/fwupdmgr"
+
+    cat << 'EOF' > "$MOCK_DIR/shutdown"
+#!/bin/bash
+echo "FAIL_SHOULD_NOT_REBOOT"
+EOF
+    /bin/chmod +x "$MOCK_DIR/shutdown"
+
+    run bash -c "export PATH=$MOCK_DIR:$PATH; ./scripts/update_pi_firmware.sh"
+    [[ "$output" =~ "Updates available. Installing" ]]
+    [[ "$output" =~ "ERROR: 'fwupdmgr update' failed (exit code 1). Firmware was NOT updated." ]]
+    [[ "$output" =~ "No firmware update was applied or no reboot is required" ]]
+    [[ ! "$output" =~ "FAIL_SHOULD_NOT_REBOOT" ]]
 }
 
 @test "Component: Firmware - fwupd all devices current (no release block) does not install" {

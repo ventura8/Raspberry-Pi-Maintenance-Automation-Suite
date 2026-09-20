@@ -331,6 +331,13 @@ case "\$1" in
         exit 0
         ;;
     "update")
+        # Mirror real fwupd 2.x: unknown options are a hard parse error.
+        for arg in "\${@:2}"; do
+            case "\$arg" in
+                -y|--assume-yes|--no-reboot-check|--no-unreported-check|--no-metadata-check) ;;
+                -*) echo "Failed to parse arguments: Unknown option \$arg"; exit 1 ;;
+            esac
+        done
         echo "Successfully installed firmware"
         echo "Reboot required"
         exit 0

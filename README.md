@@ -88,7 +88,7 @@ Automatically checks for and applies firmware updates for Samsung NVMe SSDs. It 
 
 **Safety Note:** This script explicitly uses stable firmware channels only. It does not enable `lvfs-testing` to prevent beta firmware installation.
 
-- **Commands:** `fwupdmgr update -y --no-reboot`, `nvme-cli`, `fumagician`.
+- **Commands:** `fwupdmgr update -y --no-reboot-check`, `nvme-cli`, `fumagician`.
 
 ### **7. Self-Update Service (`update_self.sh`)**
 
@@ -450,7 +450,7 @@ This repository includes workspace-level Copilot customization for implementatio
 
 For release-ready GitHub description text, see:
 
-- `docs/releases/v1.1.3.md` — current example for this release (prepare with the `prepare-release` skill)
+- `docs/releases/v1.1.4.md` — current example for this release (prepare with the `prepare-release` skill)
 - Future releases: `docs/releases/vX.Y.Z.md` must match the pushed tag / root `VERSION` exactly
 
 Pushing tag `vX.Y.Z` (matching root `VERSION`, after merge to the default branch) runs
