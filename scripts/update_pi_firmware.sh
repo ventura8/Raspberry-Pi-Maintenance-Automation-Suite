@@ -129,7 +129,10 @@ main() {
 
             if [ "$FWUPD_UPDATE_AVAILABLE" = true ]; then
                 _pi_echo "Updates available. Installing..."
-                UPDATE_OUTPUT=$(sudo fwupdmgr update -y --no-reboot 2>&1)
+                # --no-reboot-check: suppress fwupd's own reboot prompt/check (valid on fwupd 1.x and 2.x;
+                # "--no-reboot" is not a real flag and fwupd 2.x rejects it). We schedule the reboot ourselves.
+                FWUPD_UPDATE_RC=0
+                UPDATE_OUTPUT=$(sudo fwupdmgr update -y --no-reboot-check 2>&1) || FWUPD_UPDATE_RC=$?
                 echo "$UPDATE_OUTPUT"
 
                 # Check for reboot requirement in fwupd output
@@ -137,7 +140,10 @@ main() {
                 # For safety, if we updated something, we might assume reboot if unsure,
                 # but "Successfully installed" usually appears.
                 # We'll look for keywords indicating success and need for restart.
-                if echo "$UPDATE_OUTPUT" | grep -qiE "Restarting|Must be restarted|Reboot required|Successfully installed"; then
+                if [ "$FWUPD_UPDATE_RC" -ne 0 ]; then
+                    _pi_echof "ERROR: 'fwupdmgr update' failed (exit code %s). Firmware was NOT updated." "$FWUPD_UPDATE_RC"
+                    REBOOT_NEEDED=false
+                elif echo "$UPDATE_OUTPUT" | grep -qiE "Restarting|Must be restarted|Reboot required|Successfully installed"; then
                     REBOOT_NEEDED=true
                 else
                     REBOOT_NEEDED=false

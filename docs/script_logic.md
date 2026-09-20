@@ -23,6 +23,10 @@ ______________________________________________________________________
   the absence of a "no updates" phrase — modern fwupd always prints a
   `Devices with no available firmware updates:` section for current devices even when another
   device (e.g. UEFI dbx) has a pending release.
+- Installs with `fwupdmgr update -y --no-reboot-check` (the real flag on fwupd 1.x and 2.x; `--no-reboot`
+  does not exist and fwupd 2.x rejects it). A non-zero exit from `fwupdmgr update` is reported as an
+  explicit `ERROR` in the email and never schedules a reboot. Same rule applies to the LVFS path in
+  `update_samsung_ssd.sh`.
 
 ### `update_pip.sh`
 
