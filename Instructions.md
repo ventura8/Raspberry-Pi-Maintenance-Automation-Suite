@@ -69,6 +69,7 @@ The suite includes a self-healing capability (`scripts/update_self.sh`) that ens
 - **Version SSOT**: repo-root [`VERSION`](VERSION) file (`vMAJOR.MINOR.PATCH`). GitHub release tags must match it.
 - **Automated GitHub Release**: pushing tag `vX.Y.Z` runs [`.github/workflows/release.yml`](.github/workflows/release.yml), which publishes [`docs/releases/vX.Y.Z.md`](docs/releases/) as the release body (H1 = title). Tag commit must be an ancestor of the default branch.
 - **Installed copy**: `install.sh` writes `$INSTALL_DIR/.version` from local `VERSION` (or `$RAW_URL/VERSION`).
+- **Install location**: `$INSTALL_DIR` defaults to the root-owned `/usr/local/lib/pi-maintenance` (`root:root`, `0755`/`0644`). Root cron runs these scripts, so a user-writable tree (the pre-v1.1.5 `~/pi-scripts`) would let a user-level compromise escalate to root. Legacy trees are migrated automatically (re-download, crontab repoint, and removal of the old directory only when it contains nothing but suite files — anything else is left in place). `update_self.sh` derives `INSTALL_DIR` from its own location, not `$HOME`.
 - **Update Logic**:
   1. `update_self.sh` checks the GitHub API (`releases/latest`).
   1. Compares the remote tag with the local `.version` file.
@@ -82,5 +83,5 @@ The suite includes a self-healing capability (`scripts/update_self.sh`) that ens
 - [Project Overview & Directory Structure](docs/project_overview.md)
 - [Script Logic & Functionality](docs/script_logic.md)
 - [Development & Standards](docs/development_standards.md)
-- [Release Notes (GitHub description)](docs/releases/v1.1.4.md) — prepare via `.agents/skills/prepare-release`; published automatically by `.github/workflows/release.yml` when the matching tag is pushed
+- [Release Notes (GitHub description)](docs/releases/v1.1.5.md) — prepare via `.agents/skills/prepare-release`; published automatically by `.github/workflows/release.yml` when the matching tag is pushed
 - [Prompt Templates for Chat Workflows](.github/prompts/README.md)

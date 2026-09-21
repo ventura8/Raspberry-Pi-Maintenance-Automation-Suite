@@ -8,6 +8,7 @@ source ./tests/setup_mocks.sh
 export TEST_MODE=true
 export MOCK_IS_PI="${MOCK_IS_PI:-true}"
 export INSTALL_DIR="/tmp/pi-scripts-install-cov"
+export LEGACY_INSTALL_DIR="/tmp/pi-scripts-legacy-isolated"
 export INSTALL_FORCE_TEXT_UI=1
 export INSTALL_USE_WHIPTAIL=0
 rm -rf "$INSTALL_DIR"

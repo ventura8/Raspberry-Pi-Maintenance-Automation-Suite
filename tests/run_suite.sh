@@ -13,6 +13,8 @@ export INSTALL_UI_MODE=""
 # Isolate installer state from any real ~/pi-scripts on the host.
 _SUITE_INSTALL_DIR_DEFAULT="/tmp/pi-scripts-suite"
 export INSTALL_DIR="${INSTALL_DIR:-$_SUITE_INSTALL_DIR_DEFAULT}"
+# Likewise isolate the legacy-migration source so tests never touch a real ~/pi-scripts.
+export LEGACY_INSTALL_DIR="${LEGACY_INSTALL_DIR:-/tmp/pi-scripts-legacy-isolated}"
 case "$INSTALL_DIR" in
     /tmp/pi-scripts-suite | /tmp/pi-scripts-suite/* | /tmp/pi-scripts*)
         rm -rf "$INSTALL_DIR"
@@ -122,6 +124,7 @@ if [ "$MODE" = "all" ] || [ "$MODE" = "installer" ]; then
         kcov "${KCOV_ARGS[@]}" "$COVERAGE_OUTPUT_DIR/install_whiptail" bats tests/install_whiptail.bats
         kcov "${KCOV_ARGS[@]}" "$COVERAGE_OUTPUT_DIR/install_pi_mode" bats tests/install_pi_mode.bats
         kcov "${KCOV_ARGS[@]}" "$COVERAGE_OUTPUT_DIR/install_non_pi_mode" bats tests/install_non_pi_mode.bats
+        kcov "${KCOV_ARGS[@]}" "$COVERAGE_OUTPUT_DIR/install_root_owned" bats tests/install_root_owned.bats
         kcov "${KCOV_ARGS[@]}" "$COVERAGE_OUTPUT_DIR/uninstall" bats tests/uninstall.bats
     else
         bats tests/unit_tests.bats
@@ -130,6 +133,7 @@ if [ "$MODE" = "all" ] || [ "$MODE" = "installer" ]; then
         bats tests/install_whiptail.bats
         bats tests/install_pi_mode.bats
         bats tests/install_non_pi_mode.bats
+        bats tests/install_root_owned.bats
         bats tests/uninstall.bats
     fi
 fi
@@ -352,6 +356,7 @@ if [ "$COVERAGE_ENABLED" = "1" ]; then
             "$COVERAGE_OUTPUT_DIR/unit_tests" \
             "$COVERAGE_OUTPUT_DIR/install_interactive" \
             "$COVERAGE_OUTPUT_DIR/install_extended" \
+            "$COVERAGE_OUTPUT_DIR/install_root_owned" \
             "$COVERAGE_OUTPUT_DIR/install_whiptail" \
             "$COVERAGE_OUTPUT_DIR/install_phase1" \
             "$COVERAGE_OUTPUT_DIR/install_phase3_edge_cases" \
@@ -368,6 +373,7 @@ if [ "$COVERAGE_ENABLED" = "1" ]; then
             "$COVERAGE_OUTPUT_DIR/component_tests_os_pkg" \
             "$COVERAGE_OUTPUT_DIR/install_interactive" \
             "$COVERAGE_OUTPUT_DIR/install_extended" \
+            "$COVERAGE_OUTPUT_DIR/install_root_owned" \
             "$COVERAGE_OUTPUT_DIR/install_whiptail" \
             "$COVERAGE_OUTPUT_DIR/install_non_pi_mode" \
             "$COVERAGE_OUTPUT_DIR/install_pi_mode" \

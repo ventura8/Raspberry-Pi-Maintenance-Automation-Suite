@@ -2,6 +2,8 @@
 
 setup() {
     export MOCK_DIR="/tmp/mocks"
+    # Never let installer tests migrate/delete a real ~/pi-scripts on the host.
+    export LEGACY_INSTALL_DIR="/tmp/pi-scripts-legacy-isolated"
     export INSTALL_DIR="/tmp/scripts_non_pi"
     rm -rf "$INSTALL_DIR"
     mkdir -p "$MOCK_DIR"

@@ -105,7 +105,9 @@ Live logs: tee long runs under `reports/distro-logs/` when iterating on matrix/p
 1. Piped one-liner (`curl|bash`) must still prompt via `/dev/tty` when a TTY exists.
 1. Fresh `curl|bash` with no adjacent/installed `lib/` bootstraps `os_pkg.sh` / `mail_send.sh` / `ui_msg.sh` from `$RAW_URL/lib/` before `check_dependencies` so `pkg_install` / `has_mail_sender` are defined.
 1. `install.sh --update` must stay **non-interactive** (deps + download + quiet cron redirects) for cron via `update_self.sh`.
-1. Detection of “already installed” is `$INSTALL_DIR` directory presence (default `$HOME/pi-scripts`).
+1. Detection of “already installed” is `$INSTALL_DIR` directory presence (default `/usr/local/lib/pi-maintenance`) **or** a legacy tree (`$LEGACY_INSTALL_DIR`, default `$HOME/pi-scripts`, or any directory a suite crontab line still points at).
+1. **Root-owned install tree (security invariant)**: root cron executes `$INSTALL_DIR/*.sh`, so the default tree must be root-owned and not writable by the login user (`root:root`, `0755` scripts, `0644` libs). All writes into the tree go through `_install_run` / `_install_atomic_mv` (sudo when the tree is unwritable, `install -o root -g root` when privileged). Never reintroduce a `$HOME`-based default, `chmod +x` / `sed -i` on installed files without `_install_run`, or a crontab entry pointing at a user-writable path. `INSTALL_DIR="$HOME/pi-scripts"` is redirected to the default (legacy `update_self.sh` exports it).
+1. Legacy installs are migrated in place: `--update` and the interactive entry re-download into `$INSTALL_DIR`, repoint root + user crontab paths, and remove legacy directories only when they contain nothing but suite files (`_legacy_dir_is_suite_only`, including `lib/` contents) — a crontab line pointing into a home directory must never trigger deletion. Retire only after `download_scripts` returned success and `_repoint_crontab_dir` verified no crontab still references the legacy path; a failed download aborts `--update` / migration with a non-zero exit and no crontab changes. Tests **must** isolate `LEGACY_INSTALL_DIR` (never a real `~/pi-scripts`).
 1. Interactive UI shows the suite version from root `VERSION` (via `read_suite_version`) in the header / whiptail welcome and main menu from the start of the session.
 1. Preserve public function names used by BATS when refactoring UI (`configure_email_interactive`, `main_menu`, `run_fresh_install`, `manage_tasks_ui`, `read_input`, `run_interactive`, …).
 1. Shipped maintenance scripts must set `RECIPIENT_EMAIL="your_email@gmail.com"` (never a real address). `download_scripts` rewrites that assignment to the configured ssmtp/msmtp user (same pattern as `save_email_configuration`) so `--update` cannot restore a hardcoded inbox.
@@ -131,7 +133,8 @@ Live logs: tee long runs under `reports/distro-logs/` when iterating on matrix/p
 1. Pushing a `v*` tag on a commit that is an ancestor of the default branch runs [`.github/workflows/release.yml`](.github/workflows/release.yml): it requires `docs/releases/vX.Y.Z.md`, uses that file as the GitHub Release body, and sets the release title from the file’s H1. Do not rely on auto-generated release notes.
 1. Installed copy is `$INSTALL_DIR/.version`, written by `install.sh` from `VERSION` (local tree or `$RAW_URL/VERSION`).
 1. Fetch latest tag via Releases API; on mismatch stage tagged `install.sh`, `VERSION`, and `lib/` in a `mktemp` directory, export `RAW_URL` for that tag, then run `bash "$stage_dir/install.sh" --update` — **never** pipe installer stdin for this path.
-1. `--update` must source `$INSTALL_DIR/lib` when the installer tree has no sibling `lib/`, fail closed if `pkg_install` / `has_mail_sender` are undefined, and replace scripts via `mktemp` + `mv`.
+1. `--update` must source `$INSTALL_DIR/lib` when the installer tree has no sibling `lib/`, fail closed if `pkg_install` / `has_mail_sender` are undefined, and replace scripts atomically (staged `install` + `mv` next to the destination).
+1. `INSTALL_DIR` in `update_self.sh` defaults to the script's own directory (`BASH_SOURCE`), never `$HOME`.
 1. Suite crontab lines use `>/dev/null 2>&1`; `--update` rewrites existing lines so cron MAILTO does not duplicate suite emails.
 1. Email success / up-to-date / failure reports via mail helpers.
 1. Covered by `tests/component_tests_self_update.bats`.
@@ -147,6 +150,8 @@ Live logs: tee long runs under `reports/distro-logs/` when iterating on matrix/p
 ## Uninstall / Temp-File Safety (`uninstall.sh`)
 
 1. Rewrite root/user crontabs using `mktemp` + mode `600` bak/new files — never hardcoded `/tmp/root_cron.*` or `/tmp/user_cron.*` paths (TOCTOU / crontab injection).
+1. Install-directory detection parses the script's directory from the crontab **bak** files (captured before entries are stripped), via `_cron_script_dir` (matches any of the seven suite scripts) — never re-read `crontab -l` afterwards or take the line's last field.
+1. `rm -rf` of a detected/default/legacy directory is guarded by `_dir_is_suite_only` (requires the `.version` marker and also inspects `lib/`): refuse when it contains anything the installer did not create (a manual `/home/pi/update_pi_os.sh` crontab line must never delete a home directory). The root-owned default is removed via `sudo`.
 
 ## Distro Matrix Governance
 
@@ -166,7 +171,8 @@ Dockerfiles live under `docker/images/tests/`. Matrix orchestration: `scripts/ru
 1. Installer tests: `tests/install_*.bats` (including `install_whiptail.bats`).
 1. Component tests per script area; e2e under `tests/e2e/` with `REAL_DEPS=1` for real packages.
 1. Coverage via kcov + `tests/transform_coverage.py` (thresholds above).
-1. Prefer deterministic mocks; isolate `INSTALL_DIR`, `SSMTP_CONF`, `REVALIASES`, `MOCK_DIR`.
+1. Prefer deterministic mocks; isolate `INSTALL_DIR`, `LEGACY_INSTALL_DIR`, `SSMTP_CONF`, `REVALIASES`, `MOCK_DIR`.
+1. Root-owned tree tests (`tests/install_root_owned.bats`, `tests/uninstall.bats`) use real passwordless `sudo` (test images grant it to `pi`) and `skip` when `sudo -n true` fails.
 1. Whiptail mock is controllable via `/tmp/mocks/whiptail_*` state files — exercise both whiptail success and text-fallback paths.
 
 ## Skills Index (`.agents/skills/`)

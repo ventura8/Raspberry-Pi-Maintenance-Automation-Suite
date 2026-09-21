@@ -2,6 +2,8 @@
 
 setup() {
     export MOCK_DIR="/tmp/mocks"
+    # Never let installer tests migrate/delete a real ~/pi-scripts on the host.
+    export LEGACY_INSTALL_DIR="/tmp/pi-scripts-legacy-isolated"
     # Use nested dir in tmp to avoid volume permission issues AND overwrites
     export TEST_ROOT="/tmp/test_env"
     export INSTALL_DIR="$TEST_ROOT/scripts"
@@ -384,4 +386,29 @@ EOF
     run ./scripts/update_self.sh
     [[ "$status" -eq 0 ]]
     [[ "$output" =~ "Failed to deliver email notification" ]]
+}
+
+@test "Self Update: INSTALL_DIR defaults to the script's own directory (not \$HOME)" {
+    export TEST_REMOTE_TAG="v1.0.0"
+    _mock_curl_self_update
+    export SSMTP_CONF="$MOCK_DIR/ssmtp.conf"
+    rm -f "$SSMTP_CONF"
+    export MSMTP_CONF="$MOCK_DIR/missing-msmtp.conf"
+
+    local staged="$MOCK_DIR/staged_self_default"
+    rm -rf "$staged"
+    mkdir -p "$staged/lib"
+    cp ./scripts/update_self.sh "$staged/"
+    cp ./lib/*.sh "$staged/lib/"
+    echo "v1.0.0" > "$staged/.version"
+    # A stale $HOME/pi-scripts/.version must NOT be what self-update compares against.
+    local fake_home="$MOCK_DIR/fake_home"
+    mkdir -p "$fake_home/pi-scripts"
+    echo "v0.0.1" > "$fake_home/pi-scripts/.version"
+
+    run env -u INSTALL_DIR HOME="$fake_home" PATH="$MOCK_DIR:$PATH" SSMTP_CONF="$SSMTP_CONF" MSMTP_CONF="$MSMTP_CONF" \
+        "$staged/update_self.sh"
+    [ "$status" -eq 0 ]
+    [[ "$output" =~ "Local Version:  v1.0.0" ]]
+    [[ "$output" =~ "System is up to date" ]]
 }

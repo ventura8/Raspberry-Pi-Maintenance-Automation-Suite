@@ -9,6 +9,7 @@ export REAL_DEPS=1
 export TEST_MODE=true
 export INSTALL_FORCE_TEXT_UI=1
 export INSTALL_DIR="${INSTALL_DIR:-/tmp/pi-scripts-e2e}"
+export LEGACY_INSTALL_DIR="${LEGACY_INSTALL_DIR:-/tmp/pi-scripts-legacy-isolated}"
 export MATRIX_ALLOW_RM_INSTALL_DIR=1
 
 # shellcheck source=lib/os_pkg.sh

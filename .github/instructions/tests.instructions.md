@@ -4,7 +4,7 @@ ______________________________________________________________________
 
 # Tests Instructions
 
-1. Keep tests deterministic; isolate `INSTALL_DIR`, `SSMTP_CONF`, `REVALIASES`, `MOCK_DIR`, `TEST_MODE`.
+1. Keep tests deterministic; isolate `INSTALL_DIR`, `LEGACY_INSTALL_DIR`, `SSMTP_CONF`, `REVALIASES`, `MOCK_DIR`, `TEST_MODE`.
 1. Prefer shared mocks from `tests/setup_mocks.sh`; mock external tools, not product logic.
 1. Cover whiptail success **and** text-fallback paths for installer changes.
 1. Self-update tests must assert no stdin pipe into `install.sh --update`.
