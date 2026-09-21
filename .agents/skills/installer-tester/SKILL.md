@@ -49,7 +49,8 @@ Docker e2e lane (text forced for noninteractive containers):
 ## Mock notes
 
 1. Whiptail mock state files under `/tmp/mocks/` (`whiptail_mode`, `whiptail_yesno`, `whiptail_input`, `whiptail_checklist`) — see `tests/setup_mocks.sh`.
-1. Isolate `INSTALL_DIR` / `SSMTP_CONF` / `REVALIASES` / `MSMTP_CONF` per test.
+1. Isolate `INSTALL_DIR` / `LEGACY_INSTALL_DIR` / `SSMTP_CONF` / `REVALIASES` / `MSMTP_CONF` per test (a real `~/pi-scripts` must never be migrated or deleted by tests).
+1. Root-owned tree behaviour (`root:root`, `0755`/`0644`, sudo writes, legacy migration) lives in `tests/install_root_owned.bats`; privileged cases `skip` without passwordless `sudo`.
 1. Cancel (rc 1/255) must not silently switch to text UI.
 1. Fresh install Cancel (welcome Continue/Cancel, download Download/Cancel, Esc on email/checklist) must abort with an "Installation cancelled…" message and non-zero status.
 

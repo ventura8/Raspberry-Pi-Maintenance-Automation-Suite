@@ -4,6 +4,8 @@
 
 setup() {
     export MOCK_DIR="/tmp/mocks"
+    # Never let uninstall tests delete a real ~/pi-scripts on the host.
+    export LEGACY_INSTALL_DIR="/tmp/pi-scripts-legacy-isolated"
     export INSTALL_DIR="/tmp/scripts" # Matches default mock
     
     # Always ensure clean shared mocks
@@ -14,6 +16,7 @@ setup() {
     mkdir -p "$INSTALL_DIR"
     touch "$INSTALL_DIR/update_pi_os.sh"
     touch "$INSTALL_DIR/update_pi_apps.sh"
+    echo "v0.0.0" > "$INSTALL_DIR/.version"
     export TEST_MODE="true"
     chmod +x ./uninstall.sh
     
@@ -114,6 +117,7 @@ EOF
     CUSTOM_DIR="/tmp/custom_pi_scripts"
     mkdir -p "$CUSTOM_DIR"
     touch "$CUSTOM_DIR/update_pi_os.sh"
+    echo "v0.0.0" > "$CUSTOM_DIR/.version"
     
     # Set default INSTALL_DIR to something non-existent
     export INSTALL_DIR="/tmp/non_existent_default"
@@ -142,6 +146,7 @@ EOF
     CUSTOM_DIR="/tmp/custom_pi_scripts_user"
     mkdir -p "$CUSTOM_DIR"
     touch "$CUSTOM_DIR/update_pi_apps.sh"
+    echo "v0.0.0" > "$CUSTOM_DIR/.version"
     
     # Set default INSTALL_DIR to something non-existent
     export INSTALL_DIR="/tmp/non_existent_default"
@@ -238,4 +243,112 @@ EOF
         echo RC=$?
     '
     [[ "$output" =~ "RC=1" ]]
+}
+
+@test "Uninstall: removes a root-owned install tree via sudo" {
+    sudo -n true 2> /dev/null || skip "passwordless sudo required"
+    local parent="/tmp/pi-scripts-uninstall-rootowned"
+    sudo -n rm -rf "$parent"
+    sudo -n /usr/bin/install -d -o root -g root -m 0755 "$parent" "$parent/tree"
+    sudo -n /usr/bin/install -o root -g root -m 0755 ./scripts/update_pi_os.sh "$parent/tree/update_pi_os.sh"
+    sudo -n /usr/bin/install -o root -g root -m 0644 ./VERSION "$parent/tree/.version"
+    export INSTALL_DIR="$parent/tree"
+
+    run bash ./uninstall.sh
+    [ "$status" -eq 0 ]
+    [[ "$output" =~ "Removing scripts from $INSTALL_DIR" ]]
+    [ ! -d "$INSTALL_DIR" ]
+    sudo -n rm -rf "$parent"
+}
+
+@test "Uninstall: also removes a legacy user-writable tree" {
+    export LEGACY_INSTALL_DIR="/tmp/pi-scripts-uninstall-legacy"
+    mkdir -p "$LEGACY_INSTALL_DIR/lib"
+    # Full installer layout: all seven scripts, the three helper libs, marker and staging leftovers.
+    touch "$LEGACY_INSTALL_DIR"/{update_pi_os,update_pi_firmware,update_pip,update_pi_apps}.sh
+    touch "$LEGACY_INSTALL_DIR"/{docker_cleanup,update_samsung_ssd,update_self}.sh
+    touch "$LEGACY_INSTALL_DIR"/lib/{os_pkg,mail_send,ui_msg}.sh "$LEGACY_INSTALL_DIR/lib/.rpi-install.x"
+    touch "$LEGACY_INSTALL_DIR/.rpi-install.y" "$LEGACY_INSTALL_DIR/update_pi_os.sh.rpi-new.1"
+    echo "v0.0.0" > "$LEGACY_INSTALL_DIR/.version"
+
+    run bash ./uninstall.sh
+    [ "$status" -eq 0 ]
+    [[ "$output" =~ "Removing legacy scripts from $LEGACY_INSTALL_DIR" ]]
+    [ ! -d "$LEGACY_INSTALL_DIR" ]
+    [ ! -d "$INSTALL_DIR" ]
+}
+
+@test "Uninstall: default INSTALL_DIR is the root-owned tree" {
+    export INSTALL_DIR="/tmp/pi-scripts-uninstall-default-probe"
+    rm -rf "$INSTALL_DIR"
+    run env -u INSTALL_DIR bash -c "source ./uninstall.sh; printf '%s' \"\$DEFAULT_INSTALL_DIR\""
+    [ "$output" = "/usr/local/lib/pi-maintenance" ]
+}
+
+@test "Uninstall: detection uses the crontab captured before entries are stripped" {
+    CUSTOM_DIR="/tmp/custom_pi_scripts_once"
+    mkdir -p "$CUSTOM_DIR"
+    touch "$CUSTOM_DIR/update_pi_os.sh"
+    echo "v0.0.0" > "$CUSTOM_DIR/.version"
+    export INSTALL_DIR="/tmp/non_existent_default"
+    # Stateful mock: the entry disappears after the first write, and the line ends in a redirect.
+    echo "0 0 * * * $CUSTOM_DIR/update_pi_os.sh >/dev/null 2>&1" > "$MOCK_DIR/root_cron"
+    rm -f "$MOCK_DIR/user_cron"
+
+    run bash ./uninstall.sh
+    [ "$status" -eq 0 ]
+    [[ "$output" =~ "Detected installation directory: $CUSTOM_DIR" ]]
+    [ ! -d "$CUSTOM_DIR" ]
+}
+
+@test "Uninstall: refuses to delete a detected directory holding non-suite files" {
+    HOME_LIKE="/tmp/custom_pi_home_like"
+    mkdir -p "$HOME_LIKE"
+    touch "$HOME_LIKE/update_pi_os.sh"
+    echo "thesis" > "$HOME_LIKE/thesis.txt"
+    export INSTALL_DIR="/tmp/non_existent_default"
+    echo "0 0 * * * $HOME_LIKE/update_pi_os.sh >/dev/null 2>&1" > "$MOCK_DIR/root_cron"
+    rm -f "$MOCK_DIR/user_cron"
+
+    run bash ./uninstall.sh
+    [ "$status" -eq 0 ]
+    [[ "$output" =~ "Refusing to remove $HOME_LIKE" ]]
+    [ -f "$HOME_LIKE/thesis.txt" ]
+    rm -rf "$HOME_LIKE"
+}
+
+@test "Uninstall: refuses to delete a legacy tree holding non-suite files" {
+    export LEGACY_INSTALL_DIR="/tmp/pi-scripts-uninstall-legacy-data"
+    mkdir -p "$LEGACY_INSTALL_DIR/lib"
+    touch "$LEGACY_INSTALL_DIR/update_pi_os.sh" "$LEGACY_INSTALL_DIR/lib/os_pkg.sh"
+    echo "photos" > "$LEGACY_INSTALL_DIR/lib/backup.tar"
+
+    run bash ./uninstall.sh
+    [ "$status" -eq 0 ]
+    [[ "$output" =~ "Refusing to remove legacy $LEGACY_INSTALL_DIR" ]]
+    [ -f "$LEGACY_INSTALL_DIR/lib/backup.tar" ]
+    rm -rf "$LEGACY_INSTALL_DIR"
+}
+
+@test "Uninstall: refuses to delete a directory without the .version marker" {
+    rm -f "$INSTALL_DIR/.version"
+    run bash ./uninstall.sh
+    [ "$status" -eq 0 ]
+    [[ "$output" =~ "Refusing to remove $INSTALL_DIR" ]]
+    [ -f "$INSTALL_DIR/update_pi_os.sh" ]
+}
+
+@test "Uninstall: detects the directory from any scheduled suite script" {
+    CUSTOM_DIR="/tmp/custom_pi_scripts_self"
+    mkdir -p "$CUSTOM_DIR"
+    touch "$CUSTOM_DIR/update_self.sh"
+    echo "v0.0.0" > "$CUSTOM_DIR/.version"
+    export INSTALL_DIR="/tmp/non_existent_default"
+    echo "0 1 * * 0 $CUSTOM_DIR/update_self.sh >/dev/null 2>&1" > "$MOCK_DIR/root_cron"
+    rm -f "$MOCK_DIR/user_cron"
+
+    run bash ./uninstall.sh
+    [ "$status" -eq 0 ]
+    [[ "$output" =~ "Detected installation directory: $CUSTOM_DIR" ]]
+    [ ! -d "$CUSTOM_DIR" ]
 }

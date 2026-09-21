@@ -43,7 +43,7 @@ Maintenance scripts only:
 ## Mocking philosophy
 
 1. Shared mocks: `tests/setup_mocks.sh` (`curl`, `sudo`, crontab, apt/dnf/pacman as needed, `whiptail`).
-1. Isolate `INSTALL_DIR`, `SSMTP_CONF`, `REVALIASES`, `MOCK_DIR`, `TEST_MODE=true`.
+1. Isolate `INSTALL_DIR`, `LEGACY_INSTALL_DIR`, `SSMTP_CONF`, `REVALIASES`, `MOCK_DIR`, `TEST_MODE=true`.
 1. Whiptail mock modes: exercise **success path** and **text fallback** (`whiptail_mode=fail|missing`).
 1. Pi toggles: `MOCK_IS_PI=true|false` for Pi-only script visibility.
 1. Never mock product scripts under test as “always succeed” — mock external tools only.

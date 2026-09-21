@@ -13,7 +13,8 @@ ______________________________________________________________________
 1. Preserve Pi vs non-Pi behavior: skip Pi-only tasks on non-Pi; keep firmware updates available.
 1. Samsung path: LVFS stable first; never enable testing channels.
 1. Self-update stages tagged `install.sh` + `VERSION` + `lib/` in a `mktemp` directory, exports `RAW_URL` for that tag, and invokes `bash "$stage_dir/install.sh" --update` with no stdin piping (never `$INSTALL_DIR/../install.sh`).
-1. `download_scripts` must replace files atomically (`mktemp` + `mv`). Suite crontab lines use `>/dev/null 2>&1`.
+1. `download_scripts` must replace files atomically (staged `install` + `mv` next to the destination) and only through `_install_run` / `_install_atomic_mv`, so the tree stays `root:root` (`0755` scripts, `0644` libs) — root cron executes it. Suite crontab lines use `>/dev/null 2>&1`.
+1. `update_self.sh` derives `INSTALL_DIR` from `BASH_SOURCE`, never `$HOME`.
 1. Shipped maintenance scripts must set `RECIPIENT_EMAIL="your_email@gmail.com"`. `download_scripts` must rewrite `RECIPIENT_EMAIL="..."` to the configured mail user (do not rely on replacing the literal placeholder string alone).
 1. Installer UI: whiptail default; text UI automatic fallback only when whiptail cannot run.
 1. Keep public function names stable when tests source `install.sh`.

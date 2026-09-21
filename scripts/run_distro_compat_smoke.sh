@@ -43,6 +43,7 @@ pkg_refresh || _smoke_log "WARN: pkg_refresh failed (non-fatal for smoke)"
 
 export REAL_DEPS=1
 export INSTALL_DIR="${INSTALL_DIR:-/tmp/pi-scripts-compat-smoke}"
+export LEGACY_INSTALL_DIR="${LEGACY_INSTALL_DIR:-/tmp/pi-scripts-legacy-isolated}"
 export MATRIX_ALLOW_RM_INSTALL_DIR=1
 trap '_smoke_cleanup' EXIT
 matrix_prepare_install_env

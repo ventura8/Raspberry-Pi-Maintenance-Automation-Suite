@@ -29,6 +29,7 @@ Authoritative rules: [`AGENTS.md`](../AGENTS.md). Task playbooks: [`.agents/skil
 1. `install.sh --update` is non-interactive and must remain cron-safe for `update_self.sh` (stage tagged installer + `lib/` in `mktemp`, source `$INSTALL_DIR/lib` as fallback, atomic script replace, crontab `>/dev/null 2>&1`).
 1. Maintenance scripts ship `RECIPIENT_EMAIL="your_email@gmail.com"`; `download_scripts` rewrites that assignment to the configured mail user.
 1. Suite version SSOT is root `VERSION`; GitHub tags and `$INSTALL_DIR/.version` must match it.
+1. `INSTALL_DIR` defaults to the root-owned `/usr/local/lib/pi-maintenance`; root cron runs those scripts, so writes must go through `_install_run` / `_install_atomic_mv` (root:root, 0755/0644) and no `$HOME`-based default may return. Legacy `~/pi-scripts` trees are migrated (re-download, crontab repoint; the old directory is removed only when it holds nothing but suite files); tests isolate `LEGACY_INSTALL_DIR`.
 1. Distro matrix: `debian:trixie`, `ubuntu:26.04`, `fedora:44`, `rocky:9`, `archlinux:latest`.
 
 ## Documentation discipline

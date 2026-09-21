@@ -10,7 +10,16 @@ REPO_NAME="Raspberry-Pi-Maintenance-Automation-Suite"
 BRANCH="main"
 RAW_URL="${RAW_URL:-https://raw.githubusercontent.com/$GITHUB_USER/$REPO_NAME/$BRANCH}"
 
-INSTALL_DIR="${INSTALL_DIR:-$HOME/pi-scripts}"
+# Root cron executes these scripts, so they must live under a root-owned tree: a user-writable
+# location (the pre-v1.1.5 default $HOME/pi-scripts) lets the login user swap in code that root runs.
+DEFAULT_INSTALL_DIR="/usr/local/lib/pi-maintenance"
+LEGACY_INSTALL_DIR="${LEGACY_INSTALL_DIR:-$HOME/pi-scripts}"
+INSTALL_DIR="${INSTALL_DIR:-$DEFAULT_INSTALL_DIR}"
+# update_self.sh <= v1.1.4 exported INSTALL_DIR="$HOME/pi-scripts" (=/root/pi-scripts under root
+# cron); redirect that legacy default so self-update lands in the root-owned tree.
+if [ "$INSTALL_DIR" = "$HOME/pi-scripts" ]; then
+    INSTALL_DIR="$DEFAULT_INSTALL_DIR"
+fi
 SSMTP_CONF="${SSMTP_CONF:-/etc/ssmtp/ssmtp.conf}"
 REVALIASES="${REVALIASES:-/etc/ssmtp/revaliases}"
 MSMTP_CONF="${MSMTP_CONF:-/etc/msmtprc}"
@@ -550,7 +559,7 @@ EOF
     if [ -d "$INSTALL_DIR" ]; then
         for file in "$INSTALL_DIR"/*.sh; do
             [ -f "$file" ] || continue
-            sed -i "s/RECIPIENT_EMAIL=\".*\"/RECIPIENT_EMAIL=\"$user_email\"/" "$file"
+            _install_run sed -i "s/RECIPIENT_EMAIL=\".*\"/RECIPIENT_EMAIL=\"$user_email\"/" "$file"
         done
     fi
 
@@ -804,43 +813,100 @@ show_email_config() {
     show_email_config_text
 }
 
-# Write via temp + mv so a running cron script keeps its old inode.
+# --- Install tree (root-owned) helpers ---
+# The default INSTALL_DIR sits under a root-owned tree, so writes go through sudo (unless already
+# root) and installed files are forced to root:root. A user-writable INSTALL_DIR (tests, explicit
+# override) is written directly and its ownership left alone.
+_install_dir_needs_root() {
+    local dir="$INSTALL_DIR"
+    while [ ! -e "$dir" ] && [ "$dir" != "/" ]; do
+        dir=$(dirname "$dir")
+    done
+    [ ! -w "$dir" ]
+}
+
+_install_run() {
+    if _install_dir_needs_root; then
+        sudo "$@"
+    else
+        "$@"
+    fi
+}
+
+# Owner flags for install(1), filled into the caller's array: pin root:root whenever we write
+# with root privileges.
+_install_owner_flags() {
+    local -n _iof_out="$1"
+    _iof_out=()
+    if [ "$(id -u)" -eq 0 ] || _install_dir_needs_root; then
+        _iof_out=(-o root -g root)
+    fi
+}
+
+_install_mkdir() {
+    local flags
+    _install_owner_flags flags
+    _install_run install -d "${flags[@]}" -m 0755 "$@"
+}
+
+# Stage into a same-dir temp + rename so a running cron script keeps its old inode.
 _install_atomic_mv() {
     local tmp="$1"
     local dest="$2"
-    chmod 600 "$tmp" 2> /dev/null || true
-    mv -f "$tmp" "$dest"
+    local mode="${3:-0755}"
+    local staged="$dest.rpi-new.$$" flags
+    _install_owner_flags flags
+    if _install_run install "${flags[@]}" -m "$mode" "$tmp" "$staged" && _install_run mv -f "$staged" "$dest"; then
+        rm -f "$tmp"
+        return 0
+    fi
+    rm -f "$tmp"
+    _install_run rm -f "$staged"
+    return 1
+}
+
+_install_tmp() {
+    mktemp "${TMPDIR:-/tmp}/rpi-install.XXXXXX"
 }
 
 _install_atomic_copy() {
     local src="$1"
     local dest="$2"
+    local mode="${3:-0755}"
     local tmp
-    mkdir -p "$(dirname "$dest")"
-    tmp=$(mktemp "$(dirname "$dest")/.rpi-install.XXXXXX")
+    tmp=$(_install_tmp)
     if ! cat "$src" > "$tmp"; then
         rm -f "$tmp"
         return 1
     fi
-    _install_atomic_mv "$tmp" "$dest"
+    _install_atomic_mv "$tmp" "$dest" "$mode"
 }
 
+# Optional $4 = RECIPIENT_EMAIL to inject before the file lands in the (root-owned) tree.
 _install_atomic_curl() {
     local url="$1"
     local dest="$2"
+    local mode="${3:-0755}"
+    local email="${4:-}"
     local tmp
-    mkdir -p "$(dirname "$dest")"
-    tmp=$(mktemp "$(dirname "$dest")/.rpi-install.XXXXXX")
+    tmp=$(_install_tmp)
     if ! curl -fsSL "$url" -o "$tmp"; then
         rm -f "$tmp"
         return 1
     fi
-    _install_atomic_mv "$tmp" "$dest"
+    if [ -n "$email" ]; then
+        sed -i "s/RECIPIENT_EMAIL=\".*\"/RECIPIENT_EMAIL=\"$email\"/" "$tmp"
+    fi
+    _install_atomic_mv "$tmp" "$dest" "$mode"
 }
 
 download_scripts() {
     _pi_echo "Downloading/Updating scripts..."
-    mkdir -p "$INSTALL_DIR" "$INSTALL_DIR/lib"
+    local failed=0
+    if ! _install_mkdir "$INSTALL_DIR" "$INSTALL_DIR/lib"; then
+        _pi_echof "Error: cannot create %s (root privileges required)." "$INSTALL_DIR"
+        return 1
+    fi
 
     # Get email for injection
     local email_to_inject="your_email@gmail.com"
@@ -861,17 +927,18 @@ download_scripts() {
             lib_src="$_INSTALL_ROOT/lib/$lib_file"
         fi
         if [ -n "$lib_src" ]; then
-            if ! _install_atomic_copy "$lib_src" "$INSTALL_DIR/lib/$lib_file"; then
+            if ! _install_atomic_copy "$lib_src" "$INSTALL_DIR/lib/$lib_file" 0644; then
                 _pi_echof "Error downloading lib/%s" "$lib_file"
+                failed=1
                 continue
             fi
         else
-            if ! _install_atomic_curl "$RAW_URL/lib/$lib_file" "$INSTALL_DIR/lib/$lib_file"; then
+            if ! _install_atomic_curl "$RAW_URL/lib/$lib_file" "$INSTALL_DIR/lib/$lib_file" 0644; then
                 _pi_echof "Error downloading lib/%s" "$lib_file"
+                failed=1
                 continue
             fi
         fi
-        chmod +x "$INSTALL_DIR/lib/$lib_file"
     done
 
     for i in {1..7}; do
@@ -882,21 +949,159 @@ download_scripts() {
             continue
         fi
 
-        if ! _install_atomic_curl "$RAW_URL/scripts/$script" "$INSTALL_DIR/$script"; then
+        if ! _install_atomic_curl "$RAW_URL/scripts/$script" "$INSTALL_DIR/$script" 0755 "$email_to_inject"; then
             _pi_echof "Error downloading %s" "$script"
+            failed=1
             continue
         fi
-
-        if [ -f "$INSTALL_DIR/$script" ]; then
-            sed -i "s/RECIPIENT_EMAIL=\".*\"/RECIPIENT_EMAIL=\"$email_to_inject\"/" "$INSTALL_DIR/$script"
-            chmod +x "$INSTALL_DIR/$script"
-        else
-            _pi_echof "Error downloading %s" "$script"
-        fi
     done
-    _pi_echo "Scripts updated."
+    if [ "$failed" -ne 0 ]; then
+        _pi_echo "Scripts updated with errors (see above)."
+    else
+        _pi_echo "Scripts updated."
+    fi
     write_installed_version
     sleep 1
+    return "$failed"
+}
+
+# --- Legacy (user-writable) install migration ---
+# Print every directory a suite crontab line still points at (root + current user crontab),
+# plus $LEGACY_INSTALL_DIR when present, excluding $INSTALL_DIR itself.
+_legacy_install_dirs() {
+    local i script_name
+    {
+        [ -d "$LEGACY_INSTALL_DIR" ] && printf '%s\n' "$LEGACY_INSTALL_DIR"
+        for i in {1..7}; do
+            script_name="${SCRIPTS[$i]}"
+            {
+                sudo -n crontab -l 2> /dev/null
+                crontab -l 2> /dev/null
+            } | grep -F "/$script_name" | sed "s|^.* \(/[^ ]*\)/$script_name.*|\1|"
+        done
+    } | grep -vxF -- "$INSTALL_DIR" | sort -u
+}
+
+# True when $1 is a name the installer itself creates (script, .version, staging leftover).
+_is_suite_entry_name() {
+    local name="$1" i
+    case "$name" in
+        .version | .rpi-install.* | *.rpi-new.*) return 0 ;;
+    esac
+    for i in {1..7}; do
+        [ "$name" = "${SCRIPTS[$i]}" ] && return 0
+    done
+    return 1
+}
+
+# True when $1 is a lib/ directory holding only the shared helper libraries.
+_is_suite_lib_dir() {
+    local dir="$1" entry
+    [ -d "$dir" ] || return 1
+    for entry in "$dir"/* "$dir"/.[!.]*; do
+        [ -e "$entry" ] || continue
+        case "${entry##*/}" in
+            os_pkg.sh | mail_send.sh | ui_msg.sh | .rpi-install.* | *.rpi-new.*) ;;
+            *) return 1 ;;
+        esac
+    done
+    return 0
+}
+
+# A legacy directory is deleted only when it holds nothing but suite files. A crontab line such as
+# the README's manual "/home/pi/update_pi_os.sh" resolves to a home directory — never remove that.
+_legacy_dir_is_suite_only() {
+    local dir="$1" entry
+    [ -f "$dir/.version" ] || return 1
+    for entry in "$dir"/* "$dir"/.[!.]*; do
+        [ -e "$entry" ] || continue
+        if [ "${entry##*/}" = "lib" ]; then
+            _is_suite_lib_dir "$entry" || return 1
+        else
+            _is_suite_entry_name "${entry##*/}" || return 1
+        fi
+    done
+    return 0
+}
+
+# Rewrite one crontab in place: "$@" is the crontab command (e.g. sudo crontab, crontab -u pi).
+_cron_replace_dir() {
+    local legacy="$1" current
+    shift
+    current=$("$@" -l 2> /dev/null) || current=""
+    [[ "$current" == *"$legacy/"* ]] || return 0
+    printf '%s\n' "${current//"$legacy/"/"$INSTALL_DIR/"}" | "$@" -
+}
+
+# True when the root crontab or the (given) user crontab still references $1.
+_crontabs_reference_dir() {
+    local legacy="$1"
+    shift
+    {
+        sudo crontab -l 2> /dev/null
+        "$@" -l 2> /dev/null
+    } | grep -qF "$legacy/"
+}
+
+# Repoint root crontab and the legacy owner's user crontab (Pi-Apps job) from $legacy to
+# $INSTALL_DIR. Fails when a write failed or either crontab still references the legacy path.
+_repoint_crontab_dir() {
+    local legacy="$1" owner
+    local -a user_cron=(crontab)
+    owner=$(stat -c %U "$legacy" 2> /dev/null || true)
+    if [ "$(id -u)" -eq 0 ] && [ -n "$owner" ] && [ "$owner" != "root" ]; then
+        # KCOV_EXCL_START
+        user_cron=(crontab -u "$owner")
+        # KCOV_EXCL_STOP
+    fi
+    _cron_replace_dir "$legacy" sudo crontab || return 1
+    _cron_replace_dir "$legacy" "${user_cron[@]}" || return 1
+    ! _crontabs_reference_dir "$legacy" "${user_cron[@]}"
+}
+
+# Retire legacy directories (newline-separated in $1): repoint crontabs, then delete the copies
+# root cron no longer runs. Only directories that look like a suite install are removed.
+_retire_legacy_install_dirs() {
+    local legacy
+    while IFS= read -r legacy; do
+        if [ -z "$legacy" ] || [ "$legacy" = "$INSTALL_DIR" ]; then
+            continue
+        fi
+        if ! _repoint_crontab_dir "$legacy"; then
+            _pi_echof "Warning: crontab entries still reference %s; leaving it in place." "$legacy"
+            continue
+        fi
+        if ! _legacy_dir_is_suite_only "$legacy"; then
+            _pi_echof "Left %s in place (not a suite-only directory); cron now runs %s." "$legacy" "$INSTALL_DIR"
+            continue
+        fi
+        # Deleting needs write access on the parent, not just on the tree itself.
+        if [ -w "$legacy" ] && [ -w "$(dirname "$legacy")" ]; then
+            rm -rf "$legacy"
+        else
+            sudo rm -rf "$legacy"
+        fi
+        if [ -d "$legacy" ]; then
+            _pi_echof "Warning: could not remove legacy install directory %s; cron now runs %s." "$legacy" "$INSTALL_DIR"
+        else
+            _pi_echof "Removed legacy install directory %s (scripts now live in %s)." "$legacy" "$INSTALL_DIR"
+        fi
+    done <<< "$1"
+}
+
+# Interactive path: an install found only under a legacy directory is re-downloaded into the
+# root-owned $INSTALL_DIR and its crontab entries repointed before the menu opens.
+migrate_legacy_install() {
+    local legacy
+    legacy=$(_legacy_install_dirs)
+    [ -n "$legacy" ] || return 0
+    _pi_echof "Migrating scripts to root-owned %s ..." "$INSTALL_DIR"
+    if ! download_scripts; then
+        _pi_echof "Migration aborted: %s was not fully populated; crontabs and legacy files left untouched." "$INSTALL_DIR"
+        return 1
+    fi
+    quiet_suite_cron_jobs
+    _retire_legacy_install_dirs "$legacy"
 }
 
 # Suite version SSOT: root VERSION (next to install.sh), else installed .version, else RAW_URL/VERSION.
@@ -934,7 +1139,10 @@ write_installed_version() {
     fi
 
     if [ -n "$version" ]; then
-        printf '%s\n' "$version" > "$INSTALL_DIR/.version"
+        local tmp
+        tmp=$(_install_tmp)
+        printf '%s\n' "$version" > "$tmp"
+        _install_atomic_mv "$tmp" "$INSTALL_DIR/.version" 0644
         SUITE_VERSION="$version"
         _pi_echof "Version set to: %s" "$version"
     else
@@ -956,9 +1164,10 @@ get_task_status() {
     if [ -z "$line" ]; then
         _pi_echo "DISABLED|-"
     else
-        # Extract schedule part (remove the command path)
+        # Extract schedule part (everything before the absolute command path; the line may
+        # still point at a legacy directory until migration rewrites it)
         local sched
-        sched=${line% "$INSTALL_DIR"/*}
+        sched=${line%% /*}
         echo "ENABLED|$sched"
     fi
 }
@@ -1740,9 +1949,16 @@ install_main() {
         if ! _require_update_helpers; then
             return 1
         fi
+        local legacy
+        legacy=$(_legacy_install_dirs)
         check_dependencies
-        download_scripts
+        if ! download_scripts; then
+            # Never repoint or retire anything when the new tree is incomplete.
+            _pi_echof "Update incomplete: %s was not fully populated; crontabs left untouched." "$INSTALL_DIR"
+            return 1
+        fi
         quiet_suite_cron_jobs
+        _retire_legacy_install_dirs "$legacy"
         return 0
     fi
 
@@ -1754,10 +1970,11 @@ install_main() {
 
     echo "Raspberry Pi Maintenance Suite $(read_suite_version)"
 
-    # Check if already installed
-    if [ -d "$INSTALL_DIR" ]; then
+    # Check if already installed (current tree or a legacy user-writable tree awaiting migration)
+    if [ -d "$INSTALL_DIR" ] || [ -n "$(_legacy_install_dirs)" ]; then
         # Ensure dependencies are present even on existing installs
         check_dependencies
+        migrate_legacy_install
         select_ui_mode
         run_interactive main_menu
     else

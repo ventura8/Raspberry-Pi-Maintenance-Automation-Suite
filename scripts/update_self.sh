@@ -2,7 +2,10 @@
 # Description: Checks for updates to the Raspberry Pi Maintenance Suite and applies them.
 
 # --- Configuration ---
-INSTALL_DIR="${INSTALL_DIR:-$HOME/pi-scripts}"
+# Default to the directory this script runs from (the root-owned install tree root cron executes),
+# never $HOME: under root cron that resolved to /root/pi-scripts and updated the wrong copy.
+_RPI_HERE="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+INSTALL_DIR="${INSTALL_DIR:-$_RPI_HERE}"
 VERSION_FILE="$INSTALL_DIR/.version"
 GITHUB_USER="ventura8"
 REPO_NAME="Raspberry-Pi-Maintenance-Automation-Suite"
@@ -14,7 +17,6 @@ LOG_FILE="${LOG_FILE:-$HOME/maintenance.log}"
 SSMTP_CONF="${SSMTP_CONF:-/etc/ssmtp/ssmtp.conf}"
 MSMTP_CONF="${MSMTP_CONF:-/etc/msmtprc}"
 
-_RPI_HERE="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 if [ -f "$_RPI_HERE/lib/os_pkg.sh" ]; then
     # shellcheck source=../lib/os_pkg.sh
     source "$_RPI_HERE/lib/os_pkg.sh"

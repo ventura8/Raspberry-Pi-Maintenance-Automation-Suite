@@ -4,6 +4,8 @@
 
 setup() {
     export MOCK_DIR="/tmp/mocks"
+    # Never let installer tests migrate/delete a real ~/pi-scripts on the host.
+    export LEGACY_INSTALL_DIR="/tmp/pi-scripts-legacy-isolated"
     export INSTALL_DIR="/tmp/scripts_boost"
     rm -rf "$INSTALL_DIR"
     export SSMTP_CONF="/tmp/ssmtp_boost.conf"
@@ -142,8 +144,8 @@ EOF
     # Temp copy under BATS tmp (never write into bind-mounted repo root).
     local tmp_install="${BATS_TEST_TMPDIR:-/tmp}/install_tmp.sh"
     cp ./install.sh "$tmp_install"
-    # Mock download_scripts to avoid real network (call site only).
-    sed -i 's/^        download_scripts$/        echo "MOCKED_DOWNLOAD"/' "$tmp_install"
+    # Mock download_scripts to avoid real network (redefine right after its definition).
+    sed -i 's/^install_main() {$/download_scripts() { echo "MOCKED_DOWNLOAD"; }\ninstall_main() {/' "$tmp_install"
 
     run bash "$tmp_install" --update
 

@@ -10,6 +10,8 @@ setup() {
     export TEST_WORKSPACE
     TEST_WORKSPACE=$(mktemp -d)
     export MOCK_DIR="$TEST_WORKSPACE/mocks"
+    # Never let installer tests migrate/delete a real ~/pi-scripts on the host.
+    export LEGACY_INSTALL_DIR="$TEST_WORKSPACE/legacy-isolated"
     export INSTALL_DIR="$TEST_WORKSPACE/scripts"
     rm -rf "$INSTALL_DIR"
     export SSMTP_CONF="$TEST_WORKSPACE/ssmtp.conf"

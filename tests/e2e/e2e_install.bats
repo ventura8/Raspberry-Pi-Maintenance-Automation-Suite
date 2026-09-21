@@ -7,6 +7,7 @@ setup() {
     export INSTALL_FORCE_TEXT_UI=1
     export MATRIX_ALLOW_RM_INSTALL_DIR=1
     export INSTALL_DIR="/tmp/pi-scripts-e2e-bats-$$"
+    export LEGACY_INSTALL_DIR="/tmp/pi-scripts-legacy-isolated"
     rm -rf "$INSTALL_DIR"
     # shellcheck source=../setup_mocks.sh
     source ./tests/setup_mocks.sh

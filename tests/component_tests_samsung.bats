@@ -31,6 +31,8 @@ path_hiding_cmds() {
 
 setup() {
     export MOCK_DIR="/tmp/mocks"
+    # Never let installer tests migrate/delete a real ~/pi-scripts on the host.
+    export LEGACY_INSTALL_DIR="/tmp/pi-scripts-legacy-isolated"
     export PATH="$MOCK_DIR:$PATH"
     export SSMTP_CONF="$MOCK_DIR/ssmtp.conf"
     

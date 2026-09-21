@@ -100,6 +100,9 @@ Checks the GitHub repository for a new release. If the latest release tag differ
 
 The installer configures two separate crontabs to ensure proper permissions:
 
+> [!IMPORTANT]\
+> Scripts are installed to the **root-owned** directory `/usr/local/lib/pi-maintenance` (`root:root`, `0755` scripts / `0644` libs). Root cron executes them, so they must not live in a user-writable location such as `~/pi-scripts` — otherwise anyone who can write as your login user could replace them and gain root on the next scheduled run. Installs from releases before v1.1.5 (in `~/pi-scripts`) are migrated automatically the next time `install.sh` or the weekly self-update runs: scripts are re-downloaded into the root-owned tree, crontab entries are repointed, and the old user-writable copy is removed — but only if it contains nothing except suite files; a directory holding anything else is left in place (with a notice) and just stops being referenced by cron. Override the location with `INSTALL_DIR=/path` only if that path is itself root-owned.
+
 ### **Root Crontab (`sudo crontab -e`)**
 
 - **Firmware Update**: 2:00 AM on the 1st of every month.
@@ -450,7 +453,7 @@ This repository includes workspace-level Copilot customization for implementatio
 
 For release-ready GitHub description text, see:
 
-- `docs/releases/v1.1.4.md` — current example for this release (prepare with the `prepare-release` skill)
+- `docs/releases/v1.1.5.md` — current example for this release (prepare with the `prepare-release` skill)
 - Future releases: `docs/releases/vX.Y.Z.md` must match the pushed tag / root `VERSION` exactly
 
 Pushing tag `vX.Y.Z` (matching root `VERSION`, after merge to the default branch) runs
@@ -469,16 +472,16 @@ These scripts manage system-wide software, firmware, and global Python libraries
 MAILTO="your_email@gmail.com"
 
 # 2:00 AM - Pi Firmware Update (Monthly)
-0 2 1 * * /home/pi/update_pi_firmware.sh >/dev/null 2>&1
+0 2 1 * * /usr/local/lib/pi-maintenance/update_pi_firmware.sh >/dev/null 2>&1
 
 # 3:00 AM - System OS Update  
-0 3 * * 0 /home/pi/update_pi_os.sh >/dev/null 2>&1
+0 3 * * 0 /usr/local/lib/pi-maintenance/update_pi_os.sh >/dev/null 2>&1
 
 # 4:00 AM - Python Pip Update (Global)
-0 4 * * 0 /home/pi/update_pip.sh >/dev/null 2>&1
+0 4 * * 0 /usr/local/lib/pi-maintenance/update_pip.sh >/dev/null 2>&1
 
 # 4:20 AM - Docker Cleanup  
-20 4 * * 0 /home/pi/docker_cleanup.sh >/dev/null 2>&1
+20 4 * * 0 /usr/local/lib/pi-maintenance/docker_cleanup.sh >/dev/null 2>&1
 ```
 
 ### **2. User Crontab (`crontab -e`)**
@@ -489,11 +492,11 @@ This script must run as your normal user because Pi-Apps resides in your home di
 MAILTO="your_email@gmail.com"
 
 # 5:00 AM - Pi-Apps Manager Update  
-0 5 * * 0 /home/pi/update_pi_apps.sh >/dev/null 2>&1
+0 5 * * 0 /usr/local/lib/pi-maintenance/update_pi_apps.sh >/dev/null 2>&1
 ```
 
 > [!NOTE]\
-> Ensure you replace `/home/pi/` with the actual absolute path where you stored the scripts.
+> Ensure you replace `/usr/local/lib/pi-maintenance/` with the actual absolute path where you stored the scripts. Anything referenced from the **root** crontab must be owned by root and not writable by other users (`sudo chown root:root`, `chmod 755`), or a user-level compromise becomes a root compromise.
 
 ## **⚠️ Troubleshooting**
 
