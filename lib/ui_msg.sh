@@ -16,6 +16,7 @@ _pi_gettextf() {
                 suffix=${format#*%s}
                 format="${prefix}${argument}${suffix}"
                 ;;
+            *) ;;
         esac
     done
     printf '%s' "$format"

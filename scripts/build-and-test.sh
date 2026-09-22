@@ -71,4 +71,5 @@ case "$MODE" in
         ./scripts/run_docker_matrix.sh --coverage-gate
         ./scripts/run_docker_matrix.sh --parallel
         ;;
+    *) ;;
 esac

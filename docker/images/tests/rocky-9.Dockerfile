@@ -11,7 +11,7 @@ RUN dnf install -y epel-release \
     procps ca-certificates bc \
     && dnf clean all
 
-RUN python3 -m pip install --no-cache-dir lizard
+RUN python3 -m pip install --no-cache-dir --only-binary :all: 'lizard==1.24.0'
 
 COPY docker/images/tests/scripts/common.sh /tmp/common.sh
 ARG CI_UID=1000

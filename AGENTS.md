@@ -159,7 +159,7 @@ Supported CI lanes (Pi-capable OS families; Pi 3/4 class; Pi 5 support varies up
 
 1. `debian:trixie` (canonical coverage gate + Raspberry Pi OS family)
 1. `ubuntu:26.04`
-1. `fedora:44`
+1. `fedora:45`
 1. `rocky:9`
 1. `archlinux:latest`
 

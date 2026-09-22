@@ -114,7 +114,7 @@ pkg_update_system || true
 MSBIN=$(mktemp -d)
 cat > "$MSBIN/msmtp" << 'EOF'
 #!/bin/bash
-if [ "$1" = "--account=default" ] || [ "$1" = "-t" ] || [ "$#" -eq 0 ]; then
+if [[ "$1" = "--account=default" ]] || [[ "$1" = "-t" ]] || [[ "$#" -eq 0 ]]; then
   cat >/dev/null
   exit 0
 fi

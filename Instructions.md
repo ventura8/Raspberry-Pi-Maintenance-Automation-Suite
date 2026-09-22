@@ -40,7 +40,7 @@ Preferred local gate matching GitHub Actions:
 
 Actions jobs call the same entrypoint per stage (`--lints-only`, `--coverage-only`, `--distro <image>`). Executable prep is shared via `scripts/ensure_exec.sh`. Test images bake host `CI_UID`/`CI_GID` into user `pi`, and matrix runs use `--user $(id -u):$(id -g)` so bind-mounted checkout writes work on GitHub Actions (runner UID often ≠ 1000).
 
-Stages: Docker lint → coverage on `debian:trixie` → parallel distro matrix (`debian:trixie`, `ubuntu:26.04`, `fedora:44`, `rocky:9`, `archlinux:latest`; Pi 3/4 class support, Pi 5 varies by distro) with compat then e2e in each lane. Compat runs a real text install, `--update`, and uninstall; e2e runs `tests/e2e/*.bats` plus another install/`--update`/uninstall pass under `REAL_DEPS=1`.
+Stages: Docker lint → coverage on `debian:trixie` → parallel distro matrix (`debian:trixie`, `ubuntu:26.04`, `fedora:45`, `rocky:9`, `archlinux:latest`; Pi 3/4 class support, Pi 5 varies by distro) with compat then e2e in each lane. Compat runs a real text install, `--update`, and uninstall; e2e runs `tests/e2e/*.bats` plus another install/`--update`/uninstall pass under `REAL_DEPS=1`.
 
 ## Automatic Dependency Installation
 

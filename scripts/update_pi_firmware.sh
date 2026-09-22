@@ -5,6 +5,7 @@
 
 # --- Configuration ---
 RECIPIENT_EMAIL="your_email@gmail.com"
+REPORT_SEPARATOR="======================================================="
 # ---------------------
 
 # Prevent ANSI color codes from being generated
@@ -12,14 +13,14 @@ export TERM=dumb
 export NO_COLOR=1
 
 _RPI_HERE="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-if [ -f "$_RPI_HERE/lib/os_pkg.sh" ]; then
+if [[ -f "$_RPI_HERE/lib/os_pkg.sh" ]]; then
     # shellcheck source=../lib/os_pkg.sh
     source "$_RPI_HERE/lib/os_pkg.sh"
     # shellcheck source=../lib/mail_send.sh
     source "$_RPI_HERE/lib/mail_send.sh"
     # shellcheck source=../lib/ui_msg.sh
     source "$_RPI_HERE/lib/ui_msg.sh"
-elif [ -f "$_RPI_HERE/../lib/os_pkg.sh" ]; then
+elif [[ -f "$_RPI_HERE/../lib/os_pkg.sh" ]]; then
     # shellcheck source=../lib/os_pkg.sh
     source "$_RPI_HERE/../lib/os_pkg.sh"
     # shellcheck source=../lib/mail_send.sh
@@ -38,7 +39,7 @@ check_and_install_dependencies() {
         IS_PI=true
     fi
 
-    if [ "$IS_PI" = true ]; then
+    if [[ "$IS_PI" = true ]]; then
         if ! command -v rpi-eeprom-update > /dev/null 2>&1; then
             MISSING_LOGICAL+=("rpi-eeprom")
         fi
@@ -52,7 +53,7 @@ check_and_install_dependencies() {
         MISSING_LOGICAL+=("mail-transport")
     fi
 
-    if [ ${#MISSING_LOGICAL[@]} -gt 0 ]; then
+    if [[ ${#MISSING_LOGICAL[@]} -gt 0 ]]; then
         echo "Installing missing dependencies: ${MISSING_LOGICAL[*]}"
         if pkg_install "${MISSING_LOGICAL[@]}"; then
             _pi_echo "Dependencies installed successfully."
@@ -72,9 +73,9 @@ main() {
 
     {
         # Hardcoded separators matching text length
-        _pi_echo "======================================================="
+        _pi_echo "$REPORT_SEPARATOR"
         echo "   PI FIRMWARE UPDATE LOG - $(date)"
-        _pi_echo "======================================================="
+        _pi_echo "$REPORT_SEPARATOR"
         echo ""
 
         # Ensure dependencies are present
@@ -119,7 +120,7 @@ main() {
             FWUPD_HAS_UPDATE_REGEX="New version:|Release ID:"
             FWUPD_NO_UPDATE_REGEX="No upgrades|No updates|No updatable devices"
             FWUPD_UPDATE_AVAILABLE=false
-            if [ "$FWUPD_CHECK_OK" = true ]; then
+            if [[ "$FWUPD_CHECK_OK" = true ]]; then
                 if echo "$FWUPD_LIST_OUTPUT" | grep -qE "$FWUPD_HAS_UPDATE_REGEX"; then
                     FWUPD_UPDATE_AVAILABLE=true
                 elif ! echo "$FWUPD_LIST_OUTPUT" | grep -qiE "$FWUPD_NO_UPDATE_REGEX"; then
@@ -127,7 +128,7 @@ main() {
                 fi
             fi
 
-            if [ "$FWUPD_UPDATE_AVAILABLE" = true ]; then
+            if [[ "$FWUPD_UPDATE_AVAILABLE" = true ]]; then
                 _pi_echo "Updates available. Installing..."
                 # --no-reboot-check: suppress fwupd's own reboot prompt/check (valid on fwupd 1.x and 2.x;
                 # "--no-reboot" is not a real flag and fwupd 2.x rejects it). We schedule the reboot ourselves.
@@ -140,7 +141,7 @@ main() {
                 # For safety, if we updated something, we might assume reboot if unsure,
                 # but "Successfully installed" usually appears.
                 # We'll look for keywords indicating success and need for restart.
-                if [ "$FWUPD_UPDATE_RC" -ne 0 ]; then
+                if [[ "$FWUPD_UPDATE_RC" -ne 0 ]]; then
                     _pi_echof "ERROR: 'fwupdmgr update' failed (exit code %s). Firmware was NOT updated." "$FWUPD_UPDATE_RC"
                     REBOOT_NEEDED=false
                 elif echo "$UPDATE_OUTPUT" | grep -qiE "Restarting|Must be restarted|Reboot required|Successfully installed"; then
@@ -148,7 +149,7 @@ main() {
                 else
                     REBOOT_NEEDED=false
                 fi
-            elif [ "$FWUPD_CHECK_OK" = false ]; then
+            elif [[ "$FWUPD_CHECK_OK" = false ]]; then
                 _pi_echo "fwupdmgr failed to query update availability. Skipping firmware apply step."
                 REBOOT_NEEDED=false
             else
@@ -161,7 +162,7 @@ main() {
             REBOOT_NEEDED=false
         fi
 
-        if [ "$REBOOT_NEEDED" = true ]; then
+        if [[ "$REBOOT_NEEDED" = true ]]; then
             _pi_echo "--- REBOOT STATUS ---"
             _pi_echo "A firmware update was applied. A reboot is required."
             _pi_echo "The system will reboot shortly after this report is sent."
@@ -170,9 +171,9 @@ main() {
             _pi_echo "No firmware update was applied or no reboot is required."
         fi
 
-        _pi_echo "======================================================="
+        _pi_echo "$REPORT_SEPARATOR"
         echo "   Maintenance Finished at $(date)"
-        _pi_echo "======================================================="
+        _pi_echo "$REPORT_SEPARATOR"
     } > "$LOG_FILE"
 
     if ! declare -F send_mail > /dev/null 2>&1; then
@@ -183,7 +184,7 @@ main() {
         echo "WARNING: failed to deliver email notification" >&2
     fi
     # --- Final Action ---
-    if [ "$REBOOT_NEEDED" = true ]; then
+    if [[ "$REBOOT_NEEDED" = true ]]; then
         rm "$LOG_FILE"
         sudo shutdown -r +1 "Firmware update requires a reboot. Rebooting in 1 minute."
     else

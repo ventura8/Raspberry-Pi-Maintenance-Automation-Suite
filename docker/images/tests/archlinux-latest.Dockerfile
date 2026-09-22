@@ -12,8 +12,9 @@ RUN pacman -Syu --noconfirm \
     && locale-gen \
     && pacman -Scc --noconfirm
 
-RUN python -m pip install --break-system-packages --no-cache-dir lizard || \
-    pip install --no-cache-dir lizard
+RUN python -m pip install --break-system-packages --no-cache-dir \
+        --only-binary :all: 'lizard==1.24.0' \
+    || pip install --no-cache-dir --only-binary :all: 'lizard==1.24.0'
 
 COPY docker/images/tests/scripts/common.sh /tmp/common.sh
 ARG CI_UID=1000

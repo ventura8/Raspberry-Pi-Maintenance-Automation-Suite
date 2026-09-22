@@ -5,6 +5,7 @@
 
 # --- Configuration ---
 RECIPIENT_EMAIL="your_email@gmail.com"
+REPORT_SEPARATOR="========================================================="
 # ---------------------
 
 # Prevent ANSI color codes from being generated
@@ -12,14 +13,14 @@ export TERM=dumb
 export NO_COLOR=1
 
 _RPI_HERE="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-if [ -f "$_RPI_HERE/lib/os_pkg.sh" ]; then
+if [[ -f "$_RPI_HERE/lib/os_pkg.sh" ]]; then
     # shellcheck source=../lib/os_pkg.sh
     source "$_RPI_HERE/lib/os_pkg.sh"
     # shellcheck source=../lib/mail_send.sh
     source "$_RPI_HERE/lib/mail_send.sh"
     # shellcheck source=../lib/ui_msg.sh
     source "$_RPI_HERE/lib/ui_msg.sh"
-elif [ -f "$_RPI_HERE/../lib/os_pkg.sh" ]; then
+elif [[ -f "$_RPI_HERE/../lib/os_pkg.sh" ]]; then
     # shellcheck source=../lib/os_pkg.sh
     source "$_RPI_HERE/../lib/os_pkg.sh"
     # shellcheck source=../lib/mail_send.sh
@@ -35,9 +36,9 @@ main() {
 
     {
         # Hardcoded separators matching text length
-        _pi_echo "========================================================="
+        _pi_echo "$REPORT_SEPARATOR"
         echo "   DOCKER CLEANUP LOG - $(date)"
-        _pi_echo "========================================================="
+        _pi_echo "$REPORT_SEPARATOR"
         echo ""
 
         _pi_echo "--- Step 1: System Prune ---"
@@ -59,9 +60,9 @@ main() {
         fi
         echo ""
 
-        _pi_echo "========================================================="
+        _pi_echo "$REPORT_SEPARATOR"
         echo "   Maintenance Finished at $(date)"
-        _pi_echo "========================================================="
+        _pi_echo "$REPORT_SEPARATOR"
     } > "$LOG_FILE"
 
     if ! declare -F send_mail > /dev/null 2>&1; then

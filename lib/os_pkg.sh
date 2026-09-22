@@ -6,7 +6,7 @@
 # (re-appending /usr/bin would resurrect real host binaries such as Fedora's 7z).
 
 _UI_MSG="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/ui_msg.sh"
-if [ -f "$_UI_MSG" ]; then
+if [[ -f "$_UI_MSG" ]]; then
     # shellcheck source=lib/ui_msg.sh
     source "$_UI_MSG"
 elif ! declare -F _pi_echo > /dev/null 2>&1; then
@@ -21,6 +21,7 @@ elif ! declare -F _pi_echo > /dev/null 2>&1; then
                     suffix=${format#*%s}
                     format="${prefix}${argument}${suffix}"
                     ;;
+                *) ;;
             esac
         done
         printf '%s' "$format"
@@ -35,7 +36,7 @@ fi
 unset _UI_MSG
 
 rpi_ensure_cron_path() {
-    if [ -n "${MOCK_DIR:-}" ]; then
+    if [[ -n "${MOCK_DIR:-}" ]]; then
         return 0
     fi
     export PATH="${PATH}:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"
@@ -74,7 +75,7 @@ _lookup_os_family_like() {
 detect_os_family() {
     local os_id="${INSTALL_OS_ID:-}" os_like="${INSTALL_OS_ID_LIKE:-}" family key value
 
-    if [ -n "$os_id" ]; then
+    if [[ -n "$os_id" ]]; then
         family=$(_lookup_os_family_exact "$os_id") && {
             echo "$family"
             return 0
@@ -86,11 +87,12 @@ detect_os_family() {
         return 1
     fi
 
-    if [ -r /etc/os-release ]; then
+    if [[ -r /etc/os-release ]]; then
         while IFS='=' read -r key value; do
             case "$key" in
                 ID) os_id=$(_trim_os_release_value "$value") ;;
                 ID_LIKE) os_like=$(_trim_os_release_value "$value") ;;
+                *) ;;
             esac
         done < /etc/os-release
         family=$(_lookup_os_family_exact "$os_id") && {
@@ -120,13 +122,13 @@ detect_os_family() {
 
 _current_os_id() {
     local key value os_id="${INSTALL_OS_ID:-}"
-    if [ -n "$os_id" ]; then
+    if [[ -n "$os_id" ]]; then
         printf '%s' "$os_id"
         return 0
     fi
-    if [ -r /etc/os-release ]; then
+    if [[ -r /etc/os-release ]]; then
         while IFS='=' read -r key value; do
-            if [ "$key" = "ID" ]; then
+            if [[ "$key" = "ID" ]]; then
                 _trim_os_release_value "$value"
                 return 0
             fi
@@ -230,7 +232,7 @@ pkg_refresh() {
 pkg_install_raw() {
     local family
     family=$(detect_os_family) || return 1
-    [ "$#" -eq 0 ] && return 0
+    [[ "$#" -eq 0 ]] && return 0
     case "$family" in
         debian) sudo DEBIAN_FRONTEND=noninteractive apt-get install -y "$@" ;;
         redhat)
@@ -253,7 +255,7 @@ pkg_install() {
             continue
         fi
         pkgs=$(resolve_pkg_names "$logical")
-        if [ -z "$pkgs" ]; then
+        if [[ -z "$pkgs" ]]; then
             _pi_echof "Warning: no package mapping for '%s' on this OS family; skipping." "$logical" >&2
             continue
         fi
@@ -262,7 +264,7 @@ pkg_install() {
             missing+=("$pkg")
         done
     done
-    if [ "${#missing[@]}" -eq 0 ]; then
+    if [[ "${#missing[@]}" -eq 0 ]]; then
         return 0
     fi
     pkg_refresh || true

@@ -25,7 +25,7 @@ has_mail_sender || echo "WARN: mail sender not present"
 command -v whiptail > /dev/null || echo "WARN: whiptail not present"
 
 echo "=== E2E: bats e2e suite ==="
-if [ ! -f tests/e2e/e2e_install.bats ]; then
+if [[ ! -f tests/e2e/e2e_install.bats ]]; then
     echo "ERROR: tests/e2e/e2e_install.bats is missing" >&2
     exit 1
 fi
@@ -47,8 +47,8 @@ bash ./install.sh --update
 matrix_assert_installed
 
 echo "=== E2E: Pi / non-Pi toggles via MOCK_IS_PI ==="
-MOCK_IS_PI=true bash -c 'source ./install.sh; [ "$IS_PI" = "true" ]'
-MOCK_IS_PI=false bash -c 'source ./install.sh; [ "$IS_PI" = "false" ]'
+MOCK_IS_PI=true bash -c 'source ./install.sh; [[ "$IS_PI" == "true" ]]'
+MOCK_IS_PI=false bash -c 'source ./install.sh; [[ "$IS_PI" == "false" ]]'
 
 echo "=== E2E: uninstall ==="
 matrix_run_uninstall

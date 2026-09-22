@@ -10,7 +10,7 @@ warn() {
 }
 
 fail() {
-    echo "[lint][error] $*"
+    echo "[lint][error] $*" >&2
     return 1
 }
 

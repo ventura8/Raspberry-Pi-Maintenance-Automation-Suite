@@ -12,7 +12,7 @@ Pi-capable OS families (Pi 3/4 class; Pi 5 support varies upstream):
 
 1. `debian:trixie` — coverage gate + Raspberry Pi OS family
 1. `ubuntu:26.04`
-1. `fedora:44`
+1. `fedora:45`
 1. `rocky:9`
 1. `archlinux:latest`
 
@@ -40,7 +40,7 @@ Local wrapper: `scripts/build-and-test.sh`
 ./scripts/run_docker_matrix.sh --parallel
 
 # Single lane
-./scripts/run_docker_matrix.sh --distro fedora:44 --serial
+./scripts/run_docker_matrix.sh --distro fedora:45 --serial
 
 # Compat or e2e only
 ./scripts/run_docker_matrix.sh --compat-only --parallel

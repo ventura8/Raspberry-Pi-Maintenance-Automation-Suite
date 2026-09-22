@@ -1,4 +1,4 @@
-FROM fedora:44
+FROM fedora:45
 
 # Prefer a generated UTF-8 locale for predictable test environments.
 ENV LANG=en_US.UTF-8
@@ -10,7 +10,7 @@ RUN dnf install -y \
     procps ca-certificates bc \
     && dnf clean all
 
-RUN python3 -m pip install --no-cache-dir lizard
+RUN python3 -m pip install --no-cache-dir --only-binary :all: 'lizard==1.24.0'
 
 COPY docker/images/tests/scripts/common.sh /tmp/common.sh
 ARG CI_UID=1000

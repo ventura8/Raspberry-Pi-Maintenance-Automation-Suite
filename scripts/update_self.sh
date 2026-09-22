@@ -17,14 +17,14 @@ LOG_FILE="${LOG_FILE:-$HOME/maintenance.log}"
 SSMTP_CONF="${SSMTP_CONF:-/etc/ssmtp/ssmtp.conf}"
 MSMTP_CONF="${MSMTP_CONF:-/etc/msmtprc}"
 
-if [ -f "$_RPI_HERE/lib/os_pkg.sh" ]; then
+if [[ -f "$_RPI_HERE/lib/os_pkg.sh" ]]; then
     # shellcheck source=../lib/os_pkg.sh
     source "$_RPI_HERE/lib/os_pkg.sh"
     # shellcheck source=../lib/mail_send.sh
     source "$_RPI_HERE/lib/mail_send.sh"
     # shellcheck source=../lib/ui_msg.sh
     source "$_RPI_HERE/lib/ui_msg.sh"
-elif [ -f "$_RPI_HERE/../lib/os_pkg.sh" ]; then
+elif [[ -f "$_RPI_HERE/../lib/os_pkg.sh" ]]; then
     # shellcheck source=../lib/os_pkg.sh
     source "$_RPI_HERE/../lib/os_pkg.sh"
     # shellcheck source=../lib/mail_send.sh
@@ -44,7 +44,7 @@ send_notification() {
     local body_file
 
     recipient=$(mail_read_recipient_from_config 2> /dev/null || true)
-    if [ -z "$recipient" ]; then
+    if [[ -z "$recipient" ]]; then
         log "$(_pi_gettext "No mail recipient configured, skipping email notification.")"
         return 0
     fi
@@ -99,7 +99,8 @@ main() {
     fi
 
     # Fetch remote Release JSON
-    if ! REMOTE_JSON=$(curl -s -L --max-time 10 "$API_URL"); then
+    if ! REMOTE_JSON=$(curl -s -L --max-time 10 \
+        --proto '=https' --proto-redir '=https' "$API_URL"); then
         exit_with_failure "$(_pi_gettext "Failed to contact GitHub API.")"
     fi
 
@@ -107,7 +108,7 @@ main() {
     # Looking for "tag_name": "v1.0.0"
     REMOTE_TAG=$(echo "$REMOTE_JSON" | grep -o '"tag_name": *"[^"]*"' | head -n 1 | cut -d'"' -f4)
 
-    if [ -z "$REMOTE_TAG" ]; then
+    if [[ -z "$REMOTE_TAG" ]]; then
         # Fallback: Check if it's a rate limit or other error in JSON
         log "Debug Response: $REMOTE_JSON"
         exit_with_failure "$(_pi_gettext "Could not parse remote tag from GitHub response.")"
@@ -117,13 +118,13 @@ main() {
 
     # Get Local Version
     LOCAL_TAG=""
-    if [ -f "$VERSION_FILE" ]; then
+    if [[ -f "$VERSION_FILE" ]]; then
         LOCAL_TAG=$(cat "$VERSION_FILE")
     fi
     log "Local Version:  ${LOCAL_TAG:-Unknown}"
 
     # Compare Versions
-    if [ "$REMOTE_TAG" == "$LOCAL_TAG" ]; then
+    if [[ "$REMOTE_TAG" == "$LOCAL_TAG" ]]; then
         log "$(_pi_gettext "System is up to date.")"
         send_notification "$(_pi_gettext "Pi Maintenance: System Up to Date")" \
             "$(_pi_gettextf "The system is running the latest version: %s." "$LOCAL_TAG")"
@@ -136,32 +137,32 @@ main() {
 
         local stage_dir stage_rc staged_version staged_tag
         stage_dir=$(mktemp -d) || stage_dir=""
-        if [ -z "$stage_dir" ] || [ ! -d "$stage_dir" ]; then
+        if [[ -z "$stage_dir" ]] || [[ ! -d "$stage_dir" ]]; then
             exit_with_failure "Failed to create staging directory."
         fi
 
         log "Downloading installer from $REMOTE_TAG..."
         stage_release_tree "$RAW_URL" "$stage_dir"
         stage_rc=$?
-        if [ "$stage_rc" -eq 1 ]; then
+        if [[ "$stage_rc" -eq 1 ]]; then
             rm -rf "$stage_dir"
             exit_with_failure "Failed to download install.sh from $RAW_URL."
         fi
-        if [ "$stage_rc" -eq 2 ]; then
+        if [[ "$stage_rc" -eq 2 ]]; then
             rm -rf "$stage_dir"
             exit_with_failure "Failed to download VERSION from $RAW_URL."
         fi
         staged_version="$stage_dir/VERSION"
         staged_tag=$(tr -d '[:space:]' < "$staged_version" 2> /dev/null || true)
-        if [ -z "$staged_tag" ] || [ "$staged_tag" != "$REMOTE_TAG" ]; then
+        if [[ -z "$staged_tag" ]] || [[ "$staged_tag" != "$REMOTE_TAG" ]]; then
             rm -rf "$stage_dir"
             exit_with_failure "Staged VERSION ($staged_tag) does not match release tag ($REMOTE_TAG)."
         fi
 
-        if [ "$TEST_MODE" == "true" ]; then
+        if [[ "$TEST_MODE" == "true" ]]; then
             log "TEST_MODE: Skipping actual execution of install.sh"
             # Prefer staged VERSION contents when present (must match release tag).
-            if [ -f "$staged_version" ]; then
+            if [[ -f "$staged_version" ]]; then
                 tr -d '[:space:]' < "$staged_version" > "$VERSION_FILE"
                 printf '\n' >> "$VERSION_FILE"
             else

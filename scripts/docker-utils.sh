@@ -42,7 +42,7 @@ docker_build_with_cache() {
     host_uid="$(id -u)"
     host_gid="$(id -g)"
 
-    if [ "${SKIP_DOCKER_BUILD:-0}" = "1" ] && "$DOCKER_BIN" image inspect "$tag" > /dev/null 2>&1; then
+    if [[ "${SKIP_DOCKER_BUILD:-0}" = "1" ]] && "$DOCKER_BIN" image inspect "$tag" > /dev/null 2>&1; then
         echo "Skipping docker build for $tag (SKIP_DOCKER_BUILD=1)"
         return 0
     fi
@@ -58,7 +58,7 @@ docker_build_with_cache() {
         build_cmd+=(--build-arg "CI_UID=${host_uid}" --build-arg "CI_GID=${host_gid}")
     fi
 
-    if [ -n "$cache_dir" ]; then
+    if [[ -n "$cache_dir" ]]; then
         # Cache key includes UID so local (1000) and Actions (often 1001) do not collide.
         mkdir -p "$cache_dir/${cache_name}-u${host_uid}"
         if "$DOCKER_BIN" buildx version > /dev/null 2>&1; then
