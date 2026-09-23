@@ -30,7 +30,14 @@ RUN bash -c 'source /tmp/common.sh && create_ci_user pi "$CI_UID" "$CI_GID" && p
 
 USER pi
 WORKDIR /home/pi
-COPY --chown=pi:pi . .
+# Narrow copy instead of a recursive `COPY . .`: only what a standalone run of
+# the suite needs. The matrix bind-mounts the repo over /home/pi anyway, so
+# this keeps build context (and any stray local secrets) out of the image.
+COPY --chown=pi:pi install.sh uninstall.sh VERSION ./
+COPY --chown=pi:pi lib/ ./lib/
+COPY --chown=pi:pi scripts/ ./scripts/
+COPY --chown=pi:pi tests/ ./tests/
+COPY --chown=pi:pi pi-apps/ ./pi-apps/
 RUN bash -c 'shopt -s nullglob; files=(scripts/*.sh install.sh uninstall.sh tests/*.sh lib/*.sh); \
     ((${#files[@]})) || exit 1; chmod +x "${files[@]}"'
 
