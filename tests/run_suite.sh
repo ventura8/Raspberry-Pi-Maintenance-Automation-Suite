@@ -1,6 +1,9 @@
 #!/bin/bash
 set -e
 
+# Repeated literal (shelldre:S1192).
+MODE_INSTALLER="installer"
+
 # Setup environment variables
 export TERM=dumb
 # Ensure we use the current container user, defaulting to pi if unset
@@ -45,7 +48,7 @@ TEST_FILE=""
 while [[ $# -gt 0 ]]; do
     case $1 in
         --installer-only)
-            MODE="installer"
+            MODE="$MODE_INSTALLER"
             shift
             ;;
         --maintenance-only)
@@ -112,7 +115,7 @@ if [[ -n "$TEST_FILE" ]]; then
 fi
 
 # Run Unit and Component Tests with BATS
-if [[ "$MODE" = "all" ]] || [[ "$MODE" = "installer" ]]; then
+if [[ "$MODE" = "all" ]] || [[ "$MODE" = "$MODE_INSTALLER" ]]; then
     echo "--- Running Unit Tests ---"
     if [[ "$COVERAGE_ENABLED" = "1" ]]; then
         # Lib helpers are unit-tested in component_tests_os_pkg; exclude from kcov product gate
@@ -154,7 +157,7 @@ if [[ "$MODE" = "all" ]] || [[ "$MODE" = "maintenance" ]]; then
 fi
 
 # Integration Tests: These simulate full user interaction flows
-if [[ "$MODE" = "all" ]] || [[ "$MODE" = "installer" ]]; then
+if [[ "$MODE" = "all" ]] || [[ "$MODE" = "$MODE_INSTALLER" ]]; then
     echo ""
     echo "=================================================="
     echo "[SUITE] Running Integration Test (Installer Logic)"
@@ -350,7 +353,7 @@ if [[ "$COVERAGE_ENABLED" = "1" ]]; then
     echo "--- Merging Coverage Reports ---"
     HTML_REPORT_DIR="$COVERAGE_OUTPUT_DIR/html_report"
     mkdir -p "$HTML_REPORT_DIR"
-    if [[ "$MODE" = "installer" ]]; then
+    if [[ "$MODE" = "$MODE_INSTALLER" ]]; then
         kcov --merge "$HTML_REPORT_DIR" \
             "$COVERAGE_OUTPUT_DIR/install_coverage_driver" \
             "$COVERAGE_OUTPUT_DIR/unit_tests" \

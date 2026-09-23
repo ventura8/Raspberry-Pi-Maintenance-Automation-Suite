@@ -6,6 +6,7 @@
 
 # --- Configuration ---
 RECIPIENT_EMAIL="your_email@gmail.com"
+SAMSUNG_VENDOR="Samsung"
 REPORT_SEPARATOR="======================================================="
 SAMSUNG_FIRMWARE_PAGE="https://semiconductor.samsung.com/consumer-storage/support/tools/"
 # ---------------------
@@ -45,19 +46,19 @@ fi
 # --- Dependency Management ---
 check_and_install_dependencies() {
     _pi_echo "--- Checking Dependencies ---"
-    local MISSING_LOGICAL=()
-    local LOGICAL_DEPS=("fwupd" "nvme-cli" "curl" "cpio" "p7zip" "file" "gzip")
+    local missing_logical=()
+    local logical_deps=("fwupd" "nvme-cli" "curl" "cpio" "p7zip" "file" "gzip")
     local logical
 
-    for logical in "${LOGICAL_DEPS[@]}"; do
+    for logical in "${logical_deps[@]}"; do
         if ! logical_is_installed "$logical"; then
-            MISSING_LOGICAL+=("$logical")
+            missing_logical+=("$logical")
         fi
     done
 
-    if [[ ${#MISSING_LOGICAL[@]} -gt 0 ]]; then
-        echo "Installing missing dependencies: ${MISSING_LOGICAL[*]}"
-        if pkg_install "${MISSING_LOGICAL[@]}"; then
+    if [[ ${#missing_logical[@]} -gt 0 ]]; then
+        echo "Installing missing dependencies: ${missing_logical[*]}"
+        if pkg_install "${missing_logical[@]}"; then
             _pi_echo "Dependencies installed successfully."
         else
             _pi_echo "Warning: Some dependencies may have failed to install."
@@ -71,168 +72,168 @@ check_and_install_dependencies() {
 
 # Function to dynamically find firmware URL for a given model
 find_firmware_url() {
-    local MODEL="$1"
-    local PAGE_HTML
+    local model="$1"
+    local page_html
 
     _pi_echo "Fetching Samsung firmware page..."
-    PAGE_HTML=$(curl -sL --proto '=https' --proto-redir '=https' \
+    page_html=$(curl -sL --proto '=https' --proto-redir '=https' \
         "$SAMSUNG_FIRMWARE_PAGE" 2> /dev/null)
 
-    if [[ -z "$PAGE_HTML" ]]; then
+    if [[ -z "$page_html" ]]; then
         _pi_echo "Failed to fetch Samsung firmware page."
         return 1
     fi
 
     # Normalize model name for matching (e.g., "Samsung SSD 990 PRO 2TB" -> "990 PRO")
-    local MODEL_PATTERN=""
+    local model_pattern=""
 
-    if echo "$MODEL" | /usr/bin/grep -qi "9100 PRO"; then
-        MODEL_PATTERN="9100.PRO"
-    elif echo "$MODEL" | /usr/bin/grep -qi "990 PRO"; then
-        MODEL_PATTERN="990.PRO"
-    elif echo "$MODEL" | /usr/bin/grep -qi "990 EVO Plus"; then
-        MODEL_PATTERN="990.EVO.Plus"
-    elif echo "$MODEL" | /usr/bin/grep -qi "990 EVO"; then
-        MODEL_PATTERN="990.EVO"
-    elif echo "$MODEL" | /usr/bin/grep -qi "980 PRO"; then
-        MODEL_PATTERN="980.PRO"
-    elif echo "$MODEL" | /usr/bin/grep -qi "980"; then
-        MODEL_PATTERN="980[^0-9]"
-    elif echo "$MODEL" | /usr/bin/grep -qi "970 EVO Plus"; then
-        MODEL_PATTERN="970.EVO.Plus"
-    elif echo "$MODEL" | /usr/bin/grep -qi "970 EVO"; then
-        MODEL_PATTERN="970.EVO"
-    elif echo "$MODEL" | /usr/bin/grep -qi "970 PRO"; then
-        MODEL_PATTERN="970.PRO"
-    elif echo "$MODEL" | /usr/bin/grep -qi "960 PRO"; then
-        MODEL_PATTERN="960.PRO"
-    elif echo "$MODEL" | /usr/bin/grep -qi "960 EVO"; then
-        MODEL_PATTERN="960.EVO"
-    elif echo "$MODEL" | /usr/bin/grep -qi "950 PRO"; then
-        MODEL_PATTERN="950.PRO"
+    if echo "$model" | /usr/bin/grep -qi "9100 PRO"; then
+        model_pattern="9100.PRO"
+    elif echo "$model" | /usr/bin/grep -qi "990 PRO"; then
+        model_pattern="990.PRO"
+    elif echo "$model" | /usr/bin/grep -qi "990 EVO Plus"; then
+        model_pattern="990.EVO.Plus"
+    elif echo "$model" | /usr/bin/grep -qi "990 EVO"; then
+        model_pattern="990.EVO"
+    elif echo "$model" | /usr/bin/grep -qi "980 PRO"; then
+        model_pattern="980.PRO"
+    elif echo "$model" | /usr/bin/grep -qi "980"; then
+        model_pattern="980[^0-9]"
+    elif echo "$model" | /usr/bin/grep -qi "970 EVO Plus"; then
+        model_pattern="970.EVO.Plus"
+    elif echo "$model" | /usr/bin/grep -qi "970 EVO"; then
+        model_pattern="970.EVO"
+    elif echo "$model" | /usr/bin/grep -qi "970 PRO"; then
+        model_pattern="970.PRO"
+    elif echo "$model" | /usr/bin/grep -qi "960 PRO"; then
+        model_pattern="960.PRO"
+    elif echo "$model" | /usr/bin/grep -qi "960 EVO"; then
+        model_pattern="960.EVO"
+    elif echo "$model" | /usr/bin/grep -qi "950 PRO"; then
+        model_pattern="950.PRO"
     else
-        echo "Model '$MODEL' not recognized for dynamic lookup."
+        echo "Model '$model' not recognized for dynamic lookup."
         return 1
     fi
 
     # Extract ISO URL from page HTML
-    local RAW_MATCH
-    RAW_MATCH=$(echo "$PAGE_HTML" |
-        /usr/bin/grep -iE "href=\"[^\"]+${MODEL_PATTERN}[^\"]*\"" |
+    local raw_match
+    raw_match=$(echo "$page_html" |
+        /usr/bin/grep -iE "href=\"[^\"]+${model_pattern}[^\"]*\"" |
         /usr/bin/grep -i "\.iso" |
         head -n1)
-    ISO_URL=$(echo "$RAW_MATCH" | /usr/bin/grep -oE "https://[^\"]+\.iso")
+    ISO_URL=$(echo "$raw_match" | /usr/bin/grep -oE "https://[^\"]+\.iso")
 
     if [[ -z "$ISO_URL" ]]; then
-        ISO_URL=$(echo "$PAGE_HTML" |
+        ISO_URL=$(echo "$page_html" |
             /usr/bin/grep -oE "https://semiconductor\.samsung\.com/resources/software-resources/Samsung_SSD_[^\"]+\.iso" |
-            /usr/bin/grep -i "$MODEL_PATTERN" |
+            /usr/bin/grep -i "$model_pattern" |
             head -n1)
     fi
 
     if [[ -z "$ISO_URL" ]]; then
-        echo "Could not find firmware URL for model pattern: $MODEL_PATTERN"
+        echo "Could not find firmware URL for model pattern: $model_pattern"
         return 1
     fi
 
     # Extract version from URL
-    local FW_VERSION
-    FW_VERSION=$(echo "$ISO_URL" | /usr/bin/grep -oE '[A-Z0-9]{8}\.iso$' | sed 's/\.iso//')
+    local fw_version
+    fw_version=$(echo "$ISO_URL" | /usr/bin/grep -oE '[A-Z0-9]{8}\.iso$' | sed 's/\.iso//')
 
     echo "Found firmware: $ISO_URL"
-    echo "Firmware version: $FW_VERSION"
+    echo "Firmware version: $fw_version"
 
     # Export for caller
     FOUND_ISO_URL="$ISO_URL"
-    FOUND_FW_VERSION="$FW_VERSION"
+    FOUND_FW_VERSION="$fw_version"
     return 0
 }
 
 extract_and_run_fumagician() {
-    local ISO_PATH="$1"
+    local iso_path="$1"
 
     if [[ "$TEST_MODE" == "true" ]]; then
         echo "Firmware updated successfully (MOCK)"
         return 0
     fi
 
-    local WORK_DIR
-    WORK_DIR=$(mktemp -d)
-    local MOUNT_DIR="$WORK_DIR/iso_mount"
-    local EXTRACT_DIR="$WORK_DIR/extracted"
+    local work_dir
+    work_dir=$(mktemp -d)
+    local mount_dir="$work_dir/iso_mount"
+    local extract_dir="$work_dir/extracted"
 
-    mkdir -p "$MOUNT_DIR" "$EXTRACT_DIR"
+    mkdir -p "$mount_dir" "$extract_dir"
 
     _pi_echo "Mounting ISO..."
-    if ! sudo mount -o loop "$ISO_PATH" "$MOUNT_DIR" 2> /dev/null; then
+    if ! sudo mount -o loop "$iso_path" "$mount_dir" 2> /dev/null; then
         _pi_echo "Failed to mount ISO."
-        rm -rf "$WORK_DIR"
+        rm -rf "$work_dir"
         return 1
     fi
 
     # Find initrd file
-    local INITRD_FILE=""
-    if [[ -f "$MOUNT_DIR/initrd" ]]; then
-        INITRD_FILE="$MOUNT_DIR/initrd"
-    elif [[ -f "$MOUNT_DIR/boot/initrd" ]]; then
-        INITRD_FILE="$MOUNT_DIR/boot/initrd"
+    local initrd_file=""
+    if [[ -f "$mount_dir/initrd" ]]; then
+        initrd_file="$mount_dir/initrd"
+    elif [[ -f "$mount_dir/boot/initrd" ]]; then
+        initrd_file="$mount_dir/boot/initrd"
     fi
 
-    if [[ -z "$INITRD_FILE" ]]; then
+    if [[ -z "$initrd_file" ]]; then
         _pi_echo "Could not find initrd in ISO."
-        sudo umount "$MOUNT_DIR"
-        rm -rf "$WORK_DIR"
+        sudo umount "$mount_dir"
+        rm -rf "$work_dir"
         return 1
     fi
 
     _pi_echo "Extracting initrd..."
-    cd "$EXTRACT_DIR" || return 1
+    cd "$extract_dir" || return 1
 
-    if file "$INITRD_FILE" | /usr/bin/grep -q "gzip"; then
-        gzip -dc "$INITRD_FILE" 2> /dev/null | cpio -idm --no-absolute-filenames 2> /dev/null
-    elif file "$INITRD_FILE" | /usr/bin/grep -q "7-zip"; then
+    if file "$initrd_file" | /usr/bin/grep -q "gzip"; then
+        gzip -dc "$initrd_file" 2> /dev/null | cpio -idm --no-absolute-filenames 2> /dev/null
+    elif file "$initrd_file" | /usr/bin/grep -q "7-zip"; then
         if command -v 7z > /dev/null 2>&1; then
-            7z x "$INITRD_FILE" -o"$EXTRACT_DIR" > /dev/null 2>&1
+            7z x "$initrd_file" -o"$extract_dir" > /dev/null 2>&1
         else
             _pi_echo "7z required but not installed."
-            sudo umount "$MOUNT_DIR"
-            rm -rf "$WORK_DIR"
+            sudo umount "$mount_dir"
+            rm -rf "$work_dir"
             return 1
         fi
     else
-        cpio -idm --no-absolute-filenames < "$INITRD_FILE" 2> /dev/null
+        cpio -idm --no-absolute-filenames < "$initrd_file" 2> /dev/null
     fi
 
     # Find fumagician
-    local FUMAGICIAN=""
-    FUMAGICIAN=$(find "$EXTRACT_DIR" -name "fumagician" -type f 2> /dev/null | head -n1)
+    local fumagician=""
+    fumagician=$(find "$extract_dir" -name "fumagician" -type f 2> /dev/null | head -n1)
 
-    if [[ -z "$FUMAGICIAN" ]]; then
+    if [[ -z "$fumagician" ]]; then
         _pi_echo "Could not find fumagician in initrd."
-        sudo umount "$MOUNT_DIR"
-        rm -rf "$WORK_DIR"
+        sudo umount "$mount_dir"
+        rm -rf "$work_dir"
         return 1
     fi
 
-    echo "Found fumagician at: $FUMAGICIAN"
-    chmod +x "$FUMAGICIAN"
+    echo "Found fumagician at: $fumagician"
+    chmod +x "$fumagician"
 
-    local FUMA_DIR
-    FUMA_DIR=$(dirname "$FUMAGICIAN")
+    local fuma_dir
+    fuma_dir=$(dirname "$fumagician")
 
     _pi_echo "Running firmware update..."
-    cd "$FUMA_DIR" || return 1
+    cd "$fuma_dir" || return 1
 
-    local UPDATE_RESULT
-    UPDATE_RESULT=$(timeout 900 sudo "$FUMAGICIAN" --auto < /dev/null 2>&1 || timeout 900 sudo "$FUMAGICIAN" -y < /dev/null 2>&1)
-    echo "$UPDATE_RESULT"
+    local update_result
+    update_result=$(timeout 900 sudo "$fumagician" --auto < /dev/null 2>&1 || timeout 900 sudo "$fumagician" -y < /dev/null 2>&1)
+    echo "$update_result"
 
     # Cleanup
     cd / || true
-    sudo umount "$MOUNT_DIR" 2> /dev/null
-    rm -rf "$WORK_DIR"
+    sudo umount "$mount_dir" 2> /dev/null
+    rm -rf "$work_dir"
 
-    if echo "$UPDATE_RESULT" | /usr/bin/grep -qiE "success|updated|complete|reboot"; then
+    if echo "$update_result" | /usr/bin/grep -qiE "success|updated|complete|reboot"; then
         return 0
     else
         return 1
@@ -240,50 +241,50 @@ extract_and_run_fumagician() {
 }
 
 update_via_official_iso() {
-    local NVME_DEV="$1"
-    local MODEL="$2"
+    local nvme_dev="$1"
+    local model="$2"
 
-    if ! find_firmware_url "$MODEL"; then
+    if ! find_firmware_url "$model"; then
         _pi_echo "Manual update: https://semiconductor.samsung.com/consumer-storage/support/tools/"
         return 1
     fi
 
-    local CURRENT_FW
-    CURRENT_FW=$(sudo nvme id-ctrl "$NVME_DEV" 2> /dev/null | /usr/bin/grep "fr " | awk '{print $3}' | tr -d '[:space:]')
-    echo "Current Firmware: $CURRENT_FW"
+    local current_fw
+    current_fw=$(sudo nvme id-ctrl "$nvme_dev" 2> /dev/null | /usr/bin/grep "fr " | awk '{print $3}' | tr -d '[:space:]')
+    echo "Current Firmware: $current_fw"
     echo "Latest Firmware:  $FOUND_FW_VERSION"
 
-    if [[ "$CURRENT_FW" = "$FOUND_FW_VERSION" ]]; then
+    if [[ "$current_fw" = "$FOUND_FW_VERSION" ]]; then
         _pi_echo "Firmware is already up to date."
         return 1
     fi
 
     _pi_echo "New firmware available! Downloading..."
-    local ISO_PATH
-    ISO_PATH=$(mktemp /tmp/samsung_fw.XXXXXX.iso) || return 1
-    chmod 600 "$ISO_PATH"
+    local iso_path
+    iso_path=$(mktemp /tmp/samsung_fw.XXXXXX.iso) || return 1
+    chmod 600 "$iso_path"
 
-    if ! curl -L -s -o "$ISO_PATH" "$FOUND_ISO_URL"; then
+    if ! curl -L -s -o "$iso_path" "$FOUND_ISO_URL"; then
         _pi_echo "Failed to download firmware ISO."
-        rm -f "$ISO_PATH"
+        rm -f "$iso_path"
         return 1
     fi
 
-    if [[ ! -s "$ISO_PATH" ]]; then
+    if [[ ! -s "$iso_path" ]]; then
         _pi_echo "Downloaded file is empty."
-        rm -f "$ISO_PATH"
+        rm -f "$iso_path"
         return 1
     fi
 
-    echo "ISO downloaded: $(du -h "$ISO_PATH" | cut -f1)"
+    echo "ISO downloaded: $(du -h "$iso_path" | cut -f1)"
 
-    if extract_and_run_fumagician "$ISO_PATH"; then
+    if extract_and_run_fumagician "$iso_path"; then
         _pi_echo "Firmware update applied successfully."
-        rm -f "$ISO_PATH"
+        rm -f "$iso_path"
         return 0
     else
         _pi_echo "Firmware update via fumagician failed."
-        rm -f "$ISO_PATH"
+        rm -f "$iso_path"
         return 1
     fi
 }
@@ -305,21 +306,21 @@ main() {
         if command -v fwupdmgr > /dev/null 2>&1; then
             _pi_echo "--- Checking for Samsung SSDs via fwupd ---"
 
-            local FWUPD_DEVICES
+            local fwupd_devices
             if [[ "$TEST_MODE" = "true" ]] && [[ -n "$MOCK_FWUPD_DEVICES" ]]; then
-                FWUPD_DEVICES="$MOCK_FWUPD_DEVICES"
+                fwupd_devices="$MOCK_FWUPD_DEVICES"
             else
-                FWUPD_DEVICES=$(sudo fwupdmgr get-devices 2> /dev/null)
+                fwupd_devices=$(sudo fwupdmgr get-devices 2> /dev/null)
             fi
 
-            if echo "$FWUPD_DEVICES" | /usr/bin/grep -qi "Samsung"; then
+            if echo "$fwupd_devices" | /usr/bin/grep -qi "$SAMSUNG_VENDOR"; then
                 _pi_echo "Samsung SSD detected by fwupd."
 
                 _pi_echo "--- Refreshing Metadata ---"
                 sudo fwupdmgr refresh > /dev/null 2>&1
 
                 _pi_echo "--- Checking for Updates ---"
-                if sudo fwupdmgr get-updates 2> /dev/null | /usr/bin/grep -qi "Samsung"; then
+                if sudo fwupdmgr get-updates 2> /dev/null | /usr/bin/grep -qi "$SAMSUNG_VENDOR"; then
                     _pi_echo "Updates available. Installing..."
 
                     # --no-reboot-check is the real fwupd flag (1.x and 2.x); "--no-reboot" is rejected by 2.x.
@@ -342,20 +343,20 @@ main() {
                 _pi_echo "--- Fallback: Samsung Official ISO Update ---"
 
                 if command -v nvme > /dev/null 2>&1; then
-                    local NVME_LIST_OUTPUT
-                    NVME_LIST_OUTPUT=$(sudo nvme list 2> /dev/null)
+                    local nvme_list_output
+                    nvme_list_output=$(sudo nvme list 2> /dev/null)
 
-                    NVME_DEV=$(echo "$NVME_LIST_OUTPUT" | /usr/bin/grep -i "Samsung" | head -n1 | awk '{print $1}')
-                    MODEL=$(echo "$NVME_LIST_OUTPUT" |
-                        /usr/bin/grep -i "Samsung" |
+                    nvme_dev=$(echo "$nvme_list_output" | /usr/bin/grep -i "$SAMSUNG_VENDOR" | head -n1 | awk '{print $1}')
+                    model=$(echo "$nvme_list_output" |
+                        /usr/bin/grep -i "$SAMSUNG_VENDOR" |
                         head -n1 |
                         awk '{$1=$2=""; print $0}' |
                         sed 's/^[ \t]*//')
 
-                    if [[ -n "$NVME_DEV" ]]; then
-                        echo "Found: $MODEL on $NVME_DEV"
+                    if [[ -n "$nvme_dev" ]]; then
+                        echo "Found: $model on $nvme_dev"
 
-                        if update_via_official_iso "$NVME_DEV" "$MODEL"; then
+                        if update_via_official_iso "$nvme_dev" "$model"; then
                             REBOOT_NEEDED=true
                         fi
                     else

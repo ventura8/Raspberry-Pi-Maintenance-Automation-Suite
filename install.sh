@@ -8,6 +8,17 @@
 GITHUB_USER="ventura8"
 REPO_NAME="Raspberry-Pi-Maintenance-Automation-Suite"
 BRANCH="main"
+UI_MODE_WHIPTAIL="whiptail"
+
+# Repeated literals (shelldre:S1192).
+TR_UPPER='[:upper:]'
+TR_LOWER='[:lower:]'
+TR_SPACE='[:space:]'
+STATE_ENABLED="ENABLED"
+MSG_EMAIL_CONFIG="Email Configuration"
+MSG_PRESS_ENTER="Press Enter to return..."
+MSG_RUN_ENABLED_TASKS="Run Enabled Tasks Now"
+MSG_TASKS_CANCELLED="Cancelled: Enabled tasks were not run."
 RAW_URL="${RAW_URL:-https://raw.githubusercontent.com/$GITHUB_USER/$REPO_NAME/$BRANCH}"
 
 # Root cron executes these scripts, so they must live under a root-owned tree: a user-writable
@@ -86,6 +97,7 @@ _source_install_libs() {
     fi
     lib_root=$(_fetch_bootstrap_libs) || return 1
     _source_lib_dir "$lib_root"
+    return
 }
 
 _ensure_install_helpers() {
@@ -117,12 +129,14 @@ if ! declare -F _pi_gettext > /dev/null 2>&1; then
                 esac
             done
             printf '%s' "$format"
+            return
         }
         _pi_echo() { printf '%s\n' "$1"; }
         _pi_echof() {
             local format
             format=$(_pi_gettextf "$@")
             printf '%s\n' "$format"
+            return
         }
     fi
 fi
@@ -161,7 +175,8 @@ NAMES[7]="Self-Update Service"
 
 # Display name for task id.
 _pi_task_name() {
-    case "$1" in
+    local task_id="$1"
+    case "$task_id" in
         1) _pi_gettext "System OS Update" ;;
         2) _pi_gettext "Firmware Update" ;;
         3) _pi_gettext "Python Pip Update" ;;
@@ -169,8 +184,9 @@ _pi_task_name() {
         5) _pi_gettext "Pi-Apps Update" ;;
         6) _pi_gettext "Samsung SSD Firmware Update" ;;
         7) _pi_gettext "Self-Update Service" ;;
-        *) _pi_gettext "${NAMES[$1]:-Unknown task}" ;;
+        *) _pi_gettext "${NAMES[$task_id]:-Unknown task}" ;;
     esac
+    return
 }
 
 # --- Hardware/OS Detection ---
@@ -247,19 +263,25 @@ print_header() {
     echo "                      $ver"
     _pi_echo "==========================================================="
     echo ""
+    return
 }
 
 is_installed() {
-    command -v "$1" &> /dev/null
+    local cmd="$1"
+    command -v "$cmd" &> /dev/null
+    return
 }
 
 skip_pi_only_task() {
     local script="$1"
     [[ "$IS_PI" == "false" ]] && [[ "$script" == "update_pip.sh" ]]
+    return
 }
 
 task_uses_user_cron() {
-    [[ "$1" == "update_pi_apps.sh" ]]
+    local script_name="$1"
+    [[ "$script_name" == "update_pi_apps.sh" ]]
+    return
 }
 
 check_dependencies() {
@@ -300,6 +322,7 @@ check_dependencies() {
             _pi_echo "Warning: Failed to install whiptail. Falling back to text UI."
         fi
     fi
+    return
 }
 
 # --- Whiptail / UI selection helpers ---
@@ -315,16 +338,19 @@ _close_wizard_ui_fds() {
         INSTALL_UI_OUT_FD=
     fi
     # KCOV_EXCL_STOP
+    return
 }
 
 _has_open_wizard_ui_fds() {
     [[ -n "${INSTALL_UI_IN_FD:-}" ]] && [[ -n "${INSTALL_UI_OUT_FD:-}" ]]
+    return
 }
 
 _can_open_wizard_ui_tty() {
     [[ "${INSTALL_FAKE_NO_TTY:-0}" = "1" ]] && return 1
     { [[ -t 0 ]] || [[ -c /dev/tty ]]; } || return 1
     [[ -r /dev/tty ]] && [[ -w /dev/tty ]]
+    return
 }
 
 _open_wizard_ui_fd() {
@@ -353,6 +379,7 @@ _open_wizard_ui_fd() {
 _is_whiptail_cancel() {
     local rc="$1"
     [[ "$rc" -eq 1 ]] || [[ "$rc" -eq 255 ]]
+    return
 }
 
 can_use_whiptail() {
@@ -371,11 +398,12 @@ can_use_whiptail() {
 
 select_ui_mode() {
     if can_use_whiptail; then
-        INSTALL_UI_MODE="whiptail"
+        INSTALL_UI_MODE="$UI_MODE_WHIPTAIL"
     else
         INSTALL_UI_MODE="text"
         _close_wizard_ui_fds
     fi
+    return
 }
 
 _wt_fallback_to_text() {
@@ -383,6 +411,7 @@ _wt_fallback_to_text() {
     INSTALL_UI_MODE="text"
     INSTALL_FORCE_TEXT_UI=1
     _close_wizard_ui_fds
+    return
 }
 
 _run_whiptail() {
@@ -408,6 +437,7 @@ _run_whiptail() {
         # KCOV_EXCL_STOP
         whiptail "$@"
     fi
+    return
 }
 
 _wt_capture() {
@@ -429,6 +459,7 @@ _wt_capture() {
 wt_msgbox() {
     local title="$1" message="$2" height="${3:-10}" width="${4:-70}"
     _run_whiptail "" --title "$title" --msgbox "$message" "$height" "$width"
+    return
 }
 
 wt_yesno() {
@@ -441,22 +472,26 @@ wt_yesno() {
     else
         _run_whiptail "" --title "$title" --yesno "$message" "$height" "$width"
     fi
+    return
 }
 
 wt_inputbox() {
     local title="$1" message="$2" height="${3:-10}" width="${4:-70}" default="${5:-}"
     _wt_capture --title "$title" --inputbox "$message" "$height" "$width" "$default"
+    return
 }
 
 wt_passwordbox() {
     local title="$1" message="$2" height="${3:-10}" width="${4:-70}"
     _wt_capture --title "$title" --passwordbox "$message" "$height" "$width"
+    return
 }
 
 wt_menu() {
     local title="$1" message="$2" height="$3" width="$4" menu_height="$5"
     shift 5
     _wt_capture --title "$title" --menu "$message" "$height" "$width" "$menu_height" "$@"
+    return
 }
 
 cron_to_human() {
@@ -501,11 +536,13 @@ cron_to_human() {
     else
         _pi_echo "Custom Schedule"
     fi
+    return
 }
 
 validate_email_address() {
     local user_email="$1"
     [[ "$user_email" =~ ^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$ ]]
+    return
 }
 
 save_email_configuration() {
@@ -575,6 +612,7 @@ EOF
     } | crontab -
 
     _pi_echo "Email configured successfully."
+    return
 }
 
 get_current_email_user() {
@@ -586,6 +624,7 @@ get_current_email_user() {
     if [[ -f "$SSMTP_CONF" ]]; then
         sudo grep "^AuthUser=" "$SSMTP_CONF" | cut -d= -f2
     fi
+    return
 }
 
 # Resolve msmtp default-account user+host into the caller's namerefs; fail if either is missing.
@@ -603,6 +642,7 @@ _msmtp_user_host() {
     _msmtp_uh_user=$(printf '%s' "$msmtp_content" | _msmtp_resolve_default_field user)
     _msmtp_uh_host=$(printf '%s' "$msmtp_content" | _msmtp_resolve_default_field host)
     [[ -n "$_msmtp_uh_user" ]] && [[ -n "$_msmtp_uh_host" ]]
+    return
 }
 
 apply_task_schedule() {
@@ -620,6 +660,7 @@ apply_task_schedule() {
             echo "$sched $INSTALL_DIR/$script_name >/dev/null 2>&1"
         ) | sudo crontab -
     fi
+    return
 }
 
 # Rewrite existing suite crontab lines so cron MAILTO does not dump stdout/stderr.
@@ -642,6 +683,7 @@ quiet_suite_cron_jobs() {
         [[ -n "$sched" ]] || continue
         apply_task_schedule "$script_name" "$sched"
     done
+    return
 }
 
 remove_task_schedule() {
@@ -652,6 +694,7 @@ remove_task_schedule() {
     else
         sudo crontab -l 2> /dev/null | grep -v "$script_name" | sudo crontab -
     fi
+    return
 }
 
 # --- Email (text + whiptail) ---
@@ -665,7 +708,7 @@ configure_email_text() {
     if [[ -n "$current_user" ]]; then
         echo "Current Configured Email: $current_user"
         read_input "Do you want to reconfigure email? [y/N]: " confirm
-        confirm=$(echo "$confirm" | tr '[:upper:]' '[:lower:]')
+        confirm=$(echo "$confirm" | tr "$TR_UPPER" "$TR_LOWER")
         [[ ! "$confirm" == "y" ]] && return
     fi
 
@@ -692,6 +735,7 @@ configure_email_text() {
 
     save_email_configuration "$user_email" "$app_pass"
     sleep 1
+    return
 }
 
 configure_email_whiptail() {
@@ -699,7 +743,7 @@ configure_email_whiptail() {
 
     current_user=$(get_current_email_user)
     if [[ -n "$current_user" ]]; then
-        wt_yesno "$(_pi_gettext "Email Configuration")" \
+        wt_yesno "$(_pi_gettext "$MSG_EMAIL_CONFIG")" \
             "Current email: ${current_user:-unknown}\n\nReconfigure email settings?" 10 70
         confirm_rc=$?
         if [[ "$confirm_rc" -eq 255 ]]; then
@@ -713,36 +757,36 @@ configure_email_whiptail() {
         fi
     fi
 
-    user_email=$(wt_inputbox "$(_pi_gettext "Email Configuration")" "$(_pi_gettext "Enter Gmail address:")" 10 70) || {
+    user_email=$(wt_inputbox "$(_pi_gettext "$MSG_EMAIL_CONFIG")" "$(_pi_gettext "Enter Gmail address:")" 10 70) || {
         local rc=$?
         _is_whiptail_cancel "$rc" && return 1
         return 2
     }
     user_email=$(echo "$user_email" | tr -d '\r' | xargs)
     if ! validate_email_address "$user_email"; then
-        wt_msgbox "$(_pi_gettext "Email Configuration")" "$(_pi_gettext "Invalid email address.")" 8 50 || true
+        wt_msgbox "$(_pi_gettext "$MSG_EMAIL_CONFIG")" "$(_pi_gettext "Invalid email address.")" 8 50 || true
         return 0
     fi
 
-    app_pass=$(wt_passwordbox "$(_pi_gettext "Email Configuration")" "$(_pi_gettext "Enter App Password (16-char):")" 10 70) || {
+    app_pass=$(wt_passwordbox "$(_pi_gettext "$MSG_EMAIL_CONFIG")" "$(_pi_gettext "Enter App Password (16-char):")" 10 70) || {
         local rc=$?
         _is_whiptail_cancel "$rc" && return 1
         return 2
     }
     app_pass=$(echo "$app_pass" | tr -d ' ' | tr -d '\r')
     if [[ -z "$app_pass" ]]; then
-        wt_msgbox "$(_pi_gettext "Email Configuration")" "$(_pi_gettext "Password empty. Returning.")" 8 50 || true
+        wt_msgbox "$(_pi_gettext "$MSG_EMAIL_CONFIG")" "$(_pi_gettext "Password empty. Returning.")" 8 50 || true
         return 0
     fi
 
     save_email_configuration "$user_email" "$app_pass"
-    wt_msgbox "$(_pi_gettext "Email Configuration")" "$(_pi_gettext "Email configured successfully.")" 8 50 || true
+    wt_msgbox "$(_pi_gettext "$MSG_EMAIL_CONFIG")" "$(_pi_gettext "Email configured successfully.")" 8 50 || true
     return 0
 }
 
 configure_email_interactive() {
-    if [[ "${INSTALL_UI_MODE}" = "whiptail" ]] || { [[ -z "${INSTALL_UI_MODE}" ]] && can_use_whiptail; }; then
-        INSTALL_UI_MODE="whiptail"
+    if [[ "${INSTALL_UI_MODE}" = "$UI_MODE_WHIPTAIL" ]] || { [[ -z "${INSTALL_UI_MODE}" ]] && can_use_whiptail; }; then
+        INSTALL_UI_MODE="$UI_MODE_WHIPTAIL"
         configure_email_whiptail
         local rc=$?
         if [[ "$rc" -eq 0 ]] || [[ "$rc" -eq 1 ]]; then
@@ -751,6 +795,7 @@ configure_email_interactive() {
         _wt_fallback_to_text
     fi
     configure_email_text
+    return
 }
 
 # Print User/Server lines from whichever mailer config is active (msmtp preferred, ssmtp fallback).
@@ -782,7 +827,8 @@ show_email_config_text() {
         _pi_echo "No mail configuration found."
     fi
     echo ""
-    read_input "Press Enter to return..." _
+    read_input "$MSG_PRESS_ENTER" _
+    return
 }
 
 show_email_config_whiptail() {
@@ -802,8 +848,8 @@ show_email_config_whiptail() {
 }
 
 show_email_config() {
-    if [[ "${INSTALL_UI_MODE}" = "whiptail" ]] || { [[ -z "${INSTALL_UI_MODE}" ]] && can_use_whiptail; }; then
-        INSTALL_UI_MODE="whiptail"
+    if [[ "${INSTALL_UI_MODE}" = "$UI_MODE_WHIPTAIL" ]] || { [[ -z "${INSTALL_UI_MODE}" ]] && can_use_whiptail; }; then
+        INSTALL_UI_MODE="$UI_MODE_WHIPTAIL"
         show_email_config_whiptail
         local rc=$?
         if [[ "$rc" -eq 0 ]] || [[ "$rc" -eq 1 ]]; then
@@ -812,6 +858,7 @@ show_email_config() {
         _wt_fallback_to_text
     fi
     show_email_config_text
+    return
 }
 
 # --- Install tree (root-owned) helpers ---
@@ -824,6 +871,7 @@ _install_dir_needs_root() {
         dir=$(dirname "$dir")
     done
     [[ ! -w "$dir" ]]
+    return
 }
 
 _install_run() {
@@ -832,6 +880,7 @@ _install_run() {
     else
         "$@"
     fi
+    return
 }
 
 # Owner flags for install(1), filled into the caller's array: pin root:root whenever we write
@@ -842,12 +891,14 @@ _install_owner_flags() {
     if [[ "$(id -u)" -eq 0 ]] || _install_dir_needs_root; then
         _iof_out=(-o root -g root)
     fi
+    return
 }
 
 _install_mkdir() {
     local flags
     _install_owner_flags flags
     _install_run install -d "${flags[@]}" -m 0755 "$@"
+    return
 }
 
 # Stage into a same-dir temp + rename so a running cron script keeps its old inode.
@@ -868,6 +919,7 @@ _install_atomic_mv() {
 
 _install_tmp() {
     mktemp "${TMPDIR:-/tmp}/rpi-install.XXXXXX"
+    return
 }
 
 _install_atomic_copy() {
@@ -881,6 +933,7 @@ _install_atomic_copy() {
         return 1
     fi
     _install_atomic_mv "$tmp" "$dest" "$mode"
+    return
 }
 
 # Optional $4 = RECIPIENT_EMAIL to inject before the file lands in the (root-owned) tree.
@@ -899,6 +952,7 @@ _install_atomic_curl() {
         sed -i "s/RECIPIENT_EMAIL=\".*\"/RECIPIENT_EMAIL=\"$email\"/" "$tmp"
     fi
     _install_atomic_mv "$tmp" "$dest" "$mode"
+    return
 }
 
 download_scripts() {
@@ -981,6 +1035,7 @@ _legacy_install_dirs() {
             } | grep -F "/$script_name" | sed "s|^.* \(/[^ ]*\)/$script_name.*|\1|"
         done
     } | grep -vxF -- "$INSTALL_DIR" | sort -u
+    return
 }
 
 # True when $1 is a name the installer itself creates (script, .version, staging leftover).
@@ -1033,6 +1088,7 @@ _cron_replace_dir() {
     current=$("$@" -l 2> /dev/null) || current=""
     [[ "$current" == *"$legacy/"* ]] || return 0
     printf '%s\n' "${current//"$legacy/"/"$INSTALL_DIR/"}" | "$@" -
+    return
 }
 
 # True when the root crontab or the (given) user crontab still references $1.
@@ -1043,6 +1099,7 @@ _crontabs_reference_dir() {
         sudo crontab -l 2> /dev/null
         "$@" -l 2> /dev/null
     } | grep -qF "$legacy/"
+    return
 }
 
 # Repoint root crontab and the legacy owner's user crontab (Pi-Apps job) from $legacy to
@@ -1059,6 +1116,7 @@ _repoint_crontab_dir() {
     _cron_replace_dir "$legacy" sudo crontab || return 1
     _cron_replace_dir "$legacy" "${user_cron[@]}" || return 1
     ! _crontabs_reference_dir "$legacy" "${user_cron[@]}"
+    return
 }
 
 # Retire legacy directories (newline-separated in $1): repoint crontabs, then delete the copies
@@ -1089,6 +1147,7 @@ _retire_legacy_install_dirs() {
             _pi_echof "Removed legacy install directory %s (scripts now live in %s)." "$legacy" "$INSTALL_DIR"
         fi
     done <<< "$1"
+    return
 }
 
 # Interactive path: an install found only under a legacy directory is re-downloaded into the
@@ -1104,6 +1163,7 @@ migrate_legacy_install() {
     fi
     quiet_suite_cron_jobs
     _retire_legacy_install_dirs "$legacy"
+    return
 }
 
 # Suite version SSOT: root VERSION (next to install.sh), else installed .version, else RAW_URL/VERSION.
@@ -1116,15 +1176,16 @@ read_suite_version() {
     fi
 
     if [[ -f "$_INSTALL_ROOT/VERSION" ]]; then
-        version=$(tr -d '[:space:]' < "$_INSTALL_ROOT/VERSION")
+        version=$(tr -d "$TR_SPACE" < "$_INSTALL_ROOT/VERSION")
     elif [[ -f "${INSTALL_DIR:-}/.version" ]]; then
-        version=$(tr -d '[:space:]' < "$INSTALL_DIR/.version")
+        version=$(tr -d "$TR_SPACE" < "$INSTALL_DIR/.version")
     else
-        version=$(curl -fsSL --max-time 10 "$RAW_URL/VERSION" 2> /dev/null | tr -d '[:space:]' || true)
+        version=$(curl -fsSL --max-time 10 "$RAW_URL/VERSION" 2> /dev/null | tr -d "$TR_SPACE" || true)
     fi
 
     SUITE_VERSION="${version:-unknown}"
     printf '%s' "$SUITE_VERSION"
+    return
 }
 
 # Copy suite version into $INSTALL_DIR/.version from VERSION SSOT (local file or RAW_URL).
@@ -1135,9 +1196,9 @@ write_installed_version() {
     SUITE_VERSION=""
 
     if [[ -f "$_INSTALL_ROOT/VERSION" ]]; then
-        version=$(tr -d '[:space:]' < "$_INSTALL_ROOT/VERSION")
+        version=$(tr -d "$TR_SPACE" < "$_INSTALL_ROOT/VERSION")
     else
-        version=$(curl -fsSL --max-time 10 "$RAW_URL/VERSION" 2> /dev/null | tr -d '[:space:]' || true)
+        version=$(curl -fsSL --max-time 10 "$RAW_URL/VERSION" 2> /dev/null | tr -d "$TR_SPACE" || true)
     fi
 
     if [[ -n "$version" ]]; then
@@ -1150,6 +1211,7 @@ write_installed_version() {
     else
         _pi_echof "Warning: could not read VERSION (local or %s)." "$RAW_URL/VERSION"
     fi
+    return
 }
 
 get_task_status() {
@@ -1172,6 +1234,7 @@ get_task_status() {
         sched=${line%% /*}
         echo "ENABLED|$sched"
     fi
+    return
 }
 
 toggle_task() {
@@ -1195,14 +1258,14 @@ toggle_task() {
     echo ""
     _pi_echof "Task: %s" "$(_pi_task_name "$id")"
     echo "Current Status: $state"
-    if [[ "$state" == "ENABLED" ]]; then
+    if [[ "$state" == "$STATE_ENABLED" ]]; then
         echo "Current Schedule: $current_sched"
     fi
     echo ""
 
-    if [[ "$state" == "ENABLED" ]]; then
+    if [[ "$state" == "$STATE_ENABLED" ]]; then
         read_input "Do you want to DISABLE this task? [y/N] (Enter 'e' to edit time): " choice
-        choice=$(echo "$choice" | tr '[:upper:]' '[:lower:]')
+        choice=$(echo "$choice" | tr "$TR_UPPER" "$TR_LOWER")
         if [[ "$choice" == "y" ]]; then
             remove_task_schedule "$script_name"
             _pi_echo "Task disabled."
@@ -1214,7 +1277,7 @@ toggle_task() {
         fi
     else
         read_input "Do you want to ENABLE this task? [y/N]: " choice
-        choice=$(echo "$choice" | tr '[:upper:]' '[:lower:]')
+        choice=$(echo "$choice" | tr "$TR_UPPER" "$TR_LOWER")
         if [[ "$choice" == "y" ]]; then
             read_input "Enter cron schedule (Default: $default_sched): " new_time
             new_time=${new_time:-$default_sched}
@@ -1223,6 +1286,7 @@ toggle_task() {
         fi
     fi
     sleep 1
+    return
 }
 
 toggle_task_whiptail() {
@@ -1240,7 +1304,7 @@ toggle_task_whiptail() {
     state=$(echo "$status_info" | cut -d'|' -f1)
     current_sched=$(echo "$status_info" | cut -d'|' -f2)
 
-    if [[ "$state" == "ENABLED" ]]; then
+    if [[ "$state" == "$STATE_ENABLED" ]]; then
         choice=$(wt_menu "$(_pi_gettextf "Task: %s" "$(_pi_task_name "$id")")" \
             "Status: ENABLED\nSchedule: $current_sched" 14 70 3 \
             "disable" "Disable this task" \
@@ -1294,14 +1358,15 @@ _confirm_reboot_tasks_text() {
     local confirm_reboot_run=""
     _pi_echo "Warning: One or more enabled tasks may reboot the system and terminate this session."
     read_input "Proceed with running enabled tasks now? [y/N]: " confirm_reboot_run
-    confirm_reboot_run=$(echo "$confirm_reboot_run" | tr '[:upper:]' '[:lower:]')
+    confirm_reboot_run=$(echo "$confirm_reboot_run" | tr "$TR_UPPER" "$TR_LOWER")
     [[ "$confirm_reboot_run" = "y" ]]
+    return
 }
 
 _confirm_reboot_tasks_whiptail() {
     local message rc
     message="Warning: One or more enabled tasks may reboot the system and terminate this session.\n\nProceed?"
-    wt_yesno "$(_pi_gettext "Run Enabled Tasks Now")" "$message" 12 70
+    wt_yesno "$(_pi_gettext "$MSG_RUN_ENABLED_TASKS")" "$message" 12 70
     rc=$?
     [[ "$rc" -eq 0 ]] && return 0
     [[ "$rc" -eq 1 ]] || [[ "$rc" -eq 255 ]] && return 1
@@ -1330,7 +1395,7 @@ _execute_enabled_tasks() {
         status_info=$(get_task_status "$script_name" "$is_root")
         state=$(echo "$status_info" | cut -d'|' -f1)
 
-        if [[ "$state" != "ENABLED" ]]; then
+        if [[ "$state" != "$STATE_ENABLED" ]]; then
             continue
         fi
 
@@ -1371,6 +1436,7 @@ _execute_enabled_tasks() {
     else
         _pi_echo "All enabled tasks completed successfully."
     fi
+    return
 }
 
 _has_enabled_reboot_task() {
@@ -1378,7 +1444,7 @@ _has_enabled_reboot_task() {
     for reboot_script in "update_pi_os.sh" "update_pi_firmware.sh" "update_samsung_ssd.sh"; do
         reboot_status_info=$(get_task_status "$reboot_script" "true")
         reboot_state=$(echo "$reboot_status_info" | cut -d'|' -f1)
-        if [[ "$reboot_state" == "ENABLED" ]]; then
+        if [[ "$reboot_state" == "$STATE_ENABLED" ]]; then
             return 0
         fi
     done
@@ -1388,9 +1454,9 @@ _has_enabled_reboot_task() {
 run_enabled_tasks_now() {
     local use_wt=false confirm_rc=0
 
-    if [[ "${INSTALL_UI_MODE}" = "whiptail" ]] || { [[ -z "${INSTALL_UI_MODE}" ]] && can_use_whiptail; }; then
+    if [[ "${INSTALL_UI_MODE}" = "$UI_MODE_WHIPTAIL" ]] || { [[ -z "${INSTALL_UI_MODE}" ]] && can_use_whiptail; }; then
         use_wt=true
-        INSTALL_UI_MODE="whiptail"
+        INSTALL_UI_MODE="$UI_MODE_WHIPTAIL"
     fi
 
     if [[ "$use_wt" != "true" ]]; then
@@ -1406,19 +1472,19 @@ run_enabled_tasks_now() {
                 _wt_fallback_to_text
                 use_wt=false
                 if ! _confirm_reboot_tasks_text; then
-                    _pi_echo "Cancelled: Enabled tasks were not run."
-                    read_input "Press Enter to return..." _
+                    _pi_echo "$MSG_TASKS_CANCELLED"
+                    read_input "$MSG_PRESS_ENTER" _
                     return
                 fi
             elif [[ "$confirm_rc" -ne 0 ]]; then
-                _pi_echo "Cancelled: Enabled tasks were not run."
-                wt_msgbox "$(_pi_gettext "Run Enabled Tasks Now")" "$(_pi_gettext "Cancelled: Enabled tasks were not run.")" 8 60 || true
+                _pi_echo "$MSG_TASKS_CANCELLED"
+                wt_msgbox "$(_pi_gettext "$MSG_RUN_ENABLED_TASKS")" "$(_pi_gettext "$MSG_TASKS_CANCELLED")" 8 60 || true
                 return
             fi
         else
             if ! _confirm_reboot_tasks_text; then
-                _pi_echo "Cancelled: Enabled tasks were not run."
-                read_input "Press Enter to return..." _
+                _pi_echo "$MSG_TASKS_CANCELLED"
+                read_input "$MSG_PRESS_ENTER" _
                 return
             fi
         fi
@@ -1426,12 +1492,13 @@ run_enabled_tasks_now() {
 
     _execute_enabled_tasks
 
-    if [[ "$use_wt" = "true" ]] && [[ "${INSTALL_UI_MODE}" = "whiptail" ]]; then
-        wt_msgbox "$(_pi_gettext "Run Enabled Tasks Now")" \
+    if [[ "$use_wt" = "true" ]] && [[ "${INSTALL_UI_MODE}" = "$UI_MODE_WHIPTAIL" ]]; then
+        wt_msgbox "$(_pi_gettext "$MSG_RUN_ENABLED_TASKS")" \
             "$(_pi_gettext "Finished running enabled tasks.\nSee terminal output for details.")" 10 60 || true
     else
-        read_input "Press Enter to return..." _
+        read_input "$MSG_PRESS_ENTER" _
     fi
+    return
 }
 
 manage_tasks_ui_text() {
@@ -1480,6 +1547,7 @@ manage_tasks_ui_text() {
             toggle_task "$sel"
         fi
     done
+    return
 }
 
 _build_task_menu_items() {
@@ -1499,6 +1567,7 @@ _build_task_menu_items() {
         human_time=$(cron_to_human "$sched")
         printf '%s\n%s\n' "$i" "$name [$state] $human_time"
     done
+    return
 }
 
 manage_tasks_ui_whiptail() {
@@ -1531,11 +1600,12 @@ manage_tasks_ui_whiptail() {
             }
         fi
     done
+    return
 }
 
 manage_tasks_ui() {
-    if [[ "${INSTALL_UI_MODE}" = "whiptail" ]] || { [[ -z "${INSTALL_UI_MODE}" ]] && can_use_whiptail; }; then
-        INSTALL_UI_MODE="whiptail"
+    if [[ "${INSTALL_UI_MODE}" = "$UI_MODE_WHIPTAIL" ]] || { [[ -z "${INSTALL_UI_MODE}" ]] && can_use_whiptail; }; then
+        INSTALL_UI_MODE="$UI_MODE_WHIPTAIL"
         manage_tasks_ui_whiptail
         local rc=$?
         if [[ "$rc" -eq 0 ]] || [[ "$rc" -eq 1 ]]; then
@@ -1544,6 +1614,7 @@ manage_tasks_ui() {
         _wt_fallback_to_text
     fi
     manage_tasks_ui_text
+    return
 }
 
 _enable_selected_fresh_tasks_text() {
@@ -1565,7 +1636,7 @@ _enable_selected_fresh_tasks_text() {
         human=$(cron_to_human "$sched")
 
         read_input "$i. Enable $name ($human)? [Y/n]: " choice
-        choice=$(echo "$choice" | tr '[:upper:]' '[:lower:]')
+        choice=$(echo "$choice" | tr "$TR_UPPER" "$TR_LOWER")
         choice=${choice:-y}
 
         if [[ "$choice" == "y" ]]; then
@@ -1576,6 +1647,7 @@ _enable_selected_fresh_tasks_text() {
         fi
         echo "" # Newline separator after status
     done
+    return
 }
 
 _fresh_task_checklist_items() {
@@ -1589,6 +1661,7 @@ _fresh_task_checklist_items() {
         human=$(cron_to_human "${DEFAULTS[$i]}")
         printf '%s\n%s\n%s\n' "$i" "$name ($human)" "ON"
     done
+    return
 }
 
 _enable_selected_fresh_tasks_whiptail() {
@@ -1638,6 +1711,7 @@ _abort_fresh_install_whiptail() {
     local reason="${1:-Installation cancelled.}"
     echo "$reason"
     wt_msgbox "$(_pi_gettext "Installation Cancelled")" "$reason" 9 70 || true
+    return
 }
 
 _enable_default_fresh_tasks() {
@@ -1653,6 +1727,7 @@ _enable_default_fresh_tasks() {
         apply_task_schedule "$script" "$sched"
         echo "Enabled $name"
     done
+    return
 }
 
 # Non-interactive matrix/CI fresh install (no stdin blank-line protocol, no manager menu).
@@ -1670,6 +1745,7 @@ run_fresh_install_matrix() {
     _enable_default_fresh_tasks
     echo ""
     _pi_echo "Installation Complete!"
+    return
 }
 
 _run_fresh_install_text_after_deps() {
@@ -1684,11 +1760,13 @@ _run_fresh_install_text_after_deps() {
     _pi_echo "Installation Complete!"
     read_input "Press Enter to open the Manager Menu..." _
     main_menu_text
+    return
 }
 
 run_fresh_install_text() {
     check_dependencies
     _run_fresh_install_text_after_deps
+    return
 }
 
 run_fresh_install_whiptail() {
@@ -1758,11 +1836,12 @@ run_fresh_install_whiptail() {
     wt_msgbox "$(_pi_gettext "Installation Complete")" \
         "Setup finished successfully.\nOpening the Manager menu next." 10 60 || true
     main_menu_whiptail
+    return
 }
 
 run_fresh_install() {
     select_ui_mode
-    if [[ "${INSTALL_UI_MODE}" = "whiptail" ]]; then
+    if [[ "${INSTALL_UI_MODE}" = "$UI_MODE_WHIPTAIL" ]]; then
         run_fresh_install_whiptail
         local rc=$?
         if [[ "$rc" -eq 0 ]] || [[ "$rc" -eq 1 ]]; then
@@ -1774,6 +1853,7 @@ run_fresh_install() {
         return
     fi
     run_fresh_install_text
+    return
 }
 
 _start_uninstall() {
@@ -1823,7 +1903,7 @@ main_menu_text() {
                 ;;
             6)
                 read_input "Are you sure you want to uninstall? [y/N]: " un
-                un=$(echo "$un" | tr '[:upper:]' '[:lower:]')
+                un=$(echo "$un" | tr "$TR_UPPER" "$TR_LOWER")
                 if [[ "$un" == "y" ]]; then
                     _start_uninstall
                 fi
@@ -1835,6 +1915,7 @@ main_menu_text() {
                 ;;
         esac
     done
+    return
 }
 
 main_menu_whiptail() {
@@ -1848,7 +1929,7 @@ main_menu_whiptail() {
             "2" "$(_pi_gettext "View Current Email Config")" \
             "3" "$(_pi_gettext "Manage Tasks & Schedules")" \
             "4" "$(_pi_gettext "Force Update Scripts (from GitHub)")" \
-            "5" "$(_pi_gettext "Run Enabled Tasks Now")" \
+            "5" "$(_pi_gettext "$MSG_RUN_ENABLED_TASKS")" \
             "6" "$(_pi_gettext "Uninstall Suite")" \
             "0" "$(_pi_gettext "Exit")") || {
             rc=$?
@@ -1887,7 +1968,7 @@ main_menu_whiptail() {
                 ;;
             4) download_scripts ;;
             5)
-                INSTALL_UI_MODE="whiptail"
+                INSTALL_UI_MODE="$UI_MODE_WHIPTAIL"
                 run_enabled_tasks_now
                 ;;
             6)
@@ -1905,11 +1986,12 @@ main_menu_whiptail() {
             *) ;;
         esac
     done
+    return
 }
 
 main_menu() {
     select_ui_mode
-    if [[ "${INSTALL_UI_MODE}" = "whiptail" ]]; then
+    if [[ "${INSTALL_UI_MODE}" = "$UI_MODE_WHIPTAIL" ]]; then
         main_menu_whiptail
         local rc=$?
         if [[ "$rc" -eq 0 ]] || [[ "$rc" -eq 1 ]]; then
@@ -1918,6 +2000,7 @@ main_menu() {
         _wt_fallback_to_text
     fi
     main_menu_text
+    return
 }
 
 run_interactive() {
@@ -1939,11 +2022,13 @@ run_interactive() {
         "$@"
     fi
     # KCOV_EXCL_STOP
+    return
 }
 
 # --- Entry Point ---
 _require_update_helpers() {
     _ensure_install_helpers
+    return
 }
 
 install_main() {
@@ -1984,6 +2069,7 @@ install_main() {
     else
         run_interactive run_fresh_install
     fi
+    return
 }
 
 # Check if we are running as a script (not sourced)

@@ -35,6 +35,7 @@ fi
 
 log() {
     echo "[$(date '+%Y-%m-%d %H:%M:%S')] $1"
+    return
 }
 
 send_notification() {
@@ -56,6 +57,7 @@ send_notification() {
         log "Failed to deliver email notification to $recipient."
     fi
     rm -f "$body_file"
+    return
 }
 
 exit_with_failure() {
@@ -195,6 +197,7 @@ main() {
 
         send_notification "Pi Maintenance Suite Updated" "The suite has been updated to version $REMOTE_TAG."
     fi
+    return
 }
 
 main "$@"

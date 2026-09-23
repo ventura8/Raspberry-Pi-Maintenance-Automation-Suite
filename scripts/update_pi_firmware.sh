@@ -32,30 +32,30 @@ fi
 # --- Dependency Management ---
 check_and_install_dependencies() {
     _pi_echo "--- Checking Dependencies ---"
-    local MISSING_LOGICAL=()
+    local missing_logical=()
 
-    local IS_PI=false
+    local is_pi=false
     if grep -q "Raspberry Pi" /proc/device-tree/model 2> /dev/null || grep -q "Raspberry Pi" /proc/cpuinfo 2> /dev/null; then
-        IS_PI=true
+        is_pi=true
     fi
 
-    if [[ "$IS_PI" = true ]]; then
+    if [[ "$is_pi" = true ]]; then
         if ! command -v rpi-eeprom-update > /dev/null 2>&1; then
-            MISSING_LOGICAL+=("rpi-eeprom")
+            missing_logical+=("rpi-eeprom")
         fi
     else
         if ! command -v fwupdmgr > /dev/null 2>&1; then
-            MISSING_LOGICAL+=("fwupd")
+            missing_logical+=("fwupd")
         fi
     fi
 
     if ! has_mail_sender; then
-        MISSING_LOGICAL+=("mail-transport")
+        missing_logical+=("mail-transport")
     fi
 
-    if [[ ${#MISSING_LOGICAL[@]} -gt 0 ]]; then
-        echo "Installing missing dependencies: ${MISSING_LOGICAL[*]}"
-        if pkg_install "${MISSING_LOGICAL[@]}"; then
+    if [[ ${#missing_logical[@]} -gt 0 ]]; then
+        echo "Installing missing dependencies: ${missing_logical[*]}"
+        if pkg_install "${missing_logical[@]}"; then
             _pi_echo "Dependencies installed successfully."
         else
             _pi_echo "Warning: Some dependencies may have failed to install."
@@ -64,6 +64,7 @@ check_and_install_dependencies() {
         _pi_echo "All dependencies are installed."
     fi
     echo ""
+    return
 }
 
 main() {
@@ -190,6 +191,7 @@ main() {
     else
         rm "$LOG_FILE"
     fi
+    return
 }
 
 if [[ "${BASH_SOURCE[0]}" == "${0}" ]]; then

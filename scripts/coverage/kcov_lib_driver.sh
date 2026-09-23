@@ -11,6 +11,10 @@ source ./lib/os_pkg.sh
 # shellcheck source=../../lib/mail_send.sh
 source ./lib/mail_send.sh
 
+# Repeated literals (shelldre:S1192).
+TEST_EMAIL="a@b.com"
+TEST_OS_ID="custom"
+
 # Isolate PATH in a function (local) so shellcheck does not warn about subshell exports.
 _with_path() {
     local PATH="$1"
@@ -40,13 +44,13 @@ for id in "${os_ids[@]}"; do
     detect_os_family > /dev/null
 done
 
-INSTALL_OS_ID="custom" INSTALL_OS_ID_LIKE="debian"
+INSTALL_OS_ID="$TEST_OS_ID" INSTALL_OS_ID_LIKE="debian"
 detect_os_family > /dev/null
-INSTALL_OS_ID="custom" INSTALL_OS_ID_LIKE="fedora rhel"
+INSTALL_OS_ID="$TEST_OS_ID" INSTALL_OS_ID_LIKE="fedora rhel"
 detect_os_family > /dev/null
-INSTALL_OS_ID="custom" INSTALL_OS_ID_LIKE="arch"
+INSTALL_OS_ID="$TEST_OS_ID" INSTALL_OS_ID_LIKE="arch"
 detect_os_family > /dev/null
-INSTALL_OS_ID="custom" INSTALL_OS_ID_LIKE="unknown"
+INSTALL_OS_ID="$TEST_OS_ID" INSTALL_OS_ID_LIKE="unknown"
 detect_os_family > /dev/null || true
 
 unset INSTALL_OS_ID INSTALL_OS_ID_LIKE
@@ -146,9 +150,9 @@ REVALIASES="$MOCK_FS/etc/ssmtp/revaliases"
 MSMTP_CONF="$MOCK_FS/etc/msmtprc"
 mkdir -p "$(dirname "$SSMTP_CONF")" "$(dirname "$MSMTP_CONF")"
 : > "$SSMTP_CONF"
-write_mail_config_ssmtp "a@b.com" "pw" || true
-write_mail_config_msmtp "a@b.com" "pw" || true
-write_mail_config "a@b.com" "pw" || true
+write_mail_config_ssmtp "$TEST_EMAIL" "pw" || true
+write_mail_config_msmtp "$TEST_EMAIL" "pw" || true
+write_mail_config "$TEST_EMAIL" "pw" || true
 
 mail_read_recipient_from_config || true
 echo "root=onlyroot@x.com" > "$SSMTP_CONF"
@@ -163,12 +167,12 @@ mail_read_recipient_from_config || true
 
 body=$(mktemp)
 echo "body" > "$body"
-send_mail "a@b.com" "subj" "from" "$body" || true
-send_mail "a@b.com" "subj" "from" - <<< "stdin body" || true
+send_mail "$TEST_EMAIL" "subj" "from" "$body" || true
+send_mail "$TEST_EMAIL" "subj" "from" - <<< "stdin body" || true
 rm -f "$body"
 
 mail_sender_cmd() { return 1; }
-send_mail "a@b.com" "subj" "from" /dev/null || true
+send_mail "$TEST_EMAIL" "subj" "from" /dev/null || true
 unset -f mail_sender_cmd
 # shellcheck source=../../lib/mail_send.sh
 source ./lib/mail_send.sh

@@ -15,18 +15,24 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     yamllint \
     && rm -rf /var/lib/apt/lists/*
 
-# Pinned hadolint + actionlint with SHA256 verification (immutable release assets).
+# Pinned hadolint + actionlint with SHA256 verification
+# (immutable release assets).
 ARG HADOLINT_VERSION=v2.12.0
-ARG HADOLINT_SHA256=56de6d5e5ec427e17b74fa48d51271c7fc0d61244bf5c90e828aab8362d55010
+ARG HADOLINT_SHA256=\
+56de6d5e5ec427e17b74fa48d51271c7fc0d61244bf5c90e828aab8362d55010
 ARG ACTIONLINT_VERSION=1.7.7
-ARG ACTIONLINT_SHA256=9f7dedb4e23f89f2922073d1a6720405b7b520d4f5832ebb96f0d55a2958886c
+ARG ACTIONLINT_SHA256=\
+9f7dedb4e23f89f2922073d1a6720405b7b520d4f5832ebb96f0d55a2958886c
 RUN curl -fsSL --proto '=https' --proto-redir '=https' \
-        "https://github.com/hadolint/hadolint/releases/download/${HADOLINT_VERSION}/hadolint-Linux-x86_64" \
+        "https://github.com/hadolint/hadolint/releases/download\
+/${HADOLINT_VERSION}/hadolint-Linux-x86_64" \
         -o /usr/local/bin/hadolint \
     && echo "${HADOLINT_SHA256}  /usr/local/bin/hadolint" | sha256sum -c - \
     && chmod +x /usr/local/bin/hadolint \
     && curl -fsSL --proto '=https' --proto-redir '=https' \
-        "https://github.com/rhysd/actionlint/releases/download/v${ACTIONLINT_VERSION}/actionlint_${ACTIONLINT_VERSION}_linux_amd64.tar.gz" \
+        "https://github.com/rhysd/actionlint/releases/download\
+/v${ACTIONLINT_VERSION}/actionlint_${ACTIONLINT_VERSION}\
+_linux_amd64.tar.gz" \
         -o /tmp/actionlint.tar.gz \
     && tar -xzf /tmp/actionlint.tar.gz -C /tmp actionlint \
     && echo "${ACTIONLINT_SHA256}  /tmp/actionlint" | sha256sum -c - \
@@ -38,8 +44,16 @@ RUN curl -fsSL --proto '=https' --proto-redir '=https' \
         'mdformat==1.0.0' 'mdformat-gfm==1.0.0' 'lizard==1.24.0'
 
 WORKDIR /workspace
-COPY . .
-RUN bash -c 'shopt -s nullglob; files=(tests/*.sh scripts/*.sh scripts/coverage/*.sh install.sh uninstall.sh lib/*.sh); \
-    ((${#files[@]})) || exit 1; chmod +x "${files[@]}"'
+# Narrow copy: lint-in-docker.sh bind-mounts the repo over /workspace, so
+# only the files the chmod step below needs are baked in.
+COPY install.sh uninstall.sh ./
+COPY lib/ ./lib/
+COPY scripts/ ./scripts/
+COPY tests/ ./tests/
+RUN bash -c 'shopt -s nullglob; \
+    files=(tests/*.sh scripts/*.sh scripts/coverage/*.sh \
+        install.sh uninstall.sh lib/*.sh); \
+    ((${#files[@]})) || exit 1; \
+    chmod +x "${files[@]}"'
 
 CMD ["bash", "-lc", "STRICT_MODE=true ./tests/lint.sh"]

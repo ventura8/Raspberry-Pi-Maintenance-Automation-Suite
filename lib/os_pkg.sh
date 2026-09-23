@@ -2,6 +2,9 @@
 # OS family detection and multi-package-manager helpers (apt / dnf / pacman).
 # shellcheck shell=bash
 
+# Repeated literal (shelldre:S1192).
+OS_FAMILY_DEBIAN="debian"
+
 # Cron-friendly PATH seed. Skip when MOCK_DIR is set so BATS path_hiding stays effective
 # (re-appending /usr/bin would resurrect real host binaries such as Fedora's 7z).
 
@@ -25,12 +28,14 @@ elif ! declare -F _pi_echo > /dev/null 2>&1; then
             esac
         done
         printf '%s' "$format"
+        return
     }
     _pi_echo() { printf '%s\n' "$1"; }
     _pi_echof() {
         local format
         format=$(_pi_gettextf "$@")
         printf '%s\n' "$format"
+        return
     }
 fi
 unset _UI_MSG
@@ -40,6 +45,7 @@ rpi_ensure_cron_path() {
         return 0
     fi
     export PATH="${PATH}:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"
+    return
 }
 rpi_ensure_cron_path
 
@@ -50,26 +56,29 @@ _trim_os_release_value() {
     value="${value%\'}"
     value="${value#\'}"
     printf '%s' "$value"
+    return
 }
 
 _lookup_os_family_exact() {
     local candidate="$1"
     case "$candidate" in
-        ubuntu | debian | linuxmint | pop | kali | elementary | raspbian) echo "debian" ;;
+        ubuntu | debian | linuxmint | pop | kali | elementary | raspbian) echo "$OS_FAMILY_DEBIAN" ;;
         fedora | rhel | centos | rocky | almalinux | amzn) echo "redhat" ;;
         arch | manjaro | endeavouros | artix | steamos) echo "arch" ;;
         *) return 1 ;;
     esac
+    return
 }
 
 _lookup_os_family_like() {
     local candidate="$1"
     case "$candidate" in
-        *ubuntu* | *debian* | *raspbian*) echo "debian" ;;
+        *ubuntu* | *debian* | *raspbian*) echo "$OS_FAMILY_DEBIAN" ;;
         *fedora* | *rhel* | *centos* | *rocky* | *almalinux* | *amzn*) echo "redhat" ;;
         *arch* | *manjaro* | *endeavouros* | *artix*) echo "arch" ;;
         *) return 1 ;;
     esac
+    return
 }
 
 detect_os_family() {
@@ -106,7 +115,7 @@ detect_os_family() {
     fi
 
     if command -v apt-get > /dev/null 2>&1 || command -v apt > /dev/null 2>&1; then
-        echo "debian"
+        echo "$OS_FAMILY_DEBIAN"
         return 0
     fi
     if command -v dnf > /dev/null 2>&1 || command -v yum > /dev/null 2>&1; then
@@ -141,7 +150,7 @@ _current_os_id() {
 resolve_pkg_names() {
     local logical="$1"
     local family os_id
-    family=$(detect_os_family) || family="debian"
+    family=$(detect_os_family) || family="$OS_FAMILY_DEBIAN"
     os_id=$(_current_os_id) || os_id=""
 
     case "$family:$logical" in
@@ -176,11 +185,13 @@ resolve_pkg_names() {
         *:rpi-eeprom) echo "" ;;
         *) echo "$logical" ;;
     esac
+    return
 }
 
 # Command that indicates a logical dep is present.
 _logical_cmd() {
-    case "$1" in
+    local logical_name="$1"
+    case "$logical_name" in
         curl) echo "curl" ;;
         whiptail) echo "whiptail" ;;
         mail-transport) echo "msmtp" ;;
@@ -198,18 +209,21 @@ _logical_cmd() {
         file) echo "file" ;;
         gzip) echo "gzip" ;;
         rpi-eeprom) echo "rpi-eeprom-update" ;;
-        *) echo "$1" ;;
+        *) echo "$logical_name" ;;
     esac
+    return
 }
 
 logical_is_installed() {
     local cmd
     cmd=$(_logical_cmd "$1")
     command -v "$cmd" > /dev/null 2>&1
+    return
 }
 
 has_mail_sender() {
     command -v ssmtp > /dev/null 2>&1 || command -v msmtp > /dev/null 2>&1
+    return
 }
 
 pkg_refresh() {
@@ -227,6 +241,7 @@ pkg_refresh() {
         arch) sudo pacman -Sy --noconfirm ;;
         *) return 1 ;;
     esac
+    return
 }
 
 pkg_install_raw() {
@@ -245,6 +260,7 @@ pkg_install_raw() {
         arch) sudo pacman -S --noconfirm --needed "$@" ;;
         *) return 1 ;;
     esac
+    return
 }
 
 # Install logical deps (curl, whiptail, mail-transport, fwupd, ...).
@@ -269,6 +285,7 @@ pkg_install() {
     fi
     pkg_refresh || true
     pkg_install_raw "${missing[@]}"
+    return
 }
 
 pkg_update_system() {
@@ -306,4 +323,5 @@ pkg_update_system() {
             return 1
             ;;
     esac
+    return
 }

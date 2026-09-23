@@ -22,12 +22,14 @@ elif ! declare -F _pi_echo > /dev/null 2>&1; then
             esac
         done
         printf '%s' "$format"
+        return
     }
     _pi_echo() { printf '%s\n' "$1"; }
     _pi_echof() {
         local format
         format=$(_pi_gettextf "$@")
         printf '%s\n' "$format"
+        return
     }
 fi
 unset _UI_MSG
@@ -119,6 +121,7 @@ _msmtp_resolve_default_field() {
             exit 1
         }
     '
+    return
 }
 
 # Resolve field $1 from MSMTP_CONF, falling back to non-interactive `sudo -n cat` when the file
@@ -141,12 +144,14 @@ _msmtp_default_field() {
     content=$(sudo -n cat "$MSMTP_CONF" 2> /dev/null) || return 1
     [[ -n "$content" ]] || return 1
     printf '%s' "$content" | _msmtp_resolve_default_field "$1"
+    return
 }
 
 # True if MSMTP_CONF defines a usable "default" account (after inheritance) for
 # `msmtp --account=default`.
 _msmtp_has_default_account() {
     _msmtp_default_field host > /dev/null 2>&1
+    return
 }
 
 mail_sender_cmd() {
@@ -282,6 +287,7 @@ migrate_mail_config_to_msmtp() {
         # mode was parsed for the discarded host/port.
         write_mail_config_msmtp "$email" "$password" "smtp.gmail.com" "587" "on" "on"
     fi
+    return
 }
 
 # send_mail <to> <subject> <from_name> <body_file_or_->
@@ -334,6 +340,7 @@ Content-Transfer-Encoding: 8bit
 
 $body
 EOF
+    return
 }
 
 write_mail_config_ssmtp() {
@@ -367,6 +374,7 @@ EOF
     sudo chmod 600 "$REVALIASES"
     echo "root:$email:$hub" | sudo tee "$REVALIASES" > /dev/null
     sudo chmod 640 "$REVALIASES"
+    return
 }
 
 # Resolve a readable CA bundle for the active OS family. Debian/Ubuntu/Arch ship
@@ -389,6 +397,7 @@ _mail_tls_ca_bundle() {
         return 0
     fi
     echo /etc/ssl/certs/ca-certificates.crt
+    return
 }
 
 write_mail_config_msmtp() {
@@ -415,6 +424,7 @@ password       $password
 EOF
     sudo chown root:mail "$MSMTP_CONF" 2> /dev/null || sudo chown root:root "$MSMTP_CONF"
     sudo chmod 640 "$MSMTP_CONF"
+    return
 }
 
 # Write mailer config for the active OS family. msmtp is preferred everywhere (it verifies the
@@ -429,4 +439,5 @@ write_mail_config() {
         return $?
     fi
     write_mail_config_ssmtp "$email" "$password"
+    return
 }

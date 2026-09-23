@@ -28,15 +28,21 @@ print_header || true
 
 has_mail_sender() { return 1; }
 is_installed() {
-    case "$1" in
+    local cmd="$1"
+    case "$cmd" in
         curl | whiptail) return 1 ;;
-        *) command -v "$1" > /dev/null 2>&1 ;;
+        *) command -v "$cmd" > /dev/null 2>&1 ;;
     esac
+    return
 }
 check_dependencies || true
 unset -f is_installed has_mail_sender
 # Restore install.sh helpers (overridden above for dependency-failure branches).
-is_installed() { command -v "$1" > /dev/null 2>&1; }
+is_installed() {
+    local cmd="$1"
+    command -v "$cmd" > /dev/null 2>&1
+    return
+}
 
 # shellcheck source=../../lib/os_pkg.sh
 source ./lib/os_pkg.sh

@@ -4,6 +4,7 @@
 
 matrix_cleanup_mail_conf() {
     rm -f "${SSMTP_CONF:-}" "${REVALIASES:-}" "${MSMTP_CONF:-}" 2> /dev/null || true
+    return
 }
 
 matrix_prepare_install_env() {
@@ -32,6 +33,7 @@ matrix_prepare_install_env() {
     : > "$MSMTP_CONF"
     chmod 600 "$SSMTP_CONF" "$REVALIASES" "$MSMTP_CONF"
     rm -rf "$INSTALL_DIR"
+    return
 }
 
 # Deterministic non-interactive fresh install (INSTALL_MATRIX_FRESH contract).
@@ -85,6 +87,7 @@ matrix_assert_installed() {
             return 1
         fi
     fi
+    return
 }
 
 matrix_run_uninstall() {
@@ -99,4 +102,5 @@ matrix_run_uninstall() {
         return 1
     fi
     matrix_cleanup_mail_conf
+    return
 }

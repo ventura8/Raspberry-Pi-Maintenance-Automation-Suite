@@ -1,4 +1,7 @@
 #!/bin/bash
+
+# Repeated literal (shelldre:S1192).
+MOCK_SHEBANG='#!/bin/bash'
 set -e
 
 # Define mock directory (callers may set MOCK_DIR before sourcing for isolation)
@@ -214,25 +217,25 @@ EOF
 
     # 8. No-ops (chmod, chown, usermod)
     for cmd in chmod chown usermod; do
-        echo "#!/bin/bash" > "$MOCK_DIR/$cmd"
+        echo "$MOCK_SHEBANG" > "$MOCK_DIR/$cmd"
         echo "exit 0" >> "$MOCK_DIR/$cmd"
     done
 
     # 9. Mock hostname, clear, tput
-    echo '#!/bin/bash' > "$MOCK_DIR/hostname"
+    echo "$MOCK_SHEBANG" > "$MOCK_DIR/hostname"
     echo 'echo "test-pi"' >> "$MOCK_DIR/hostname"
-    echo '#!/bin/bash' > "$MOCK_DIR/clear"
-    echo '#!/bin/bash' > "$MOCK_DIR/tput"
+    echo "$MOCK_SHEBANG" > "$MOCK_DIR/clear"
+    echo "$MOCK_SHEBANG" > "$MOCK_DIR/tput"
     chmod +x "$MOCK_DIR/clear" "$MOCK_DIR/tput"
 
     # 10. Mock ssmtp / msmtp
-    echo '#!/bin/bash' > "$MOCK_DIR/ssmtp"
+    echo "$MOCK_SHEBANG" > "$MOCK_DIR/ssmtp"
     echo 'cat' >> "$MOCK_DIR/ssmtp"
-    echo '#!/bin/bash' > "$MOCK_DIR/msmtp"
+    echo "$MOCK_SHEBANG" > "$MOCK_DIR/msmtp"
     echo 'cat' >> "$MOCK_DIR/msmtp"
 
     # 11. Mock pip3
-    echo '#!/bin/bash' > "$MOCK_DIR/pip3"
+    echo "$MOCK_SHEBANG" > "$MOCK_DIR/pip3"
     echo 'exit 0' >> "$MOCK_DIR/pip3"
 else
     echo "--- REAL_DEPS=1: keeping real package managers and mailer binaries ---"
