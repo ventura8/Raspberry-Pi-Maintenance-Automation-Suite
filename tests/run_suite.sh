@@ -1,6 +1,9 @@
 #!/bin/bash
 set -e
 
+# Repeated literal (shelldre:S1192).
+MODE_INSTALLER="installer"
+
 # Setup environment variables
 export TERM=dumb
 # Ensure we use the current container user, defaulting to pi if unset
@@ -45,7 +48,7 @@ TEST_FILE=""
 while [[ $# -gt 0 ]]; do
     case $1 in
         --installer-only)
-            MODE="installer"
+            MODE="$MODE_INSTALLER"
             shift
             ;;
         --maintenance-only)
@@ -80,7 +83,7 @@ KCOV_EXCLUDE_PATTERN="/usr/lib,/tmp,$PWD/tests,$PWD/coverage,.git,.github,$MOCK_
 KCOV_EXCLUDE_PATTERN+=".bash_logout,install_lib.sh,pi-apps/updater,lib/os_pkg.sh,lib/mail_send.sh,/lib/os_pkg.sh,/lib/mail_send.sh"
 KCOV_ARGS=(--exclude-pattern="$KCOV_EXCLUDE_PATTERN" --include-path="$KCOV_INCLUDE_PATH" --exclude-region=KCOV_EXCL_START:KCOV_EXCL_STOP)
 
-if [ "$COVERAGE_ENABLED" = "1" ]; then
+if [[ "$COVERAGE_ENABLED" = "1" ]]; then
     echo "--- Coverage Mode: ENABLED ---"
     echo "Coverage output: $COVERAGE_OUTPUT_DIR"
     mkdir -p "$COVERAGE_OUTPUT_DIR"
@@ -100,9 +103,9 @@ else
 fi
 
 # Run Specific Test File if provided
-if [ -n "$TEST_FILE" ]; then
+if [[ -n "$TEST_FILE" ]]; then
     echo "--- Running Specific Test File: $TEST_FILE ---"
-    if [ "$COVERAGE_ENABLED" = "1" ]; then
+    if [[ "$COVERAGE_ENABLED" = "1" ]]; then
         TEST_NAME=$(basename "$TEST_FILE" .bats)
         kcov "${KCOV_ARGS[@]}" "$COVERAGE_OUTPUT_DIR/$TEST_NAME" bats "$TEST_FILE"
     else
@@ -112,9 +115,9 @@ if [ -n "$TEST_FILE" ]; then
 fi
 
 # Run Unit and Component Tests with BATS
-if [ "$MODE" = "all" ] || [ "$MODE" = "installer" ]; then
+if [[ "$MODE" = "all" ]] || [[ "$MODE" = "$MODE_INSTALLER" ]]; then
     echo "--- Running Unit Tests ---"
-    if [ "$COVERAGE_ENABLED" = "1" ]; then
+    if [[ "$COVERAGE_ENABLED" = "1" ]]; then
         # Lib helpers are unit-tested in component_tests_os_pkg; exclude from kcov product gate
         # (OS-release/manager fallbacks are environment-specific and dilute per-file rates).
         kcov "${KCOV_ARGS[@]}" "$COVERAGE_OUTPUT_DIR/install_coverage_driver" "$PWD/scripts/coverage/kcov_install_driver.sh"
@@ -138,9 +141,9 @@ if [ "$MODE" = "all" ] || [ "$MODE" = "installer" ]; then
     fi
 fi
 
-if [ "$MODE" = "all" ] || [ "$MODE" = "maintenance" ]; then
+if [[ "$MODE" = "all" ]] || [[ "$MODE" = "maintenance" ]]; then
     echo "--- Running Component Tests ---"
-    if [ "$COVERAGE_ENABLED" = "1" ]; then
+    if [[ "$COVERAGE_ENABLED" = "1" ]]; then
         kcov "${KCOV_ARGS[@]}" "$COVERAGE_OUTPUT_DIR/component_tests" bats tests/component_tests.bats
         kcov "${KCOV_ARGS[@]}" "$COVERAGE_OUTPUT_DIR/component_tests_samsung" bats tests/component_tests_samsung.bats
         kcov "${KCOV_ARGS[@]}" "$COVERAGE_OUTPUT_DIR/component_tests_self_update" bats tests/component_tests_self_update.bats
@@ -154,7 +157,7 @@ if [ "$MODE" = "all" ] || [ "$MODE" = "maintenance" ]; then
 fi
 
 # Integration Tests: These simulate full user interaction flows
-if [ "$MODE" = "all" ] || [ "$MODE" = "installer" ]; then
+if [[ "$MODE" = "all" ]] || [[ "$MODE" = "$MODE_INSTALLER" ]]; then
     echo ""
     echo "=================================================="
     echo "[SUITE] Running Integration Test (Installer Logic)"
@@ -179,7 +182,7 @@ EOF
 
     # PHASE 1: Install, Configure, Manage
     echo "--- [PHASE 1] Install, Configure, Schedule ---"
-    if [ "$COVERAGE_ENABLED" = "1" ]; then
+    if [[ "$COVERAGE_ENABLED" = "1" ]]; then
         (
             echo "Y"
             sleep 1
@@ -303,7 +306,7 @@ EOF
     # PHASE 3: Edge Cases
     echo ""
     echo "--- [PHASE 3] Edge Cases ---"
-    if [ "$COVERAGE_ENABLED" = "1" ]; then
+    if [[ "$COVERAGE_ENABLED" = "1" ]]; then
         (
             echo "1"
             sleep 0.2
@@ -346,11 +349,11 @@ EOF
 fi
 
 # PHASE 4: Uninstall Edge Case (covered by component tests)
-if [ "$COVERAGE_ENABLED" = "1" ]; then
+if [[ "$COVERAGE_ENABLED" = "1" ]]; then
     echo "--- Merging Coverage Reports ---"
     HTML_REPORT_DIR="$COVERAGE_OUTPUT_DIR/html_report"
     mkdir -p "$HTML_REPORT_DIR"
-    if [ "$MODE" = "installer" ]; then
+    if [[ "$MODE" = "$MODE_INSTALLER" ]]; then
         kcov --merge "$HTML_REPORT_DIR" \
             "$COVERAGE_OUTPUT_DIR/install_coverage_driver" \
             "$COVERAGE_OUTPUT_DIR/unit_tests" \
@@ -361,7 +364,7 @@ if [ "$COVERAGE_ENABLED" = "1" ]; then
             "$COVERAGE_OUTPUT_DIR/install_phase1" \
             "$COVERAGE_OUTPUT_DIR/install_phase3_edge_cases" \
             "$COVERAGE_OUTPUT_DIR/uninstall"
-    elif [ "$MODE" = "maintenance" ]; then
+    elif [[ "$MODE" = "maintenance" ]]; then
         cp -r "$COVERAGE_OUTPUT_DIR/component_tests/"* "$HTML_REPORT_DIR/"
     else
         kcov --merge "$HTML_REPORT_DIR" \
@@ -384,7 +387,7 @@ if [ "$COVERAGE_ENABLED" = "1" ]; then
 
     echo "--- Patching Cobertura XMLs ---"
     MERGED_XML=$(find "$HTML_REPORT_DIR" -name "cobertura.xml" | head -n 1)
-    if [ -f "$MERGED_XML" ]; then
+    if [[ -f "$MERGED_XML" ]]; then
         mv "$MERGED_XML" "$COVERAGE_OUTPUT_DIR/cobertura.xml"
         sed -i 's/branches-covered="\([^"]*\)"/branches-covered="\1" branches-valid="0"/g' "$COVERAGE_OUTPUT_DIR/cobertura.xml"
         sed -i 's/<package name="[^"]*"/<package name="RPi Maintenance Scripts"/g' "$COVERAGE_OUTPUT_DIR/cobertura.xml"
@@ -394,18 +397,18 @@ fi
 echo "[SUCCESS] All System Tests Passed!"
 
 # Auto-update coverage badge locally
-if [ "$COVERAGE_ENABLED" = "1" ] && [ -f "$COVERAGE_OUTPUT_DIR/cobertura.xml" ]; then
+if [[ "$COVERAGE_ENABLED" = "1" ]] && [[ -f "$COVERAGE_OUTPUT_DIR/cobertura.xml" ]]; then
     echo ""
     echo "--- Updating Coverage Badge ---"
     python3 tests/transform_coverage.py "$COVERAGE_OUTPUT_DIR/cobertura.xml"
 
     # Extract coverage percentage and enforce 90% threshold
     COVERAGE_PERCENT=$(grep -oP 'line-rate="\K[^"]+' "$COVERAGE_OUTPUT_DIR/cobertura.xml" | head -1)
-    if [ -n "$COVERAGE_PERCENT" ]; then
+    if [[ -n "$COVERAGE_PERCENT" ]]; then
         COVERAGE_INT=$(echo "$COVERAGE_PERCENT * 100" | bc | cut -d'.' -f1)
         echo "Coverage: ${COVERAGE_INT}%"
 
-        if [ "$COVERAGE_INT" -lt 90 ]; then
+        if [[ "$COVERAGE_INT" -lt 90 ]]; then
             echo ""
             echo "⚠️  WARNING: Coverage ${COVERAGE_INT}% is below mandatory 90% threshold!"
             echo "    Please add more tests before committing."

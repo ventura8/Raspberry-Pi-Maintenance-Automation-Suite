@@ -40,7 +40,11 @@ Preferred local gate matching GitHub Actions:
 
 Actions jobs call the same entrypoint per stage (`--lints-only`, `--coverage-only`, `--distro <image>`). Executable prep is shared via `scripts/ensure_exec.sh`. Test images bake host `CI_UID`/`CI_GID` into user `pi`, and matrix runs use `--user $(id -u):$(id -g)` so bind-mounted checkout writes work on GitHub Actions (runner UID often ≠ 1000).
 
-Stages: Docker lint → coverage on `debian:trixie` → parallel distro matrix (`debian:trixie`, `ubuntu:26.04`, `fedora:44`, `rocky:9`, `archlinux:latest`; Pi 3/4 class support, Pi 5 varies by distro) with compat then e2e in each lane. Compat runs a real text install, `--update`, and uninstall; e2e runs `tests/e2e/*.bats` plus another install/`--update`/uninstall pass under `REAL_DEPS=1`.
+Static analysis runs on SonarQube Cloud (project `ventura8_Raspberry-Pi-Maintenance-Automation-Suite`, configured by [`sonar-project.properties`](sonar-project.properties)). Automatic Analysis scans every push and PR and needs no secret, so the `sonarqube` job in `ci.yml` stays guarded by `if: env.SONAR_TOKEN != ''` and skips. Switching to CI-based analysis requires adding the `SONAR_TOKEN` secret **and** disabling Automatic Analysis — Sonar rejects CI analysis while AutoScan is on.
+
+Docker images pin every apt/dnf package version and fetch hadolint/actionlint via `ADD --checksum`; hadolint enforces this on all tracked Dockerfiles. Stale pins surface as lane build failures — refresh them per AGENTS.md "Docker Image Pinning".
+
+Stages: Docker lint → coverage on `debian:trixie` → parallel distro matrix (`debian:trixie`, `ubuntu:26.04`, `fedora:45`, `rocky:9`, `archlinux:latest`; Pi 3/4 class support, Pi 5 varies by distro) with compat then e2e in each lane. Compat runs a real text install, `--update`, and uninstall; e2e runs `tests/e2e/*.bats` plus another install/`--update`/uninstall pass under `REAL_DEPS=1`.
 
 ## Automatic Dependency Installation
 
@@ -83,5 +87,5 @@ The suite includes a self-healing capability (`scripts/update_self.sh`) that ens
 - [Project Overview & Directory Structure](docs/project_overview.md)
 - [Script Logic & Functionality](docs/script_logic.md)
 - [Development & Standards](docs/development_standards.md)
-- [Release Notes (GitHub description)](docs/releases/v1.1.5.md) — prepare via `.agents/skills/prepare-release`; published automatically by `.github/workflows/release.yml` when the matching tag is pushed
+- [Release Notes (GitHub description)](docs/releases/v1.1.6.md) — prepare via `.agents/skills/prepare-release`; published automatically by `.github/workflows/release.yml` when the matching tag is pushed
 - [Prompt Templates for Chat Workflows](.github/prompts/README.md)

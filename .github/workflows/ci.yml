@@ -18,10 +18,10 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 20
     steps:
-      - uses: actions/checkout@v7.0.1
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v7.0.1
 
       - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v4.4.1
+        uses: docker/setup-buildx-action@f87e5991a6d7451dcb8d9637bfbc97413f497069  # v4.4.1
 
       - name: Run lint gates (same as local --lints-only)
         run: |
@@ -31,7 +31,7 @@ jobs:
 
       - name: Upload lint logs
         if: always()
-        uses: actions/upload-artifact@v7.0.1
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a  # v7.0.1
         with:
           name: lint-docker-log
           path: reports/distro-logs/
@@ -43,10 +43,10 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 45
     steps:
-      - uses: actions/checkout@v7.0.1
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v7.0.1
 
       - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v4.4.1
+        uses: docker/setup-buildx-action@f87e5991a6d7451dcb8d9637bfbc97413f497069  # v4.4.1
 
       - name: Run coverage gate (same as local --coverage-only)
         run: |
@@ -56,7 +56,7 @@ jobs:
 
       - name: Upload coverage artifacts
         if: always()
-        uses: actions/upload-artifact@v7.0.1
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a  # v7.0.1
         with:
           name: coverage-gate
           path: |
@@ -64,6 +64,26 @@ jobs:
             reports/distro-logs/coverage-gate.log
           include-hidden-files: true
           if-no-files-found: warn
+
+  sonarqube:
+    name: SonarQube Cloud
+    needs: lint-docker
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v7.0.1
+        with:
+          # Sonar needs full history to assign blame and compute new-code periods.
+          fetch-depth: 0
+
+      # Skips cleanly until SONAR_TOKEN is added, so the job never fails red on
+      # a fork or before the secret exists. Requires Automatic Analysis to be
+      # OFF in the project settings -- Sonar rejects CI analysis while it is on.
+      - name: SonarQube Cloud scan
+        if: env.SONAR_TOKEN != ''
+        uses: SonarSource/sonarqube-scan-action@ba9859eae8dd6bd29e412f25ddbbef3d032000f4  # v8.2.2
 
   distro-tests:
     name: Distro (${{ matrix.image }})
@@ -76,14 +96,14 @@ jobs:
         image:
           - debian:trixie
           - ubuntu:26.04
-          - fedora:44
+          - fedora:45
           - rocky:9
           - archlinux:latest
     steps:
-      - uses: actions/checkout@v7.0.1
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v7.0.1
 
       - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v4.4.1
+        uses: docker/setup-buildx-action@f87e5991a6d7451dcb8d9637bfbc97413f497069  # v4.4.1
 
       - name: Set matrix log slug
         run: |
@@ -101,7 +121,7 @@ jobs:
 
       - name: Upload distro logs
         if: always()
-        uses: actions/upload-artifact@v7.0.1
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a  # v7.0.1
         with:
           name: distro-${{ env.log_slug }}
           path: reports/distro-logs/

@@ -12,7 +12,7 @@ Pi-capable OS families (Pi 3/4 class; Pi 5 support varies upstream):
 
 1. `debian:trixie` — coverage gate + Raspberry Pi OS family
 1. `ubuntu:26.04`
-1. `fedora:44`
+1. `fedora:45`
 1. `rocky:9`
 1. `archlinux:latest`
 
@@ -32,6 +32,9 @@ Local wrapper: `scripts/build-and-test.sh`
 1. Keep lint image separate: `docker/images/lint/debian-trixie.Dockerfile`.
 1. Shared install/uninstall helpers live in `scripts/matrix_install_flow.sh`.
 1. Test images should provide a generated UTF-8 locale (`en_US.UTF-8`) for predictable environments.
+1. Every apt/dnf package is version-pinned and hadolint gates it (see AGENTS.md "Docker Image Pinning").
+   A lane failing with `E: Version '…' was not found` (apt) or `No match for argument` (dnf) means a
+   pin went stale: refresh it from the base image, never drop the pin or add a hadolint ignore.
 
 ## Commands
 
@@ -40,7 +43,7 @@ Local wrapper: `scripts/build-and-test.sh`
 ./scripts/run_docker_matrix.sh --parallel
 
 # Single lane
-./scripts/run_docker_matrix.sh --distro fedora:44 --serial
+./scripts/run_docker_matrix.sh --distro fedora:45 --serial
 
 # Compat or e2e only
 ./scripts/run_docker_matrix.sh --compat-only --parallel

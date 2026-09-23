@@ -93,6 +93,7 @@ Live logs: tee long runs under `reports/distro-logs/` when iterating on matrix/p
 1. Per-file complexity **≤ 15**
 1. Docker lint stack clean (shellcheck, shfmt, bash -n, yamllint, actionlint, hadolint, mdformat)
 1. Distro matrix lanes pass (compat + e2e)
+1. SonarQube Cloud quality gate passes on the PR (Automatic Analysis; no token required)
 1. Commit updated `assets/coverage.svg` after coverage-affecting changes
 
 ## Installer & UI Invariants
@@ -159,11 +160,28 @@ Supported CI lanes (Pi-capable OS families; Pi 3/4 class; Pi 5 support varies up
 
 1. `debian:trixie` (canonical coverage gate + Raspberry Pi OS family)
 1. `ubuntu:26.04`
-1. `fedora:44`
+1. `fedora:45`
 1. `rocky:9`
-1. `archlinux:latest`
+1. `archlinux:latest` (builds from a dated `archlinux:base-*` snapshot upgraded by `pacman -Syu`)
 
 Dockerfiles live under `docker/images/tests/`. Matrix orchestration: `scripts/run_docker_matrix.sh`. Adding/removing a lane requires coordinated updates to matrix script, CI workflow, Dockerfiles, and docs.
+
+## Docker Image Pinning (hadolint-enforced)
+
+hadolint runs on every tracked `*Dockerfile*` (`tests/lint.sh` collects them with the `git ls-files "*Dockerfile*"` pathspec) with `failure-threshold: warning`, so these pins are gate-enforced, not advisory. Never satisfy hadolint with ignore directives; update the pins.
+
+1. **apt** (`DL3008`): pin the upstream version and wildcard the Debian/Ubuntu revision, quoted: `'curl=8.14.1*'`. Security updates bump only the revision, so pins survive them; apt still rejects a pin whose upstream version is gone (`E: Version '…' was not found`).
+1. **dnf** (`DL3041`): hadolint rejects wildcards, so pin the real package name and exact upstream version and let the release float: `curl-8.21.0`, `procps-ng-4.0.6` (not the `procps` provide). Fedora/Rocky move upstream versions faster than Debian, so expect these to need refreshing when a lane fails with `No match for argument`.
+1. **Arch** (`DL3007`): `FROM` a dated `archlinux:base-YYYYMMDD.*` snapshot. The image runs `pacman -Syu`, so the `archlinux:latest` lane still tests current rolling Arch; the tag only fixes the starting point.
+1. **USER** (`DL3066`): numeric `USER ${CI_UID}` — the uid `create_ci_user` assigns to `pi`, so `HOME` still resolves to `/home/pi`.
+1. **Lint tools**: hadolint and actionlint are fetched with `ADD --checksum=sha256:…` using the publishers' own release checksums. The in-image hadolint version is what gates CI, so validate Dockerfile changes with `./scripts/build-and-test.sh --lints-only`, not a newer host hadolint.
+
+Refresh pins by installing the package list unpinned in the base image and reading back what resolved, then rebuild the lane:
+
+```bash
+docker run --rm debian:trixie-slim bash -c 'apt-get update -qq && apt-get install -y -qq --no-install-recommends curl git >/dev/null && dpkg-query -W curl git'
+docker run --rm fedora:45 bash -c 'dnf install -y -q curl procps >/dev/null && rpm -q --whatprovides curl procps --qf "%{NAME}-%{VERSION}\n"'
+```
 
 ## Testing Conventions
 
@@ -195,7 +213,7 @@ Dockerfiles live under `docker/images/tests/`. Matrix orchestration: `scripts/ru
 
 1. Script logic: `scripts/*.sh`, `install.sh`, `uninstall.sh`, `lib/*.sh`
 1. Tests: `tests/*.bats`, `tests/e2e/`, `tests/run_suite.sh`, `tests/setup_mocks.sh`, drivers
-1. CI/Docker: `.github/workflows/ci.yml`, `.github/workflows/release.yml`, `docker/images/**`, `scripts/build-and-test.sh`, `scripts/run_docker_matrix.sh`, `scripts/lint-in-docker.sh`
+1. CI/Docker: `.github/workflows/ci.yml`, `.github/workflows/release.yml`, `docker/images/**`, `scripts/build-and-test.sh`, `scripts/run_docker_matrix.sh`, `scripts/lint-in-docker.sh`, `sonar-project.properties`, `.dockerignore`
 1. Docs: `README.md`, `Instructions.md`, `docs/*.md`, **and agent files** (`AGENTS.md`, skills, prompts)
 
 ## PR Readiness Checklist

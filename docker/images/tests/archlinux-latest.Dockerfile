@@ -1,30 +1,52 @@
-FROM archlinux:latest
+# Dated snapshot (DL3007) rather than :latest. `pacman -Syu` below upgrades
+# to current rolling Arch, so the lane still tracks rolling Arch.
+FROM archlinux:base-20260920.0.596911
 
 # Prefer a generated UTF-8 locale for predictable test environments.
 ENV LANG=en_US.UTF-8
 ENV LC_ALL=en_US.UTF-8
 
 RUN pacman -Syu --noconfirm \
-    bash curl sudo libnewt msmtp msmtp-mta s-nail bats git python python-pip cronie \
-    procps ca-certificates bc \
+    bash bats bc ca-certificates cronie curl git libnewt msmtp msmtp-mta \
+    procps python python-pip s-nail sudo \
     && sed -i 's/^#en_US.UTF-8 UTF-8/en_US.UTF-8 UTF-8/' /etc/locale.gen \
-    && grep -qxF 'en_US.UTF-8 UTF-8' /etc/locale.gen || echo 'en_US.UTF-8 UTF-8' >> /etc/locale.gen \
+    && { grep -qxF 'en_US.UTF-8 UTF-8' /etc/locale.gen \
+        || echo 'en_US.UTF-8 UTF-8' >> /etc/locale.gen; } \
     && locale-gen \
-    && pacman -Scc --noconfirm
-
-RUN python -m pip install --break-system-packages --no-cache-dir lizard || \
-    pip install --no-cache-dir lizard
+    && pacman -Scc --noconfirm \
+    && { python -m pip install --break-system-packages --no-cache-dir \
+            --only-binary :all: 'lizard==1.24.0' \
+        || pip install --no-cache-dir \
+            --only-binary :all: 'lizard==1.24.0'; }
 
 COPY docker/images/tests/scripts/common.sh /tmp/common.sh
 ARG CI_UID=1000
 ARG CI_GID=1000
 ENV CI_UID=${CI_UID} CI_GID=${CI_GID}
-RUN bash -c 'source /tmp/common.sh && create_ci_user pi "$CI_UID" "$CI_GID" && prepare_mail_dirs' && rm -f /tmp/common.sh
+RUN bash -c 'source /tmp/common.sh \
+    && create_ci_user pi "$CI_UID" "$CI_GID" \
+    && prepare_mail_dirs' \
+    && rm -f /tmp/common.sh
 
-USER pi
 WORKDIR /home/pi
-COPY --chown=pi:pi . .
-RUN bash -c 'shopt -s nullglob; files=(scripts/*.sh install.sh uninstall.sh tests/*.sh lib/*.sh); \
-    ((${#files[@]})) || exit 1; chmod +x "${files[@]}"'
+# Narrow copy instead of a recursive `COPY . .`: only what a standalone run of
+# the suite needs, keeping build context and any stray local secrets out of the
+# image. Copied as root and left root-owned so the unprivileged test user can
+# read and execute but not modify the tree -- the same principle as the
+# root-owned install tree invariant. The suite writes to /tmp, and matrix runs
+# bind-mount the repo over /home/pi anyway.
+COPY install.sh uninstall.sh VERSION ./
+COPY lib/ ./lib/
+COPY scripts/ ./scripts/
+COPY tests/ ./tests/
+COPY pi-apps/ ./pi-apps/
+RUN bash -c 'shopt -s nullglob; \
+    files=(scripts/*.sh install.sh uninstall.sh tests/*.sh lib/*.sh); \
+    ((${#files[@]})) || exit 1; \
+    chmod +x "${files[@]}"'
+
+# Numeric uid (DL3066): resolvable on the host, and it is the uid
+# create_ci_user assigned to pi, so HOME still resolves to /home/pi.
+USER ${CI_UID}
 
 CMD ["./tests/run_suite.sh"]

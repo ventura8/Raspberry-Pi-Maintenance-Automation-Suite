@@ -1,37 +1,28 @@
-FROM ubuntu:26.04
+FROM fedora:45
 
-ENV DEBIAN_FRONTEND=noninteractive
 # Prefer a generated UTF-8 locale for predictable test environments.
 ENV LANG=en_US.UTF-8
 ENV LC_ALL=en_US.UTF-8
 
-RUN apt-get update && apt-get install -y --no-install-recommends \
-    'bash=5.3*' \
-    'bats=1.13.0*' \
-    'bc=1.07.1*' \
-    'ca-certificates=20260601~26.04.1*' \
-    'cron=3.0pl1*' \
-    'curl=8.18.0*' \
-    'git=1:2.53.0*' \
-    'locales=2.43*' \
-    'mailutils=1:3.20*' \
-    'msmtp=1.8.32*' \
-    'procps=2:4.0.4*' \
-    'python3-pip=25.1.1+dfsg*' \
-    'python3=3.14.3*' \
-    'ssmtp=2.65*' \
-    'sudo=1.9.17p2*' \
-    'whiptail=0.52.25*' \
-    && sed -i 's/^# *en_US.UTF-8 UTF-8/en_US.UTF-8 UTF-8/' /etc/locale.gen \
-    && { grep -qxF 'en_US.UTF-8 UTF-8' /etc/locale.gen \
-        || echo 'en_US.UTF-8 UTF-8' >> /etc/locale.gen; } \
-    && locale-gen \
-    && update-locale LANG=en_US.UTF-8 LC_ALL=en_US.UTF-8 \
-    && rm -rf /var/lib/apt/lists/* \
-    && { python3 -m pip install --break-system-packages --no-cache-dir \
-            --only-binary :all: 'lizard==1.24.0' \
-        || python3 -m pip install --no-cache-dir \
-            --only-binary :all: 'lizard==1.24.0'; }
+RUN dnf install -y \
+    bash-5.3.15 \
+    bats-1.14.0 \
+    bc-1.08.2 \
+    ca-certificates-2025.2.80_v9.0.304 \
+    cronie-1.7.2 \
+    curl-8.21.0 \
+    git-2.55.0 \
+    glibc-langpack-en-2.44 \
+    msmtp-1.8.34 \
+    newt-0.52.25 \
+    procps-ng-4.0.6 \
+    python3-3.15.0~rc2 \
+    python3-pip-26.1.2 \
+    s-nail-14.9.25 \
+    sudo-1.9.17 \
+    && dnf clean all \
+    && python3 -m pip install --no-cache-dir \
+        --only-binary :all: 'lizard==1.24.0'
 
 COPY docker/images/tests/scripts/common.sh /tmp/common.sh
 ARG CI_UID=1000

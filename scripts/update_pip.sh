@@ -12,14 +12,14 @@ export TERM=dumb
 export NO_COLOR=1
 
 _RPI_HERE="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-if [ -f "$_RPI_HERE/lib/os_pkg.sh" ]; then
+if [[ -f "$_RPI_HERE/lib/os_pkg.sh" ]]; then
     # shellcheck source=../lib/os_pkg.sh
     source "$_RPI_HERE/lib/os_pkg.sh"
     # shellcheck source=../lib/mail_send.sh
     source "$_RPI_HERE/lib/mail_send.sh"
     # shellcheck source=../lib/ui_msg.sh
     source "$_RPI_HERE/lib/ui_msg.sh"
-elif [ -f "$_RPI_HERE/../lib/os_pkg.sh" ]; then
+elif [[ -f "$_RPI_HERE/../lib/os_pkg.sh" ]]; then
     # shellcheck source=../lib/os_pkg.sh
     source "$_RPI_HERE/../lib/os_pkg.sh"
     # shellcheck source=../lib/mail_send.sh
@@ -48,7 +48,7 @@ main() {
         # Extract package names while ignoring the header and any warning noise
         OUTDATED_PACKAGES=$(sudo -H pip3 list --outdated --break-system-packages 2> /dev/null | awk 'NR>2 {print $1}')
 
-        if [ -z "$OUTDATED_PACKAGES" ]; then
+        if [[ -z "$OUTDATED_PACKAGES" ]]; then
             _pi_echo "All pip3 packages are up-to-date."
         else
             echo "Upgrading: $OUTDATED_PACKAGES"

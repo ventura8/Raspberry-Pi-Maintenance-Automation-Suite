@@ -53,7 +53,8 @@ The project enforces a multi-layer lint gate:
 1. `bash -n` syntax validation for all shell scripts
 1. `yamllint` for YAML and workflow structure
 1. `actionlint` for GitHub Actions validation
-1. `hadolint` for Dockerfile best practices
+1. `hadolint` for Dockerfile best practices, run on every tracked `*Dockerfile*` with `failure-threshold: warning`; apt/dnf packages are version-pinned to satisfy it (see AGENTS.md "Docker Image Pinning")
+1. SonarQube Cloud static analysis (shell, Docker, GitHub Actions and secret detection) via Automatic Analysis on every push and PR
 1. `mdformat --check` for Markdown formatting checks
 1. 140-character maximum line length enforced across shell, YAML, and Dockerfiles
 

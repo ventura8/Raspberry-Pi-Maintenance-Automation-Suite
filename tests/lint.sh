@@ -10,7 +10,7 @@ warn() {
 }
 
 fail() {
-    echo "[lint][error] $*"
+    echo "[lint][error] $*" >&2
     return 1
 }
 
@@ -69,7 +69,10 @@ mapfile -t workflow_files < <(
     collect_files ".github/workflows/*.yml"
     collect_files ".github/workflows/*.yaml"
 )
-mapfile -t docker_files < <(collect_files "Dockerfile*")
+# Git pathspec globs span directories: this matches docker/Dockerfile.test and
+# docker/images/**/*.Dockerfile. The previous "Dockerfile*" matched nothing,
+# so hadolint silently never ran.
+mapfile -t docker_files < <(collect_files "*Dockerfile*")
 
 if [[ ${#shell_files[@]} -eq 0 ]]; then
     warn "No shell files found to lint."

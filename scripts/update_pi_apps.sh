@@ -8,14 +8,14 @@ RECIPIENT_EMAIL="your_email@gmail.com"
 # ---------------------
 
 _RPI_HERE="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-if [ -f "$_RPI_HERE/lib/os_pkg.sh" ]; then
+if [[ -f "$_RPI_HERE/lib/os_pkg.sh" ]]; then
     # shellcheck source=../lib/os_pkg.sh
     source "$_RPI_HERE/lib/os_pkg.sh"
     # shellcheck source=../lib/mail_send.sh
     source "$_RPI_HERE/lib/mail_send.sh"
     # shellcheck source=../lib/ui_msg.sh
     source "$_RPI_HERE/lib/ui_msg.sh"
-elif [ -f "$_RPI_HERE/../lib/os_pkg.sh" ]; then
+elif [[ -f "$_RPI_HERE/../lib/os_pkg.sh" ]]; then
     # shellcheck source=../lib/os_pkg.sh
     source "$_RPI_HERE/../lib/os_pkg.sh"
     # shellcheck source=../lib/mail_send.sh
@@ -40,7 +40,7 @@ main() {
 
         UPDATER_PATH="$HOME/pi-apps/updater"
 
-        if [ -f "$UPDATER_PATH" ]; then
+        if [[ -f "$UPDATER_PATH" ]]; then
             # We use 'cli-yes' which performs a full update.
             # We pipe through sed to strip:
             # 1. ANSI color codes (e.g., [96m)

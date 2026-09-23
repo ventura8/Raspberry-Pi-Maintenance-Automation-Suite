@@ -36,11 +36,15 @@ create_ci_user() {
 }
 
 prepare_mail_dirs() {
+    local owner="${1:-pi}"
     mkdir -p /etc/ssmtp
-    touch /etc/ssmtp/ssmtp.conf /etc/ssmtp/revaliases
-    chmod 666 /etc/ssmtp/ssmtp.conf /etc/ssmtp/revaliases
-    touch /etc/msmtprc
-    chmod 666 /etc/msmtprc
+    touch /etc/ssmtp/ssmtp.conf /etc/ssmtp/revaliases /etc/msmtprc
+    # Owned by the test user rather than world-writable: the images bake
+    # CI_UID/CI_GID to match the host user the container runs as.
+    # Numeric primary gid: CI_GID may already belong to a group not named "pi".
+    chown "$owner:$(id -g "$owner")" \
+        /etc/ssmtp/ssmtp.conf /etc/ssmtp/revaliases /etc/msmtprc
+    chmod 660 /etc/ssmtp/ssmtp.conf /etc/ssmtp/revaliases /etc/msmtprc
 }
 
 install_kcov_from_source() {

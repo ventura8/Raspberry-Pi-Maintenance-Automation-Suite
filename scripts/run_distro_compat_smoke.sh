@@ -22,7 +22,7 @@ _smoke_fail() {
 _smoke_cleanup() {
     # Best-effort: remove install tree + mail confs if a mid-run assertion fails.
     matrix_cleanup_mail_conf 2> /dev/null || true
-    if [ -d "${INSTALL_DIR:-}" ]; then
+    if [[ -d "${INSTALL_DIR:-}" ]]; then
         MATRIX_ALLOW_RM_INSTALL_DIR=1 matrix_run_uninstall 2> /dev/null || rm -rf "${INSTALL_DIR:-}" 2> /dev/null || true
     fi
 }

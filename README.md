@@ -2,7 +2,7 @@
   <img src="assets/project_logo.png" alt="Raspberry Pi Maintenance Automation Suite Logo">
 </p>
 
-[![Script](https://img.shields.io/badge/Script-Shell-blue.svg)](https://github.com/ventura8/Synology-SRM-Bing-Wallpaper-Auto-update) ![Coverage](assets/coverage.svg)
+[![Script](https://img.shields.io/badge/Script-Shell-blue.svg)](https://github.com/ventura8/Synology-SRM-Bing-Wallpaper-Auto-update) ![Coverage](assets/coverage.svg) [![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=ventura8_Raspberry-Pi-Maintenance-Automation-Suite&metric=alert_status)](https://sonarcloud.io/summary/new_code?id=ventura8_Raspberry-Pi-Maintenance-Automation-Suite)
 
 # **Raspberry Pi Maintenance & Automation Suite**
 
@@ -453,7 +453,7 @@ This repository includes workspace-level Copilot customization for implementatio
 
 For release-ready GitHub description text, see:
 
-- `docs/releases/v1.1.5.md` — current example for this release (prepare with the `prepare-release` skill)
+- `docs/releases/v1.1.6.md` — current example for this release (prepare with the `prepare-release` skill)
 - Future releases: `docs/releases/vX.Y.Z.md` must match the pushed tag / root `VERSION` exactly
 
 Pushing tag `vX.Y.Z` (matching root `VERSION`, after merge to the default branch) runs

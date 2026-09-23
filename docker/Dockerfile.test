@@ -1,5 +1,6 @@
 # Backward-compatible test image entrypoint. Prefer matrix Dockerfiles under
-# docker/images/tests/ for CI. This file mirrors the canonical debian:trixie lane.
+# docker/images/tests/ for CI. This file mirrors the canonical
+# debian:trixie lane.
 FROM debian:trixie-slim
 
 ARG INSTALL_KCOV=1
@@ -7,22 +8,66 @@ ENV DEBIAN_FRONTEND=noninteractive
 ENV LANG=C.UTF-8
 
 RUN apt-get update && apt-get install -y --no-install-recommends \
-    bash curl sudo msmtp ssmtp mailutils whiptail bats git python3 python3-pip \
-    procps cmake make g++ pkg-config libcurl4-openssl-dev libelf-dev libdw-dev \
-    binutils-dev libiberty-dev zlib1g-dev bc ca-certificates \
-    && rm -rf /var/lib/apt/lists/*
-
-RUN python3 -m pip install --break-system-packages --no-cache-dir lizard
+    'bash=5.2.37*' \
+    'bats=1.11.1*' \
+    'bc=1.07.1*' \
+    'binutils-dev=2.44*' \
+    'ca-certificates=20250419*' \
+    'cmake=3.31.6*' \
+    'curl=8.14.1*' \
+    'g++=4:14.2.0*' \
+    'git=1:2.47.3*' \
+    'libcurl4-openssl-dev=8.14.1*' \
+    'libdw-dev=0.192*' \
+    'libelf-dev=0.192*' \
+    'libiberty-dev=20250315*' \
+    'mailutils=1:3.19*' \
+    'make=4.4.1*' \
+    'msmtp=1.8.28*' \
+    'pkg-config=1.8.1*' \
+    'procps=2:4.0.4*' \
+    'python3-pip=25.1.1+dfsg*' \
+    'python3=3.13.5*' \
+    'ssmtp=2.64*' \
+    'sudo=1.9.16p2*' \
+    'whiptail=0.52.25*' \
+    'zlib1g-dev=1:1.3.dfsg+really1.3.1*' \
+    && rm -rf /var/lib/apt/lists/* \
+    && python3 -m pip install --break-system-packages --no-cache-dir \
+        --only-binary :all: 'lizard==1.24.0'
 
 COPY docker/images/tests/scripts/common.sh /tmp/common.sh
-RUN bash -c 'source /tmp/common.sh && create_ci_user pi && prepare_mail_dirs' \
-    && if [ "$INSTALL_KCOV" = "1" ]; then bash -c 'source /tmp/common.sh && install_kcov_from_source v43'; fi \
+ARG CI_UID=1000
+ARG CI_GID=1000
+ENV CI_UID=${CI_UID} CI_GID=${CI_GID}
+RUN bash -c 'source /tmp/common.sh \
+    && create_ci_user pi "$CI_UID" "$CI_GID" \
+    && prepare_mail_dirs' \
+    && if [ "$INSTALL_KCOV" = "1" ]; then \
+        bash -c 'source /tmp/common.sh \
+            && install_kcov_from_source v43'; \
+    fi \
     && rm -f /tmp/common.sh
 
-USER pi
 WORKDIR /home/pi
-COPY --chown=pi:pi . .
-RUN bash -c 'shopt -s nullglob; files=(scripts/*.sh install.sh uninstall.sh tests/*.sh lib/*.sh); \
-    ((${#files[@]})) || exit 1; chmod +x "${files[@]}"'
+# Narrow copy instead of a recursive `COPY . .`: only what a standalone run of
+# the suite needs, keeping build context and any stray local secrets out of the
+# image. Copied as root and left root-owned so the unprivileged test user can
+# read and execute but not modify the tree -- the same principle as the
+# root-owned install tree invariant. The suite writes to /tmp, and matrix runs
+# bind-mount the repo over /home/pi anyway.
+COPY install.sh uninstall.sh VERSION ./
+COPY lib/ ./lib/
+COPY scripts/ ./scripts/
+COPY tests/ ./tests/
+COPY pi-apps/ ./pi-apps/
+RUN bash -c 'shopt -s nullglob; \
+    files=(scripts/*.sh install.sh uninstall.sh tests/*.sh lib/*.sh); \
+    ((${#files[@]})) || exit 1; \
+    chmod +x "${files[@]}"'
+
+# Numeric uid (DL3066): resolvable on the host, and it is the uid
+# create_ci_user assigned to pi, so HOME still resolves to /home/pi.
+USER ${CI_UID}
 
 CMD ["./tests/run_suite.sh"]

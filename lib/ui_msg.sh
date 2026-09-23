@@ -4,6 +4,7 @@
 
 _pi_gettext() {
     printf '%s' "$1"
+    return
 }
 
 _pi_gettextf() {
@@ -16,17 +17,21 @@ _pi_gettextf() {
                 suffix=${format#*%s}
                 format="${prefix}${argument}${suffix}"
                 ;;
+            *) ;;
         esac
     done
     printf '%s' "$format"
+    return
 }
 
 _pi_echo() {
     printf '%s\n' "$1"
+    return
 }
 
 _pi_echof() {
     local format
     format=$(_pi_gettextf "$@")
     printf '%s\n' "$format"
+    return
 }

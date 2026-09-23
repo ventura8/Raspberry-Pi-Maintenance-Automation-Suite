@@ -4,6 +4,7 @@
 
 matrix_cleanup_mail_conf() {
     rm -f "${SSMTP_CONF:-}" "${REVALIASES:-}" "${MSMTP_CONF:-}" 2> /dev/null || true
+    return
 }
 
 matrix_prepare_install_env() {
@@ -11,7 +12,7 @@ matrix_prepare_install_env() {
     export INSTALL_FORCE_TEXT_UI=1
     export INSTALL_DIR="${INSTALL_DIR:?INSTALL_DIR must be set}"
 
-    if [ "${MATRIX_ALLOW_RM_INSTALL_DIR:-0}" != "1" ]; then
+    if [[ "${MATRIX_ALLOW_RM_INSTALL_DIR:-0}" != "1" ]]; then
         echo "ERROR: MATRIX_ALLOW_RM_INSTALL_DIR=1 required before removing INSTALL_DIR" >&2
         return 1
     fi
@@ -32,6 +33,7 @@ matrix_prepare_install_env() {
     : > "$MSMTP_CONF"
     chmod 600 "$SSMTP_CONF" "$REVALIASES" "$MSMTP_CONF"
     rm -rf "$INSTALL_DIR"
+    return
 }
 
 # Deterministic non-interactive fresh install (INSTALL_MATRIX_FRESH contract).
@@ -53,38 +55,39 @@ matrix_run_text_fresh_install() {
 
 matrix_assert_installed() {
     local expected actual
-    [ -d "$INSTALL_DIR" ] || {
+    [[ -d "$INSTALL_DIR" ]] || {
         echo "ERROR: INSTALL_DIR missing: $INSTALL_DIR" >&2
         return 1
     }
-    [ -f "$INSTALL_DIR/update_pi_os.sh" ] || {
+    [[ -f "$INSTALL_DIR/update_pi_os.sh" ]] || {
         echo "ERROR: update_pi_os.sh missing after install" >&2
         return 1
     }
-    [ -f "$INSTALL_DIR/update_self.sh" ] || {
+    [[ -f "$INSTALL_DIR/update_self.sh" ]] || {
         echo "ERROR: update_self.sh missing after install" >&2
         return 1
     }
-    [ -f "$INSTALL_DIR/lib/os_pkg.sh" ] || {
+    [[ -f "$INSTALL_DIR/lib/os_pkg.sh" ]] || {
         echo "ERROR: lib/os_pkg.sh missing after install" >&2
         return 1
     }
-    [ -f "$INSTALL_DIR/lib/mail_send.sh" ] || {
+    [[ -f "$INSTALL_DIR/lib/mail_send.sh" ]] || {
         echo "ERROR: lib/mail_send.sh missing after install" >&2
         return 1
     }
-    [ -f "$INSTALL_DIR/.version" ] || {
+    [[ -f "$INSTALL_DIR/.version" ]] || {
         echo "ERROR: .version missing after install" >&2
         return 1
     }
-    if [ -f ./VERSION ]; then
+    if [[ -f ./VERSION ]]; then
         expected=$(tr -d '[:space:]' < ./VERSION)
         actual=$(tr -d '[:space:]' < "$INSTALL_DIR/.version")
-        if [ "$expected" != "$actual" ]; then
+        if [[ "$expected" != "$actual" ]]; then
             echo "ERROR: .version ($actual) does not match VERSION ($expected)" >&2
             return 1
         fi
     fi
+    return
 }
 
 matrix_run_uninstall() {
@@ -93,10 +96,11 @@ matrix_run_uninstall() {
         matrix_cleanup_mail_conf
         return 1
     fi
-    if [ -d "$INSTALL_DIR" ]; then
+    if [[ -d "$INSTALL_DIR" ]]; then
         echo "ERROR: INSTALL_DIR still present after uninstall: $INSTALL_DIR" >&2
         matrix_cleanup_mail_conf
         return 1
     fi
     matrix_cleanup_mail_conf
+    return
 }

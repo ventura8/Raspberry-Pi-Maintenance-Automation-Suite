@@ -3,7 +3,7 @@
 # shellcheck shell=bash
 
 _UI_MSG="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/ui_msg.sh"
-if [ -f "$_UI_MSG" ]; then
+if [[ -f "$_UI_MSG" ]]; then
     # shellcheck source=lib/ui_msg.sh
     source "$_UI_MSG"
 elif ! declare -F _pi_echo > /dev/null 2>&1; then
@@ -18,15 +18,18 @@ elif ! declare -F _pi_echo > /dev/null 2>&1; then
                     suffix=${format#*%s}
                     format="${prefix}${argument}${suffix}"
                     ;;
+                *) ;;
             esac
         done
         printf '%s' "$format"
+        return
     }
     _pi_echo() { printf '%s\n' "$1"; }
     _pi_echof() {
         local format
         format=$(_pi_gettextf "$@")
         printf '%s\n' "$format"
+        return
     }
 fi
 unset _UI_MSG
@@ -118,6 +121,7 @@ _msmtp_resolve_default_field() {
             exit 1
         }
     '
+    return
 }
 
 # Resolve field $1 from MSMTP_CONF, falling back to non-interactive `sudo -n cat` when the file
@@ -129,23 +133,25 @@ _msmtp_resolve_default_field() {
 # callers pipe their own `sudo cat` through _msmtp_resolve_default_field directly instead, since
 # they may need install.sh's own sudo semantics (interactive install vs. cron).
 _msmtp_default_field() {
-    [ -f "$MSMTP_CONF" ] || return 1
+    [[ -f "$MSMTP_CONF" ]] || return 1
     local result
-    result=$(_msmtp_resolve_default_field "$1" < "$MSMTP_CONF") && [ -n "$result" ] && {
+    result=$(_msmtp_resolve_default_field "$1" < "$MSMTP_CONF") && [[ -n "$result" ]] && {
         printf '%s' "$result"
         return 0
     }
     command -v sudo > /dev/null 2>&1 || return 1
     local content
     content=$(sudo -n cat "$MSMTP_CONF" 2> /dev/null) || return 1
-    [ -n "$content" ] || return 1
+    [[ -n "$content" ]] || return 1
     printf '%s' "$content" | _msmtp_resolve_default_field "$1"
+    return
 }
 
 # True if MSMTP_CONF defines a usable "default" account (after inheritance) for
 # `msmtp --account=default`.
 _msmtp_has_default_account() {
     _msmtp_default_field host > /dev/null 2>&1
+    return
 }
 
 mail_sender_cmd() {
@@ -171,18 +177,18 @@ mail_read_recipient_from_config() {
     # Prefer msmtp: after migration the legacy ssmtp file is intentionally left in place, so
     # reading ssmtp first would report a stale address while send_mail uses the msmtp account.
     recipient=$(_msmtp_default_field user 2> /dev/null)
-    [ -n "$recipient" ] && {
+    [[ -n "$recipient" ]] && {
         echo "$recipient"
         return 0
     }
-    if [ -f "$SSMTP_CONF" ]; then
+    if [[ -f "$SSMTP_CONF" ]]; then
         recipient=$(grep "^root=" "$SSMTP_CONF" 2> /dev/null | cut -d= -f2)
-        [ -n "$recipient" ] && {
+        [[ -n "$recipient" ]] && {
             echo "$recipient"
             return 0
         }
         recipient=$(grep "^AuthUser=" "$SSMTP_CONF" 2> /dev/null | cut -d= -f2)
-        [ -n "$recipient" ] && {
+        [[ -n "$recipient" ]] && {
             echo "$recipient"
             return 0
         }
@@ -197,7 +203,7 @@ mail_read_recipient_from_config() {
 # stalls send_mail. Any error here leaves the existing ssmtp config untouched (migration does not
 # rewrite ssmtp.conf; TLS_CA_File hardening only applies to configs written fresh by this suite).
 migrate_mail_config_to_msmtp() {
-    [ -f "$SSMTP_CONF" ] || return 0
+    [[ -f "$SSMTP_CONF" ]] || return 0
     # Only skip migration when MSMTP_CONF already defines a usable "default" account (what
     # send_mail's `msmtp --account=default` needs) — an empty or partial file (e.g. a
     # pre-created/touched placeholder) must not block migrating good ssmtp credentials.
@@ -208,16 +214,16 @@ migrate_mail_config_to_msmtp() {
     email=$(grep "^AuthUser=" "$SSMTP_CONF" 2> /dev/null | cut -d= -f2)
     password=$(grep "^AuthPass=" "$SSMTP_CONF" 2> /dev/null | cut -d= -f2-)
     # ssmtp.conf is often mode 640 root:mail — non-root/cron may need a passwordless sudo read.
-    if { [ -z "$email" ] || [ -z "$password" ]; } && command -v sudo > /dev/null 2>&1; then
+    if { [[ -z "$email" ]] || [[ -z "$password" ]]; } && command -v sudo > /dev/null 2>&1; then
         conf_text=$(sudo -n cat "$SSMTP_CONF" 2> /dev/null) || conf_text=""
-        if [ -n "$conf_text" ]; then
-            [ -n "$email" ] || email=$(printf '%s\n' "$conf_text" | grep "^AuthUser=" | cut -d= -f2)
-            [ -n "$password" ] || password=$(printf '%s\n' "$conf_text" | grep "^AuthPass=" | cut -d= -f2-)
+        if [[ -n "$conf_text" ]]; then
+            [[ -n "$email" ]] || email=$(printf '%s\n' "$conf_text" | grep "^AuthUser=" | cut -d= -f2)
+            [[ -n "$password" ]] || password=$(printf '%s\n' "$conf_text" | grep "^AuthPass=" | cut -d= -f2-)
         fi
     fi
-    [ -n "$email" ] && [ -n "$password" ] || return 0
+    [[ -n "$email" ]] && [[ -n "$password" ]] || return 0
     # write_mail_config_msmtp needs elevated writes; never prompt for a sudo password from cron.
-    if [ "$(id -u)" -ne 0 ]; then
+    if [[ "$(id -u)" -ne 0 ]]; then
         command -v sudo > /dev/null 2>&1 || return 0
         sudo -n true 2> /dev/null || return 0
     fi
@@ -228,15 +234,15 @@ migrate_mail_config_to_msmtp() {
     # A backup already existing means a prior migration already used its one shot here — proceeding
     # would silently overwrite MSMTP_CONF's current (unbacked-up) content with no way to recover it,
     # so abort instead of replacing it further.
-    if [ -s "$MSMTP_CONF" ]; then
-        [ -e "${MSMTP_CONF}.pre-migration" ] && return 0
-        if [ "$(id -u)" -eq 0 ]; then
+    if [[ -s "$MSMTP_CONF" ]]; then
+        [[ -e "${MSMTP_CONF}.pre-migration" ]] && return 0
+        if [[ "$(id -u)" -eq 0 ]]; then
             cp -p "$MSMTP_CONF" "${MSMTP_CONF}.pre-migration" 2> /dev/null || return 0
         else
             sudo -n cp -p "$MSMTP_CONF" "${MSMTP_CONF}.pre-migration" 2> /dev/null || return 0
         fi
     fi
-    if [ -n "$conf_text" ]; then
+    if [[ -n "$conf_text" ]]; then
         hub=$(printf '%s\n' "$conf_text" | grep "^mailhub=" | cut -d= -f2)
         usestarttls=$(printf '%s\n' "$conf_text" | grep "^UseSTARTTLS=" | cut -d= -f2)
         usetls=$(printf '%s\n' "$conf_text" | grep "^UseTLS=" | cut -d= -f2)
@@ -248,7 +254,7 @@ migrate_mail_config_to_msmtp() {
     host="${hub%%:*}"
     port="${hub##*:}"
     # ssmtp mailhub is host[:port]; a bare host is valid and defaults to port 25.
-    if [ -n "$hub" ] && [ "$host" = "$port" ]; then
+    if [[ -n "$hub" ]] && [[ "$host" = "$port" ]]; then
         port=25
     fi
     local usestarttls_lc usetls_lc
@@ -260,20 +266,20 @@ migrate_mail_config_to_msmtp() {
     starttls="off"
     usestarttls_lc=$(printf '%s' "$usestarttls" | tr '[:upper:]' '[:lower:]')
     usetls_lc=$(printf '%s' "$usetls" | tr '[:upper:]' '[:lower:]')
-    if [ "$usetls_lc" = "yes" ]; then
+    if [[ "$usetls_lc" = "yes" ]]; then
         tls="on"
     fi
-    if [ "$usestarttls_lc" = "yes" ]; then
+    if [[ "$usestarttls_lc" = "yes" ]]; then
         tls="on"
         starttls="on"
     fi
     # Port 465 is implicit TLS (SMTPS), not STARTTLS: TLS is active from connect.
-    if [ "$port" = "465" ]; then
+    if [[ "$port" = "465" ]]; then
         tls="on"
         starttls="off"
     fi
-    if [ -n "$host" ] && [[ "$port" =~ ^[0-9]+$ ]] &&
-        [ "$port" -ge 1 ] && [ "$port" -le 65535 ]; then
+    if [[ -n "$host" ]] && [[ "$port" =~ ^[0-9]+$ ]] &&
+        [[ "$port" -ge 1 ]] && [[ "$port" -le 65535 ]]; then
         write_mail_config_msmtp "$email" "$password" "$host" "$port" "$starttls" "$tls"
     else
         # mailhub was missing/malformed (empty host, or a non-numeric/out-of-range port): fall
@@ -281,6 +287,7 @@ migrate_mail_config_to_msmtp() {
         # mode was parsed for the discarded host/port.
         write_mail_config_msmtp "$email" "$password" "smtp.gmail.com" "587" "on" "on"
     fi
+    return
 }
 
 # send_mail <to> <subject> <from_name> <body_file_or_->
@@ -295,13 +302,13 @@ send_mail() {
         return 1
     }
 
-    if [ "$body_src" = "-" ]; then
+    if [[ "$body_src" = "-" ]]; then
         body=$(cat)
     else
         body=$(cat "$body_src")
     fi
 
-    if [ "$sender" = "ssmtp" ]; then
+    if [[ "$sender" = "ssmtp" ]]; then
         ssmtp "$to" << EOF
 To: $to
 Subject: $subject
@@ -318,7 +325,7 @@ EOF
     # msmtp: system conf is often mode 640 root:mail. User-crontab senders (e.g. update_pi_apps)
     # cannot read it directly; elevate with sudo -n to match _msmtp_has_default_account detection.
     local -a msmtp_cmd=(msmtp)
-    if [ ! -r "$MSMTP_CONF" ] && [ "$(id -u)" -ne 0 ]; then
+    if [[ ! -r "$MSMTP_CONF" ]] && [[ "$(id -u)" -ne 0 ]]; then
         command -v sudo > /dev/null 2>&1 || return 1
         sudo -n true 2> /dev/null || return 1
         msmtp_cmd=(sudo -n msmtp)
@@ -333,6 +340,7 @@ Content-Transfer-Encoding: 8bit
 
 $body
 EOF
+    return
 }
 
 write_mail_config_ssmtp() {
@@ -366,6 +374,7 @@ EOF
     sudo chmod 600 "$REVALIASES"
     echo "root:$email:$hub" | sudo tee "$REVALIASES" > /dev/null
     sudo chmod 640 "$REVALIASES"
+    return
 }
 
 # Resolve a readable CA bundle for the active OS family. Debian/Ubuntu/Arch ship
@@ -375,19 +384,20 @@ _mail_tls_ca_bundle() {
     if declare -F detect_os_family > /dev/null 2>&1; then
         family=$(detect_os_family 2> /dev/null) || family=""
     fi
-    if [ "$family" = "redhat" ] && [ -r /etc/pki/tls/certs/ca-bundle.crt ]; then
+    if [[ "$family" = "redhat" ]] && [[ -r /etc/pki/tls/certs/ca-bundle.crt ]]; then
         echo /etc/pki/tls/certs/ca-bundle.crt
         return 0
     fi
-    if [ -r /etc/ssl/certs/ca-certificates.crt ]; then
+    if [[ -r /etc/ssl/certs/ca-certificates.crt ]]; then
         echo /etc/ssl/certs/ca-certificates.crt
         return 0
     fi
-    if [ -r /etc/pki/tls/certs/ca-bundle.crt ]; then
+    if [[ -r /etc/pki/tls/certs/ca-bundle.crt ]]; then
         echo /etc/pki/tls/certs/ca-bundle.crt
         return 0
     fi
     echo /etc/ssl/certs/ca-certificates.crt
+    return
 }
 
 write_mail_config_msmtp() {
@@ -414,6 +424,7 @@ password       $password
 EOF
     sudo chown root:mail "$MSMTP_CONF" 2> /dev/null || sudo chown root:root "$MSMTP_CONF"
     sudo chmod 640 "$MSMTP_CONF"
+    return
 }
 
 # Write mailer config for the active OS family. msmtp is preferred everywhere (it verifies the
@@ -428,4 +439,5 @@ write_mail_config() {
         return $?
     fi
     write_mail_config_ssmtp "$email" "$password"
+    return
 }

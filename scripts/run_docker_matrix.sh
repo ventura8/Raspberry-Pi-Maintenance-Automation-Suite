@@ -24,7 +24,7 @@ CLEANUP_RUNNING=0
 DISTROS=(
     "debian:trixie"
     "ubuntu:26.04"
-    "fedora:44"
+    "fedora:45"
     "rocky:9"
     "archlinux:latest"
 )
@@ -78,7 +78,7 @@ while [[ $# -gt 0 ]]; do
             exit 0
             ;;
         --distro)
-            if [ $# -lt 2 ]; then
+            if [[ $# -lt 2 ]]; then
                 echo "ERROR: --distro requires a value" >&2
                 usage >&2
                 exit 1
@@ -111,7 +111,7 @@ run_in_distro() {
     host_uid="$(id -u)"
     host_gid="$(id -g)"
 
-    if [ ! -f "$dockerfile" ]; then
+    if [[ ! -f "$dockerfile" ]]; then
         echo "Missing Dockerfile for $image ($dockerfile)" >&2
         return 1
     fi
@@ -124,7 +124,7 @@ run_in_distro() {
             # Prefer full gate when cobertura exists after suite
             container_cmd='set -euo pipefail; export COVERAGE=1 COVERAGE_OUTPUT=/home/pi/coverage; '
             container_cmd+='mkdir -p /home/pi/coverage; ./tests/run_suite.sh; '
-            container_cmd+='if [ -f coverage/cobertura.xml ]; then '
+            container_cmd+='if [[ -f coverage/cobertura.xml ]]; then '
             container_cmd+='python3 tests/transform_coverage.py coverage/cobertura.xml '
             container_cmd+='--fail-under 90 --fail-under-per-file 90 '
             container_cmd+='--max-complexity-overall 15 --max-complexity-per-file 15 '
@@ -205,7 +205,7 @@ run_coverage_gate() {
     return "${PIPESTATUS[0]}"
 }
 
-if [ "$RUN_COVERAGE_GATE" -eq 1 ]; then
+if [[ "$RUN_COVERAGE_GATE" -eq 1 ]]; then
     run_coverage_gate
     status=$?
     CLEANUP_RUNNING=1
@@ -213,19 +213,19 @@ if [ "$RUN_COVERAGE_GATE" -eq 1 ]; then
 fi
 
 targets=("${DISTROS[@]}")
-if [ "${#SELECTED_DISTROS[@]}" -gt 0 ]; then
+if [[ "${#SELECTED_DISTROS[@]}" -gt 0 ]]; then
     targets=("${SELECTED_DISTROS[@]}")
 fi
 
 mode="full"
-if [ "$COMPAT_ONLY" -eq 1 ]; then
+if [[ "$COMPAT_ONLY" -eq 1 ]]; then
     mode="compat"
-elif [ "$E2E_ONLY" -eq 1 ]; then
+elif [[ "$E2E_ONLY" -eq 1 ]]; then
     mode="e2e"
 fi
 
 failures=0
-if [ "$PARALLEL" -eq 1 ] && [ "${#targets[@]}" -gt 1 ]; then
+if [[ "$PARALLEL" -eq 1 ]] && [ "${#targets[@]}" -gt 1 ]; then
     for image in "${targets[@]}"; do
         run_in_distro "$image" "$mode" &
         ACTIVE_PIDS+=("$!")
@@ -244,7 +244,7 @@ else
 fi
 
 CLEANUP_RUNNING=1
-if [ "$failures" -gt 0 ]; then
+if [[ "$failures" -gt 0 ]]; then
     echo "$failures distro lane(s) failed." >&2
     exit 1
 fi
