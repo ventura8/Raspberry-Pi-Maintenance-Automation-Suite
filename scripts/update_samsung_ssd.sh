@@ -264,7 +264,9 @@ update_via_official_iso() {
     iso_path=$(mktemp /tmp/samsung_fw.XXXXXX.iso) || return 1
     chmod 600 "$iso_path"
 
-    if ! curl -L -s -o "$iso_path" "$FOUND_ISO_URL"; then
+    # HTTPS-only, including redirects: this ISO is extracted and run via sudo.
+    if ! curl -L -s --proto '=https' --proto-redir '=https' \
+        -o "$iso_path" "$FOUND_ISO_URL"; then
         _pi_echo "Failed to download firmware ISO."
         rm -f "$iso_path"
         return 1

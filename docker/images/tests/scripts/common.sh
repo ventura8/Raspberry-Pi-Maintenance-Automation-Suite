@@ -41,7 +41,9 @@ prepare_mail_dirs() {
     touch /etc/ssmtp/ssmtp.conf /etc/ssmtp/revaliases /etc/msmtprc
     # Owned by the test user rather than world-writable: the images bake
     # CI_UID/CI_GID to match the host user the container runs as.
-    chown "$owner:$owner" /etc/ssmtp/ssmtp.conf /etc/ssmtp/revaliases /etc/msmtprc
+    # Numeric primary gid: CI_GID may already belong to a group not named "pi".
+    chown "$owner:$(id -g "$owner")" \
+        /etc/ssmtp/ssmtp.conf /etc/ssmtp/revaliases /etc/msmtprc
     chmod 660 /etc/ssmtp/ssmtp.conf /etc/ssmtp/revaliases /etc/msmtprc
 }
 
