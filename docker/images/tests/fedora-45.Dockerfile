@@ -5,9 +5,21 @@ ENV LANG=en_US.UTF-8
 ENV LC_ALL=en_US.UTF-8
 
 RUN dnf install -y \
-    bash curl sudo newt msmtp s-nail bats git python3 python3-pip cronie \
-    glibc-langpack-en \
-    procps ca-certificates bc \
+    bash-5.3.15 \
+    bats-1.14.0 \
+    bc-1.08.2 \
+    ca-certificates-2025.2.80_v9.0.304 \
+    cronie-1.7.2 \
+    curl-8.21.0 \
+    git-2.55.0 \
+    glibc-langpack-en-2.44 \
+    msmtp-1.8.34 \
+    newt-0.52.25 \
+    procps-ng-4.0.6 \
+    python3-3.15.0~rc2 \
+    python3-pip-26.1.2 \
+    s-nail-14.9.25 \
+    sudo-1.9.17 \
     && dnf clean all \
     && python3 -m pip install --no-cache-dir \
         --only-binary :all: 'lizard==1.24.0'
@@ -38,6 +50,8 @@ RUN bash -c 'shopt -s nullglob; \
     ((${#files[@]})) || exit 1; \
     chmod +x "${files[@]}"'
 
-USER pi
+# Numeric uid (DL3066): resolvable on the host, and it is the uid
+# create_ci_user assigned to pi, so HOME still resolves to /home/pi.
+USER ${CI_UID}
 
 CMD ["./tests/run_suite.sh"]

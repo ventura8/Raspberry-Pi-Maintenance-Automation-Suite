@@ -6,8 +6,22 @@ ENV LANG=en_US.UTF-8
 ENV LC_ALL=en_US.UTF-8
 
 RUN apt-get update && apt-get install -y --no-install-recommends \
-    bash bats bc ca-certificates cron curl git locales mailutils msmtp \
-    procps python3 python3-pip ssmtp sudo whiptail \
+    'bash=5.3*' \
+    'bats=1.13.0*' \
+    'bc=1.07.1*' \
+    'ca-certificates=20260601~26.04.1*' \
+    'cron=3.0pl1*' \
+    'curl=8.18.0*' \
+    'git=1:2.53.0*' \
+    'locales=2.43*' \
+    'mailutils=1:3.20*' \
+    'msmtp=1.8.32*' \
+    'procps=2:4.0.4*' \
+    'python3-pip=25.1.1+dfsg*' \
+    'python3=3.14.3*' \
+    'ssmtp=2.65*' \
+    'sudo=1.9.17p2*' \
+    'whiptail=0.52.25*' \
     && sed -i 's/^# *en_US.UTF-8 UTF-8/en_US.UTF-8 UTF-8/' /etc/locale.gen \
     && { grep -qxF 'en_US.UTF-8 UTF-8' /etc/locale.gen \
         || echo 'en_US.UTF-8 UTF-8' >> /etc/locale.gen; } \
@@ -45,6 +59,8 @@ RUN bash -c 'shopt -s nullglob; \
     ((${#files[@]})) || exit 1; \
     chmod +x "${files[@]}"'
 
-USER pi
+# Numeric uid (DL3066): resolvable on the host, and it is the uid
+# create_ci_user assigned to pi, so HOME still resolves to /home/pi.
+USER ${CI_UID}
 
 CMD ["./tests/run_suite.sh"]

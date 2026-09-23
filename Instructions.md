@@ -42,6 +42,8 @@ Actions jobs call the same entrypoint per stage (`--lints-only`, `--coverage-onl
 
 Static analysis runs on SonarQube Cloud (project `ventura8_Raspberry-Pi-Maintenance-Automation-Suite`, configured by [`sonar-project.properties`](sonar-project.properties)). Automatic Analysis scans every push and PR and needs no secret, so the `sonarqube` job in `ci.yml` stays guarded by `if: env.SONAR_TOKEN != ''` and skips. Switching to CI-based analysis requires adding the `SONAR_TOKEN` secret **and** disabling Automatic Analysis — Sonar rejects CI analysis while AutoScan is on.
 
+Docker images pin every apt/dnf package version and fetch hadolint/actionlint via `ADD --checksum`; hadolint enforces this on all tracked Dockerfiles. Stale pins surface as lane build failures — refresh them per AGENTS.md "Docker Image Pinning".
+
 Stages: Docker lint → coverage on `debian:trixie` → parallel distro matrix (`debian:trixie`, `ubuntu:26.04`, `fedora:45`, `rocky:9`, `archlinux:latest`; Pi 3/4 class support, Pi 5 varies by distro) with compat then e2e in each lane. Compat runs a real text install, `--update`, and uninstall; e2e runs `tests/e2e/*.bats` plus another install/`--update`/uninstall pass under `REAL_DEPS=1`.
 
 ## Automatic Dependency Installation

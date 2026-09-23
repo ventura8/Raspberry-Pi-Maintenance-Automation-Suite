@@ -7,10 +7,32 @@ ENV LANG=en_US.UTF-8
 ENV LC_ALL=en_US.UTF-8
 
 RUN apt-get update && apt-get install -y --no-install-recommends \
-    bash bats bc binutils-dev ca-certificates cmake cron curl g++ git \
-    libcurl4-openssl-dev libdw-dev libelf-dev libiberty-dev locales mailutils \
-    make msmtp pkg-config procps python3 python3-pip ssmtp sudo whiptail \
-    zlib1g-dev \
+    'bash=5.2.37*' \
+    'bats=1.11.1*' \
+    'bc=1.07.1*' \
+    'binutils-dev=2.44*' \
+    'ca-certificates=20250419*' \
+    'cmake=3.31.6*' \
+    'cron=3.0pl1*' \
+    'curl=8.14.1*' \
+    'g++=4:14.2.0*' \
+    'git=1:2.47.3*' \
+    'libcurl4-openssl-dev=8.14.1*' \
+    'libdw-dev=0.192*' \
+    'libelf-dev=0.192*' \
+    'libiberty-dev=20250315*' \
+    'locales=2.41*' \
+    'mailutils=1:3.19*' \
+    'make=4.4.1*' \
+    'msmtp=1.8.28*' \
+    'pkg-config=1.8.1*' \
+    'procps=2:4.0.4*' \
+    'python3-pip=25.1.1+dfsg*' \
+    'python3=3.13.5*' \
+    'ssmtp=2.64*' \
+    'sudo=1.9.16p2*' \
+    'whiptail=0.52.25*' \
+    'zlib1g-dev=1:1.3.dfsg+really1.3.1*' \
     && sed -i 's/^# *en_US.UTF-8 UTF-8/en_US.UTF-8 UTF-8/' /etc/locale.gen \
     && { grep -qxF 'en_US.UTF-8 UTF-8' /etc/locale.gen \
         || echo 'en_US.UTF-8 UTF-8' >> /etc/locale.gen; } \
@@ -50,6 +72,8 @@ RUN bash -c 'shopt -s nullglob; \
     ((${#files[@]})) || exit 1; \
     chmod +x "${files[@]}"'
 
-USER pi
+# Numeric uid (DL3066): resolvable on the host, and it is the uid
+# create_ci_user assigned to pi, so HOME still resolves to /home/pi.
+USER ${CI_UID}
 
 CMD ["./tests/run_suite.sh"]

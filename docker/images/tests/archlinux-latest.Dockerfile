@@ -1,4 +1,6 @@
-FROM archlinux:latest
+# Dated snapshot (DL3007) rather than :latest. `pacman -Syu` below upgrades
+# to current rolling Arch, so the lane still tracks rolling Arch.
+FROM archlinux:base-20260920.0.596911
 
 # Prefer a generated UTF-8 locale for predictable test environments.
 ENV LANG=en_US.UTF-8
@@ -43,6 +45,8 @@ RUN bash -c 'shopt -s nullglob; \
     ((${#files[@]})) || exit 1; \
     chmod +x "${files[@]}"'
 
-USER pi
+# Numeric uid (DL3066): resolvable on the host, and it is the uid
+# create_ci_user assigned to pi, so HOME still resolves to /home/pi.
+USER ${CI_UID}
 
 CMD ["./tests/run_suite.sh"]

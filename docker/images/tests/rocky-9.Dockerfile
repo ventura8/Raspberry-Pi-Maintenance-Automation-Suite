@@ -4,11 +4,23 @@ FROM rockylinux:9
 ENV LANG=en_US.UTF-8
 ENV LC_ALL=en_US.UTF-8
 
-RUN dnf install -y epel-release \
+RUN dnf install -y epel-release-9 \
     && dnf install -y --allowerasing \
-    bash curl sudo newt msmtp s-nail bats git python3 python3-pip cronie \
-    glibc-langpack-en \
-    procps ca-certificates bc \
+    bash-5.1.8 \
+    bats-1.8.0 \
+    bc-1.07.1 \
+    ca-certificates-2025.2.80_v9.0.305 \
+    cronie-1.5.7 \
+    curl-7.76.1 \
+    git-2.52.0 \
+    glibc-langpack-en-2.34 \
+    msmtp-1.8.25 \
+    newt-0.52.21 \
+    procps-ng-3.3.17 \
+    python3-3.9.25 \
+    python3-pip-21.3.1 \
+    s-nail-14.9.22 \
+    sudo-1.9.17p2 \
     && dnf clean all \
     && python3 -m pip install --no-cache-dir \
         --only-binary :all: 'lizard==1.24.0'
@@ -39,6 +51,8 @@ RUN bash -c 'shopt -s nullglob; \
     ((${#files[@]})) || exit 1; \
     chmod +x "${files[@]}"'
 
-USER pi
+# Numeric uid (DL3066): resolvable on the host, and it is the uid
+# create_ci_user assigned to pi, so HOME still resolves to /home/pi.
+USER ${CI_UID}
 
 CMD ["./tests/run_suite.sh"]

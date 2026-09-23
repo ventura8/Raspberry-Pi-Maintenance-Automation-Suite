@@ -32,6 +32,9 @@ Local wrapper: `scripts/build-and-test.sh`
 1. Keep lint image separate: `docker/images/lint/debian-trixie.Dockerfile`.
 1. Shared install/uninstall helpers live in `scripts/matrix_install_flow.sh`.
 1. Test images should provide a generated UTF-8 locale (`en_US.UTF-8`) for predictable environments.
+1. Every apt/dnf package is version-pinned and hadolint gates it (see AGENTS.md "Docker Image Pinning").
+   A lane failing with `E: Version '…' was not found` (apt) or `No match for argument` (dnf) means a
+   pin went stale: refresh it from the base image, never drop the pin or add a hadolint ignore.
 
 ## Commands
 
