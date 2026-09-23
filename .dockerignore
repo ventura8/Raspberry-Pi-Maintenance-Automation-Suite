@@ -10,3 +10,11 @@ reports/
 build/
 *.log
 assets/*.svg
+
+# Local secrets must never reach a build context (COPY . .). Mirrors .gitignore:
+# ssmtp.conf holds real SMTP credentials on a developer machine.
+ssmtp.conf
+dead.letter
+.env
+*.pem
+*.key

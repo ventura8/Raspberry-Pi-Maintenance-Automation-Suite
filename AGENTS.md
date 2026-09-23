@@ -93,6 +93,7 @@ Live logs: tee long runs under `reports/distro-logs/` when iterating on matrix/p
 1. Per-file complexity **≤ 15**
 1. Docker lint stack clean (shellcheck, shfmt, bash -n, yamllint, actionlint, hadolint, mdformat)
 1. Distro matrix lanes pass (compat + e2e)
+1. SonarQube Cloud quality gate passes on the PR (Automatic Analysis; no token required)
 1. Commit updated `assets/coverage.svg` after coverage-affecting changes
 
 ## Installer & UI Invariants
@@ -195,7 +196,7 @@ Dockerfiles live under `docker/images/tests/`. Matrix orchestration: `scripts/ru
 
 1. Script logic: `scripts/*.sh`, `install.sh`, `uninstall.sh`, `lib/*.sh`
 1. Tests: `tests/*.bats`, `tests/e2e/`, `tests/run_suite.sh`, `tests/setup_mocks.sh`, drivers
-1. CI/Docker: `.github/workflows/ci.yml`, `.github/workflows/release.yml`, `docker/images/**`, `scripts/build-and-test.sh`, `scripts/run_docker_matrix.sh`, `scripts/lint-in-docker.sh`
+1. CI/Docker: `.github/workflows/ci.yml`, `.github/workflows/release.yml`, `docker/images/**`, `scripts/build-and-test.sh`, `scripts/run_docker_matrix.sh`, `scripts/lint-in-docker.sh`, `sonar-project.properties`, `.dockerignore`
 1. Docs: `README.md`, `Instructions.md`, `docs/*.md`, **and agent files** (`AGENTS.md`, skills, prompts)
 
 ## PR Readiness Checklist

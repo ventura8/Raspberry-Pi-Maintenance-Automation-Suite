@@ -2,7 +2,7 @@
   <img src="assets/project_logo.png" alt="Raspberry Pi Maintenance Automation Suite Logo">
 </p>
 
-[![Script](https://img.shields.io/badge/Script-Shell-blue.svg)](https://github.com/ventura8/Synology-SRM-Bing-Wallpaper-Auto-update) ![Coverage](assets/coverage.svg)
+[![Script](https://img.shields.io/badge/Script-Shell-blue.svg)](https://github.com/ventura8/Synology-SRM-Bing-Wallpaper-Auto-update) ![Coverage](assets/coverage.svg) [![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=ventura8_Raspberry-Pi-Maintenance-Automation-Suite&metric=alert_status)](https://sonarcloud.io/summary/new_code?id=ventura8_Raspberry-Pi-Maintenance-Automation-Suite)
 
 # **Raspberry Pi Maintenance & Automation Suite**
 

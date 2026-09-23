@@ -185,7 +185,7 @@ while [[ $i -lt ${#args[@]} ]]; do
       outfile="${args[$i]}"
       ;;
     -s|-sS|-sSL|-sL|-L|-f|-S|--silent|--show-error|--fail|--location) ;;
-    --max-time|-m|--connect-timeout)
+    --max-time|-m|--connect-timeout|--proto|--proto-redir)
       i=$((i + 1))
       ;;
     -*)
