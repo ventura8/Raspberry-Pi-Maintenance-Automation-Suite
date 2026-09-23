@@ -9,6 +9,8 @@ RECIPIENT_EMAIL="your_email@gmail.com"
 SAMSUNG_VENDOR="Samsung"
 REPORT_SEPARATOR="======================================================="
 SAMSUNG_FIRMWARE_PAGE="https://semiconductor.samsung.com/consumer-storage/support/tools/"
+# Refuse plaintext HTTP, including across -L redirects, for every download.
+CURL_HTTPS_ONLY=(--proto '=https' --proto-redir '=https')
 # ---------------------
 
 # Prevent ANSI color codes
@@ -76,7 +78,7 @@ find_firmware_url() {
     local page_html
 
     _pi_echo "Fetching Samsung firmware page..."
-    page_html=$(curl -sL --proto '=https' --proto-redir '=https' \
+    page_html=$(curl -sL "${CURL_HTTPS_ONLY[@]}" \
         "$SAMSUNG_FIRMWARE_PAGE" 2> /dev/null)
 
     if [[ -z "$page_html" ]]; then
@@ -265,7 +267,7 @@ update_via_official_iso() {
     chmod 600 "$iso_path"
 
     # HTTPS-only, including redirects: this ISO is extracted and run via sudo.
-    if ! curl -L -s --proto '=https' --proto-redir '=https' \
+    if ! curl -L -s "${CURL_HTTPS_ONLY[@]}" \
         -o "$iso_path" "$FOUND_ISO_URL"; then
         _pi_echo "Failed to download firmware ISO."
         rm -f "$iso_path"
