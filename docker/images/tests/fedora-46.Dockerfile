@@ -8,9 +8,9 @@ RUN dnf install -y \
     bash-5.3.15 \
     bats-1.14.0 \
     bc-1.08.2 \
-    ca-certificates-2025.2.80_v9.0.304 \
+    ca-certificates-2026.2.90_v9.0.317 \
     cronie-1.7.2 \
-    curl-8.22.0~rc2 \
+    curl-8.23.0~rc2 \
     git-2.55.0 \
     glibc-langpack-en-2.44.9000 \
     msmtp-1.8.34 \

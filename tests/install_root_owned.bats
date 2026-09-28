@@ -126,6 +126,15 @@ _make_legacy_tree() {
     [ -z "$(find "$INSTALL_DIR" -name '*.rpi-new.*')" ]
 }
 
+@test "Root-owned: failed .version write is reported and leaves SUITE_VERSION unset" {
+    export INSTALL_DIR="$BATS_TEST_TMPDIR/missing-tree"
+
+    run bash -c "export $(_env); source ./install.sh; write_installed_version; rc=\$?; echo \"rc=\$rc sv=[\$SUITE_VERSION]\""
+    [[ "$output" =~ "Error: could not write" ]]
+    [[ "$output" =~ "rc=1 sv=[]" ]]
+    [[ ! "$output" =~ "Version set to" ]]
+}
+
 @test "Root-owned: save_email_configuration rewrites root-owned scripts via sudo" {
     sudo -n true 2> /dev/null || skip "passwordless sudo required"
     _make_root_parent

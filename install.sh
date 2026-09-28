@@ -1017,7 +1017,7 @@ download_scripts() {
     else
         _pi_echo "Scripts updated."
     fi
-    write_installed_version
+    write_installed_version || failed=1
     sleep 1
     return "$failed"
 }
@@ -1204,7 +1204,10 @@ write_installed_version() {
     fi
 
     if [[ -n "$version" ]]; then
-        printf '%s\n' "$version" | _install_atomic_mv /dev/stdin "$INSTALL_DIR/.version" 0644
+        if ! printf '%s\n' "$version" | _install_atomic_mv /dev/stdin "$INSTALL_DIR/.version" 0644; then
+            _pi_echof "Error: could not write %s" "$INSTALL_DIR/.version"
+            return 1
+        fi
         SUITE_VERSION="$version"
         _pi_echof "Version set to: %s" "$version"
     else
