@@ -912,7 +912,8 @@ _install_staged_path() {
 _install_publish() {
     local staged="$1"
     local dest="$2"
-    if [[ "$3" -eq 0 ]] && _install_run mv -f "$staged" "$dest"; then
+    local stage_rc="$3"
+    if [[ "$stage_rc" -eq 0 ]] && _install_run mv -f "$staged" "$dest"; then
         return 0
     fi
     _install_run rm -f "$staged"
