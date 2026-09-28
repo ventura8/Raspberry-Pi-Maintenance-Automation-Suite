@@ -1,4 +1,4 @@
-FROM fedora:45
+FROM fedora:46
 
 # Prefer a generated UTF-8 locale for predictable test environments.
 ENV LANG=en_US.UTF-8
@@ -8,16 +8,16 @@ RUN dnf install -y \
     bash-5.3.15 \
     bats-1.14.0 \
     bc-1.08.2 \
-    ca-certificates-2025.2.80_v9.0.304 \
+    ca-certificates-2026.2.90_v9.0.317 \
     cronie-1.7.2 \
-    curl-8.21.0 \
+    curl-8.23.0~rc2 \
     git-2.55.0 \
-    glibc-langpack-en-2.44 \
+    glibc-langpack-en-2.44.9000 \
     msmtp-1.8.34 \
     newt-0.52.25 \
-    procps-ng-4.0.6 \
+    procps-ng-4.0.7 \
     python3-3.15.0~rc2 \
-    python3-pip-26.1.2 \
+    python3-pip-26.2.1 \
     s-nail-14.9.25 \
     sudo-1.9.17 \
     && dnf clean all \

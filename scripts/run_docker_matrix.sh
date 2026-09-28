@@ -24,7 +24,7 @@ CLEANUP_RUNNING=0
 DISTROS=(
     "debian:trixie"
     "ubuntu:26.04"
-    "fedora:45"
+    "fedora:46"
     "rocky:9"
     "archlinux:latest"
 )

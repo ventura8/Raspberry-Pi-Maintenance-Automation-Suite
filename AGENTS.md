@@ -107,7 +107,7 @@ Live logs: tee long runs under `reports/distro-logs/` when iterating on matrix/p
 1. Fresh `curl|bash` with no adjacent/installed `lib/` bootstraps `os_pkg.sh` / `mail_send.sh` / `ui_msg.sh` from `$RAW_URL/lib/` before `check_dependencies` so `pkg_install` / `has_mail_sender` are defined.
 1. `install.sh --update` must stay **non-interactive** (deps + download + quiet cron redirects) for cron via `update_self.sh`.
 1. Detection of “already installed” is `$INSTALL_DIR` directory presence (default `/usr/local/lib/pi-maintenance`) **or** a legacy tree (`$LEGACY_INSTALL_DIR`, default `$HOME/pi-scripts`, or any directory a suite crontab line still points at).
-1. **Root-owned install tree (security invariant)**: root cron executes `$INSTALL_DIR/*.sh`, so the default tree must be root-owned and not writable by the login user (`root:root`, `0755` scripts, `0644` libs). All writes into the tree go through `_install_run` / `_install_atomic_mv` (sudo when the tree is unwritable, `install -o root -g root` when privileged). Never reintroduce a `$HOME`-based default, `chmod +x` / `sed -i` on installed files without `_install_run`, or a crontab entry pointing at a user-writable path. `INSTALL_DIR="$HOME/pi-scripts"` is redirected to the default (legacy `update_self.sh` exports it).
+1. **Root-owned install tree (security invariant)**: root cron executes `$INSTALL_DIR/*.sh`, so the default tree must be root-owned and not writable by the login user (`root:root`, `0755` scripts, `0644` libs). All writes into the tree go through `_install_run` / `_install_atomic_mv` (sudo when the tree is unwritable, `install -o root -g root` when privileged). Never reintroduce a `$HOME`-based default, `chmod +x` / `sed -i` on installed files without `_install_run`, or a crontab entry pointing at a user-writable path. Downloads stream `curl | sed | sudo install /dev/stdin` (`_install_atomic_curl`): never stage bytes in a user-writable temp (e.g. `mktemp` under `/tmp`) and hand that path to a privileged `install`/`cp` — same-UID malware could swap the file between write and copy and get root cron to run it. `INSTALL_DIR="$HOME/pi-scripts"` is redirected to the default (legacy `update_self.sh` exports it).
 1. Legacy installs are migrated in place: `--update` and the interactive entry re-download into `$INSTALL_DIR`, repoint root + user crontab paths, and remove legacy directories only when they contain nothing but suite files (`_legacy_dir_is_suite_only`, including `lib/` contents) — a crontab line pointing into a home directory must never trigger deletion. Retire only after `download_scripts` returned success and `_repoint_crontab_dir` verified no crontab still references the legacy path; a failed download aborts `--update` / migration with a non-zero exit and no crontab changes. Tests **must** isolate `LEGACY_INSTALL_DIR` (never a real `~/pi-scripts`).
 1. Interactive UI shows the suite version from root `VERSION` (via `read_suite_version`) in the header / whiptail welcome and main menu from the start of the session.
 1. Preserve public function names used by BATS when refactoring UI (`configure_email_interactive`, `main_menu`, `run_fresh_install`, `manage_tasks_ui`, `read_input`, `run_interactive`, …).
@@ -160,7 +160,7 @@ Supported CI lanes (Pi-capable OS families; Pi 3/4 class; Pi 5 support varies up
 
 1. `debian:trixie` (canonical coverage gate + Raspberry Pi OS family)
 1. `ubuntu:26.04`
-1. `fedora:45`
+1. `fedora:46`
 1. `rocky:9`
 1. `archlinux:latest` (builds from a dated `archlinux:base-*` snapshot upgraded by `pacman -Syu`)
 
@@ -171,7 +171,7 @@ Dockerfiles live under `docker/images/tests/`. Matrix orchestration: `scripts/ru
 hadolint runs on every tracked `*Dockerfile*` (`tests/lint.sh` collects them with the `git ls-files "*Dockerfile*"` pathspec) with `failure-threshold: warning`, so these pins are gate-enforced, not advisory. Never satisfy hadolint with ignore directives; update the pins.
 
 1. **apt** (`DL3008`): pin the upstream version and wildcard the Debian/Ubuntu revision, quoted: `'curl=8.14.1*'`. Security updates bump only the revision, so pins survive them; apt still rejects a pin whose upstream version is gone (`E: Version '…' was not found`).
-1. **dnf** (`DL3041`): hadolint rejects wildcards, so pin the real package name and exact upstream version and let the release float: `curl-8.21.0`, `procps-ng-4.0.6` (not the `procps` provide). Fedora/Rocky move upstream versions faster than Debian, so expect these to need refreshing when a lane fails with `No match for argument`.
+1. **dnf** (`DL3041`): hadolint rejects wildcards, so pin the real package name and exact upstream version and let the release float: `curl-8.22.0~rc2`, `procps-ng-4.0.7` (not the `procps` provide). Fedora/Rocky move upstream versions faster than Debian, so expect these to need refreshing when a lane fails with `No match for argument`.
 1. **Arch** (`DL3007`): `FROM` a dated `archlinux:base-YYYYMMDD.*` snapshot. The image runs `pacman -Syu`, so the `archlinux:latest` lane still tests current rolling Arch; the tag only fixes the starting point.
 1. **USER** (`DL3066`): numeric `USER ${CI_UID}` — the uid `create_ci_user` assigns to `pi`, so `HOME` still resolves to `/home/pi`.
 1. **Lint tools**: hadolint and actionlint are fetched with `ADD --checksum=sha256:…` using the publishers' own release checksums. The in-image hadolint version is what gates CI, so validate Dockerfile changes with `./scripts/build-and-test.sh --lints-only`, not a newer host hadolint.
@@ -180,7 +180,7 @@ Refresh pins by installing the package list unpinned in the base image and readi
 
 ```bash
 docker run --rm debian:trixie-slim bash -c 'apt-get update -qq && apt-get install -y -qq --no-install-recommends curl git >/dev/null && dpkg-query -W curl git'
-docker run --rm fedora:45 bash -c 'dnf install -y -q curl procps >/dev/null && rpm -q --whatprovides curl procps --qf "%{NAME}-%{VERSION}\n"'
+docker run --rm fedora:46 bash -c 'dnf install -y -q curl procps >/dev/null && rpm -q --whatprovides curl procps --qf "%{NAME}-%{VERSION}\n"'
 ```
 
 ## Testing Conventions

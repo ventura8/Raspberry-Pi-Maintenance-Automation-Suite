@@ -115,7 +115,8 @@ for arg in "$@"; do
     prev="$arg"
 done
 if [[ "$*" =~ "scripts/test_script.sh" ]]; then
-    [ -n "$outfile" ] && printf '%s\n' 'RECIPIENT_EMAIL="not-the-placeholder@example.com"' > "$outfile"
+    line='RECIPIENT_EMAIL="not-the-placeholder@example.com"'
+    if [ -n "$outfile" ]; then printf '%s\n' "$line" > "$outfile"; else printf '%s\n' "$line"; fi
 fi
 exit 0
 EOF
