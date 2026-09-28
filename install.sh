@@ -901,57 +901,58 @@ _install_mkdir() {
     return
 }
 
-# Stage into a same-dir temp + rename so a running cron script keeps its old inode.
-_install_atomic_mv() {
-    local tmp="$1"
+# Staging path next to $dest: inside the (root-owned) tree, so only the tree owner can touch it.
+_install_staged_path() {
+    printf '%s.rpi-new.%s' "$1" "$$"
+    return
+}
+
+# Rename a staged file over $dest (same dir, so a running cron script keeps its old inode), or
+# drop it when staging failed ($3 = staging rc).
+_install_publish() {
+    local staged="$1"
     local dest="$2"
-    local mode="${3:-0755}"
-    local staged="$dest.rpi-new.$$" flags
-    _install_owner_flags flags
-    if _install_run install "${flags[@]}" -m "$mode" "$tmp" "$staged" && _install_run mv -f "$staged" "$dest"; then
-        rm -f "$tmp"
+    if [[ "$3" -eq 0 ]] && _install_run mv -f "$staged" "$dest"; then
         return 0
     fi
-    rm -f "$tmp"
     _install_run rm -f "$staged"
     return 1
 }
 
-_install_tmp() {
-    mktemp "${TMPDIR:-/tmp}/rpi-install.XXXXXX"
-    return
-}
-
-_install_atomic_copy() {
+# Install $src as $dest (tree owner, $mode). $src must be trusted input: the local checkout or
+# /dev/stdin. Never hand a user-writable temp (e.g. a mktemp under /tmp) to a privileged
+# install/cp: same-UID malware can swap its bytes between write and copy, and root cron then
+# executes them. The privileged install(1) must be the first process to write the bytes to disk.
+_install_atomic_mv() {
     local src="$1"
     local dest="$2"
     local mode="${3:-0755}"
-    local tmp
-    tmp=$(_install_tmp)
-    if ! cat "$src" > "$tmp"; then
-        rm -f "$tmp"
-        return 1
-    fi
-    _install_atomic_mv "$tmp" "$dest" "$mode"
+    local staged flags rc=0
+    staged=$(_install_staged_path "$dest")
+    _install_owner_flags flags
+    _install_run install "${flags[@]}" -m "$mode" "$src" "$staged" || rc=$?
+    _install_publish "$staged" "$dest" "$rc"
     return
 }
 
-# Optional $4 = RECIPIENT_EMAIL to inject before the file lands in the (root-owned) tree.
+# Optional $4 = RECIPIENT_EMAIL to inject before the file goes live. curl streams through sed
+# straight into the privileged install(1), so the bytes never sit in a user-writable file; the
+# staged copy only goes live when the whole pipeline (including curl) succeeded.
 _install_atomic_curl() {
     local url="$1"
     local dest="$2"
     local mode="${3:-0755}"
     local email="${4:-}"
-    local tmp
-    tmp=$(_install_tmp)
-    if ! curl -fsSL "$url" -o "$tmp"; then
-        rm -f "$tmp"
-        return 1
-    fi
-    if [[ -n "$email" ]]; then
-        sed -i "s/RECIPIENT_EMAIL=\".*\"/RECIPIENT_EMAIL=\"$email\"/" "$tmp"
-    fi
-    _install_atomic_mv "$tmp" "$dest" "$mode"
+    local staged flags rc=0
+    local filter=(cat)
+    [[ -n "$email" ]] && filter=(sed "s/RECIPIENT_EMAIL=\".*\"/RECIPIENT_EMAIL=\"$email\"/")
+    staged=$(_install_staged_path "$dest")
+    _install_owner_flags flags
+    (
+        set -o pipefail
+        curl -fsSL "$url" | "${filter[@]}" | _install_run install "${flags[@]}" -m "$mode" /dev/stdin "$staged"
+    ) || rc=$?
+    _install_publish "$staged" "$dest" "$rc"
     return
 }
 
@@ -982,7 +983,7 @@ download_scripts() {
             lib_src="$_INSTALL_ROOT/lib/$lib_file"
         fi
         if [[ -n "$lib_src" ]]; then
-            if ! _install_atomic_copy "$lib_src" "$INSTALL_DIR/lib/$lib_file" 0644; then
+            if ! _install_atomic_mv "$lib_src" "$INSTALL_DIR/lib/$lib_file" 0644; then
                 _pi_echof "Error downloading lib/%s" "$lib_file"
                 failed=1
                 continue
@@ -1202,10 +1203,7 @@ write_installed_version() {
     fi
 
     if [[ -n "$version" ]]; then
-        local tmp
-        tmp=$(_install_tmp)
-        printf '%s\n' "$version" > "$tmp"
-        _install_atomic_mv "$tmp" "$INSTALL_DIR/.version" 0644
+        printf '%s\n' "$version" | _install_atomic_mv /dev/stdin "$INSTALL_DIR/.version" 0644
         SUITE_VERSION="$version"
         _pi_echof "Version set to: %s" "$version"
     else

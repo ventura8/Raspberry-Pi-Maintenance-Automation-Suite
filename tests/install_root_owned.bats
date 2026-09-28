@@ -89,6 +89,43 @@ _make_legacy_tree() {
     [ ! -w "$INSTALL_DIR/update_pi_os.sh" ]
 }
 
+@test "Root-owned: downloads stream into root's install(1), never via a user-writable temp file" {
+    sudo -n true 2> /dev/null || skip "passwordless sudo required"
+    _make_root_parent
+    export INSTALL_DIR="$ROOT_PARENT/tree"
+    local user_tmp="$BATS_TEST_TMPDIR/user-tmp" curl_log="$BATS_TEST_TMPDIR/curl-args"
+    mkdir -p "$user_tmp"
+    : > "$curl_log"
+    # Log every curl argv, then defer to the regular mock. (Overwrite in place: PATH has a no-op
+    # chmod mock, so the executable bit must come from the existing file.)
+    cp -p "$MOCK_DIR/curl" "$MOCK_DIR/curl.real"
+    printf '#!/bin/bash\necho "$*" >> %q\nexec %q "$@"\n' "$curl_log" "$MOCK_DIR/curl.real" > "$MOCK_DIR/curl"
+
+    run bash -c "export $(_env) TMPDIR=$user_tmp; source ./install.sh; download_scripts"
+    mv -f "$MOCK_DIR/curl.real" "$MOCK_DIR/curl"
+    [ "$status" -eq 0 ]
+    # Script downloads went to stdout (piped into sudo install), never to an -o file.
+    grep -q 'update_self.sh' "$curl_log"
+    ! grep -Eq '(^| )(-o|--output)( |$)' "$curl_log"
+    # Nothing was staged in the invoking user's temp dir, and no staging leftovers remain.
+    [ -z "$(ls -A "$user_tmp")" ]
+    [ -z "$(find "$INSTALL_DIR" -name '*.rpi-new.*')" ]
+    [ "$(stat -c %U:%a "$INSTALL_DIR/update_self.sh")" = "root:755" ]
+    grep -q 'RECIPIENT_EMAIL="your_email@gmail.com"' "$INSTALL_DIR/update_pi_os.sh"
+}
+
+@test "Root-owned: failed download never replaces the installed script" {
+    export INSTALL_DIR="$BATS_TEST_TMPDIR/tree"
+    mkdir -p "$INSTALL_DIR"
+    echo "old" > "$INSTALL_DIR/update_pi_os.sh"
+    printf '#!/bin/bash\necho partial\nexit 22\n' > "$MOCK_DIR/curl"
+
+    run bash -c "export $(_env); source ./install.sh; _install_atomic_curl https://example.invalid/x \"\$INSTALL_DIR/update_pi_os.sh\" 0755 a@b.c"
+    [ "$status" -ne 0 ]
+    [ "$(cat "$INSTALL_DIR/update_pi_os.sh")" = "old" ]
+    [ -z "$(find "$INSTALL_DIR" -name '*.rpi-new.*')" ]
+}
+
 @test "Root-owned: save_email_configuration rewrites root-owned scripts via sudo" {
     sudo -n true 2> /dev/null || skip "passwordless sudo required"
     _make_root_parent
