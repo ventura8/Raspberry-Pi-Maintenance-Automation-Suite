@@ -145,7 +145,11 @@ INSTALL_DIR=$_save_idir
 _require_update_helpers || true
 unset -f pkg_install has_mail_sender
 _require_update_helpers || true
-is_installed() { command -v "$1" > /dev/null 2>&1; }
+is_installed() {
+    local cmd="$1"
+    command -v "$cmd" > /dev/null 2>&1
+    return
+}
 # shellcheck source=../../lib/os_pkg.sh
 source ./lib/os_pkg.sh
 # shellcheck source=../../lib/mail_send.sh
@@ -207,7 +211,11 @@ has_mail_sender() { return 1; }
 is_installed() { return 1; }
 check_dependencies || true
 unset -f pkg_install is_installed has_mail_sender
-is_installed() { command -v "$1" > /dev/null 2>&1; }
+is_installed() {
+    local cmd="$1"
+    command -v "$cmd" > /dev/null 2>&1
+    return
+}
 # shellcheck source=../../lib/os_pkg.sh
 source ./lib/os_pkg.sh
 # shellcheck source=../../lib/mail_send.sh

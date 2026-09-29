@@ -13,7 +13,10 @@ if [[ -f "$_UI_MSG" ]]; then
     # shellcheck source=lib/ui_msg.sh
     source "$_UI_MSG"
 elif ! declare -F _pi_echo > /dev/null 2>&1; then
-    _pi_gettext() { printf '%s' "$1"; }
+    _pi_gettext() {
+        printf '%s' "$1"
+        return
+    }
     _pi_gettextf() {
         local format="$1" argument prefix suffix
         shift
@@ -30,7 +33,10 @@ elif ! declare -F _pi_echo > /dev/null 2>&1; then
         printf '%s' "$format"
         return
     }
-    _pi_echo() { printf '%s\n' "$1"; }
+    _pi_echo() {
+        printf '%s\n' "$1"
+        return
+    }
     _pi_echof() {
         local format
         format=$(_pi_gettextf "$@")

@@ -257,6 +257,36 @@ def generate_badge(line_rate, output_path="assets/coverage.svg"):
         f.write(svg)
     print(f"Generated badge: {output_path} ({coverage_str})")
 
+def generate_sonar_generic_coverage(classes, output_path):
+    """Write SonarQube generic test coverage XML (sonar.coverageReportPaths).
+
+    Sonar has no native Bash coverage importer, so the kcov/Cobertura line hits
+    are re-emitted in the language-agnostic generic format.
+    """
+    root = ET.Element("coverage", version="1")
+    for cls in sorted(classes, key=lambda item: item.get("filename", "")):
+        filename = cls.get("filename", "")
+        lines_el = cls.find("lines")
+        if not filename or not os.path.isfile(filename) or lines_el is None:
+            continue
+        file_el = ET.SubElement(root, "file", path=filename)
+        for line in lines_el.findall("line"):
+            try:
+                hits = int(line.get("hits", "0"))
+            except ValueError:
+                hits = 0
+            ET.SubElement(
+                file_el,
+                "lineToCover",
+                lineNumber=line.get("number", "0"),
+                covered="true" if hits > 0 else "false",
+            )
+
+    os.makedirs(os.path.dirname(output_path) or ".", exist_ok=True)
+    ET.ElementTree(root).write(output_path, encoding="UTF-8", xml_declaration=True)
+    print(f"Generated SonarQube generic coverage: {output_path}")
+
+
 def transform_coverage(
     xml_file,
     fail_under=None,
@@ -339,6 +369,9 @@ def transform_coverage(
     )
     
     generate_markdown_summary(all_classes, root_line_rate, root_complexity)
+    generate_sonar_generic_coverage(
+        all_classes, os.path.join(os.path.dirname(xml_file), "sonar-coverage.xml")
+    )
 
     if fail_under is not None:
         try:

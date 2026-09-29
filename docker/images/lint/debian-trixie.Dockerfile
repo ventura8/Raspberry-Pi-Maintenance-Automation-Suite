@@ -49,6 +49,12 @@ RUN bash -c 'shopt -s nullglob; \
     files=(tests/*.sh scripts/*.sh scripts/coverage/*.sh \
         install.sh uninstall.sh lib/*.sh); \
     ((${#files[@]})) || exit 1; \
-    chmod +x "${files[@]}"'
+    chmod +x "${files[@]}"' \
+    && useradd --create-home --uid 10001 --shell /bin/bash lint
+
+# Lint only reads the tree, so it never needs root. lint-in-docker.sh still
+# runs as the host uid/gid (like the test lanes) so bind-mounted reads always
+# match the checkout's owner.
+USER 10001
 
 CMD ["bash", "-lc", "STRICT_MODE=true ./tests/lint.sh"]

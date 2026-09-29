@@ -15,12 +15,14 @@ source ./lib/mail_send.sh
 TEST_EMAIL="a@b.com"
 TEST_OS_ID="custom"
 
-# Isolate PATH in a function (local) so shellcheck does not warn about subshell exports.
+# Run "$@" with PATH temporarily set to $1 (a prefix assignment is scoped to the call,
+# so shellcheck does not warn about subshell exports and the caller's PATH is restored).
 _with_path() {
-    local PATH="$1"
+    local search_path="$1"
     shift
     hash -r 2> /dev/null || true
-    "$@"
+    PATH="$search_path" "$@"
+    return
 }
 
 _trim_os_release_value '"quoted"' > /dev/null || true

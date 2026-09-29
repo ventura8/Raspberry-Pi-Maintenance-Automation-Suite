@@ -67,7 +67,7 @@ jobs:
 
   sonarqube:
     name: SonarQube Cloud
-    needs: lint-docker
+    needs: [lint-docker, coverage-gate]
     runs-on: ubuntu-latest
     timeout-minutes: 20
     env:
@@ -78,9 +78,22 @@ jobs:
           # Sonar needs full history to assign blame and compute new-code periods.
           fetch-depth: 0
 
+      # Restores coverage/sonar-coverage.xml (generic coverage report written
+      # by tests/transform_coverage.py during the coverage gate).
+      - name: Download coverage report
+        if: env.SONAR_TOKEN != ''
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c  # v8.0.1
+        with:
+          name: coverage-gate
+
+      - name: Verify Sonar coverage report
+        if: env.SONAR_TOKEN != ''
+        run: test -s coverage/sonar-coverage.xml
+
       # Skips cleanly until SONAR_TOKEN is added, so the job never fails red on
       # a fork or before the secret exists. Requires Automatic Analysis to be
-      # OFF in the project settings -- Sonar rejects CI analysis while it is on.
+      # OFF in the project settings -- Sonar rejects CI analysis while it is on,
+      # and Automatic Analysis cannot import coverage.
       - name: SonarQube Cloud scan
         if: env.SONAR_TOKEN != ''
         uses: SonarSource/sonarqube-scan-action@ba9859eae8dd6bd29e412f25ddbbef3d032000f4  # v8.2.2
