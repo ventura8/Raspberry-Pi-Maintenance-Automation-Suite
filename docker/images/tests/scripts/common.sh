@@ -31,8 +31,8 @@ create_ci_user() {
     chmod 440 "/etc/sudoers.d/$user"
 
     # Fail the image build early if UID/GID binding did not stick.
-    test "$(id -u "$user")" = "$uid"
-    test "$(id -g "$user")" = "$gid"
+    [[ "$(id -u "$user")" == "$uid" ]]
+    [[ "$(id -g "$user")" == "$gid" ]]
 }
 
 prepare_mail_dirs() {

@@ -225,7 +225,7 @@ elif [[ "$E2E_ONLY" -eq 1 ]]; then
 fi
 
 failures=0
-if [[ "$PARALLEL" -eq 1 ]] && [ "${#targets[@]}" -gt 1 ]; then
+if [[ "$PARALLEL" -eq 1 ]] && [[ "${#targets[@]}" -gt 1 ]]; then
     for image in "${targets[@]}"; do
         run_in_distro "$image" "$mode" &
         ACTIVE_PIDS+=("$!")

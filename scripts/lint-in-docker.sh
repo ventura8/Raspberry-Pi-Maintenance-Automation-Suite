@@ -26,6 +26,8 @@ docker_build_with_cache \
     "lint-debian-trixie" 2>&1 | tee "$LOG_DIR/lint-build.log"
 
 "$DOCKER_BIN" run --rm \
+    --user "$(id -u):$(id -g)" \
+    -e HOME=/tmp \
     -v "$REPO_ROOT:/workspace:rw" \
     -w /workspace \
     "$DOCKER_IMAGE" \

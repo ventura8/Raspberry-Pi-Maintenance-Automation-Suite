@@ -69,7 +69,7 @@ Preferred (Docker, matches CI):
 
 Stages: lint-in-docker → coverage gate (`debian:trixie`) → parallel distro matrix (compat then e2e per lane). Compat exercises real text install + `--update` + uninstall; e2e runs `tests/e2e/*.bats` and another install/`--update`/uninstall pass with `REAL_DEPS=1`. Matrix fresh install uses `INSTALL_MATRIX_FRESH=1` via `scripts/matrix_install_flow.sh` (requires `MATRIX_ALLOW_RM_INSTALL_DIR=1` and `INSTALL_DIR` under `/tmp/pi-scripts*`).
 
-GitHub Actions [`.github/workflows/ci.yml`](.github/workflows/ci.yml) must call the **same** entrypoint flags as local: `--lints-only`, `--coverage-only`, and `--distro <image>` (not raw `lint-in-docker.sh` / `run_docker_matrix.sh` one-offs). Host + container executable prep uses [`scripts/ensure_exec.sh`](scripts/ensure_exec.sh) so bind-mounted checkouts work when container `USER pi` does not own the tree (GitHub Actions UID mismatch). Test images are built with `CI_UID`/`CI_GID` matching the host and containers run `--user $(id -u):$(id -g)` so writes into the bind-mounted repo (coverage badge, temp copies, kcov) succeed on Actions and locally.
+GitHub Actions [`.github/workflows/ci.yml`](.github/workflows/ci.yml) must call the **same** entrypoint flags as local: `--lints-only`, `--coverage-only`, and `--distro <image>` (not raw `lint-in-docker.sh` / `run_docker_matrix.sh` one-offs). Host + container executable prep uses [`scripts/ensure_exec.sh`](scripts/ensure_exec.sh) so bind-mounted checkouts work when container `USER pi` does not own the tree (GitHub Actions UID mismatch). Test images are built with `CI_UID`/`CI_GID` matching the host and containers run `--user $(id -u):$(id -g)` so writes into the bind-mounted repo (coverage badge, temp copies, kcov) succeed on Actions and locally. The lint image also runs as non-root (image `USER 10001`; `lint-in-docker.sh` runs `--user $(id -u):$(id -g)` with `HOME=/tmp`).
 
 Lint collects shell files via `git ls-files` — new `*.sh` must be tracked before local Docker lint matches GitHub Actions. Ignore `/coverage/` and `/coverage_*/` only at repo root (never `scripts/coverage/` kcov drivers); keep `.gitignore` and `.dockerignore` aligned on that rule.
 
@@ -93,7 +93,7 @@ Live logs: tee long runs under `reports/distro-logs/` when iterating on matrix/p
 1. Per-file complexity **≤ 15**
 1. Docker lint stack clean (shellcheck, shfmt, bash -n, yamllint, actionlint, hadolint, mdformat)
 1. Distro matrix lanes pass (compat + e2e)
-1. SonarQube Cloud quality gate passes on the PR (Automatic Analysis; no token required)
+1. SonarQube Cloud quality gate passes on the PR (CI-based analysis via the `sonarqube` job: needs the `SONAR_TOKEN` secret and Automatic Analysis off; imports `coverage/sonar-coverage.xml` from the coverage gate)
 1. Commit updated `assets/coverage.svg` after coverage-affecting changes
 
 ## Installer & UI Invariants
@@ -188,7 +188,7 @@ docker run --rm fedora:46 bash -c 'dnf install -y -q curl procps >/dev/null && r
 1. BATS under `tests/`; shared mocks in `tests/setup_mocks.sh`.
 1. Installer tests: `tests/install_*.bats` (including `install_whiptail.bats`).
 1. Component tests per script area; e2e under `tests/e2e/` with `REAL_DEPS=1` for real packages.
-1. Coverage via kcov + `tests/transform_coverage.py` (thresholds above).
+1. Coverage via kcov + `tests/transform_coverage.py` (thresholds above); it also writes `coverage/sonar-coverage.xml` (Sonar generic coverage) for the CI `sonarqube` job.
 1. Prefer deterministic mocks; isolate `INSTALL_DIR`, `LEGACY_INSTALL_DIR`, `SSMTP_CONF`, `REVALIASES`, `MOCK_DIR`.
 1. Root-owned tree tests (`tests/install_root_owned.bats`, `tests/uninstall.bats`) use real passwordless `sudo` (test images grant it to `pi`) and `skip` when `sudo -n true` fails.
 1. Whiptail mock is controllable via `/tmp/mocks/whiptail_*` state files — exercise both whiptail success and text-fallback paths.

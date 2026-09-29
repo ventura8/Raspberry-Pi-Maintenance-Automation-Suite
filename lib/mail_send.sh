@@ -7,7 +7,10 @@ if [[ -f "$_UI_MSG" ]]; then
     # shellcheck source=lib/ui_msg.sh
     source "$_UI_MSG"
 elif ! declare -F _pi_echo > /dev/null 2>&1; then
-    _pi_gettext() { printf '%s' "$1"; }
+    _pi_gettext() {
+        printf '%s' "$1"
+        return
+    }
     _pi_gettextf() {
         local format="$1" argument prefix suffix
         shift
@@ -24,7 +27,10 @@ elif ! declare -F _pi_echo > /dev/null 2>&1; then
         printf '%s' "$format"
         return
     }
-    _pi_echo() { printf '%s\n' "$1"; }
+    _pi_echo() {
+        printf '%s\n' "$1"
+        return
+    }
     _pi_echof() {
         local format
         format=$(_pi_gettextf "$@")
@@ -48,7 +54,8 @@ MSMTP_CONF="${MSMTP_CONF:-/etc/msmtprc}"
 # `msmtp --account=default` accepts either). A bare `defaults` block alone is not usable.
 # Prints nothing and fails if unresolved.
 _msmtp_resolve_default_field() {
-    awk -v field="$1" '
+    local field="$1"
+    awk -v field="$field" '
         # msmtp requires every inherited account to already be declared (parsed earlier in the
         # file) — an undeclared or forward-referenced parent makes the whole config invalid, not
         # just that one lookup. bound is the referencing accounts declaration order; a parent
@@ -134,8 +141,8 @@ _msmtp_resolve_default_field() {
 # they may need install.sh's own sudo semantics (interactive install vs. cron).
 _msmtp_default_field() {
     [[ -f "$MSMTP_CONF" ]] || return 1
-    local result
-    result=$(_msmtp_resolve_default_field "$1" < "$MSMTP_CONF") && [[ -n "$result" ]] && {
+    local field="$1" result
+    result=$(_msmtp_resolve_default_field "$field" < "$MSMTP_CONF") && [[ -n "$result" ]] && {
         printf '%s' "$result"
         return 0
     }
@@ -143,7 +150,7 @@ _msmtp_default_field() {
     local content
     content=$(sudo -n cat "$MSMTP_CONF" 2> /dev/null) || return 1
     [[ -n "$content" ]] || return 1
-    printf '%s' "$content" | _msmtp_resolve_default_field "$1"
+    printf '%s' "$content" | _msmtp_resolve_default_field "$field"
     return
 }
 

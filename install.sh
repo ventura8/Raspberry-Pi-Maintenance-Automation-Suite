@@ -114,7 +114,10 @@ if ! declare -F _pi_gettext > /dev/null 2>&1; then
     if [[ -f "$_INSTALL_ROOT/lib/ui_msg.sh" ]]; then
         source "$_INSTALL_ROOT/lib/ui_msg.sh"
     else
-        _pi_gettext() { printf '%s' "$1"; }
+        _pi_gettext() {
+            printf '%s' "$1"
+            return
+        }
         _pi_gettextf() {
             local format="$1" argument prefix suffix
             shift
@@ -131,7 +134,10 @@ if ! declare -F _pi_gettext > /dev/null 2>&1; then
             printf '%s' "$format"
             return
         }
-        _pi_echo() { printf '%s\n' "$1"; }
+        _pi_echo() {
+            printf '%s\n' "$1"
+            return
+        }
         _pi_echof() {
             local format
             format=$(_pi_gettextf "$@")
@@ -616,8 +622,8 @@ EOF
 }
 
 get_current_email_user() {
-    local user hub
-    if _msmtp_user_host user hub; then
+    local user host
+    if _msmtp_user_host user host && [[ -n "$host" ]]; then
         printf '%s\n' "$user"
         return 0
     fi
@@ -1124,7 +1130,7 @@ _repoint_crontab_dir() {
 # Retire legacy directories (newline-separated in $1): repoint crontabs, then delete the copies
 # root cron no longer runs. Only directories that look like a suite install are removed.
 _retire_legacy_install_dirs() {
-    local legacy
+    local legacy_dirs="$1" legacy
     while IFS= read -r legacy; do
         if [[ -z "$legacy" ]] || [[ "$legacy" = "$INSTALL_DIR" ]]; then
             continue
@@ -1148,7 +1154,7 @@ _retire_legacy_install_dirs() {
         else
             _pi_echof "Removed legacy install directory %s (scripts now live in %s)." "$legacy" "$INSTALL_DIR"
         fi
-    done <<< "$1"
+    done <<< "$legacy_dirs"
     return
 }
 

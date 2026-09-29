@@ -40,7 +40,7 @@ Preferred local gate matching GitHub Actions:
 
 Actions jobs call the same entrypoint per stage (`--lints-only`, `--coverage-only`, `--distro <image>`). Executable prep is shared via `scripts/ensure_exec.sh`. Test images bake host `CI_UID`/`CI_GID` into user `pi`, and matrix runs use `--user $(id -u):$(id -g)` so bind-mounted checkout writes work on GitHub Actions (runner UID often ≠ 1000).
 
-Static analysis runs on SonarQube Cloud (project `ventura8_Raspberry-Pi-Maintenance-Automation-Suite`, configured by [`sonar-project.properties`](sonar-project.properties)). Automatic Analysis scans every push and PR and needs no secret, so the `sonarqube` job in `ci.yml` stays guarded by `if: env.SONAR_TOKEN != ''` and skips. Switching to CI-based analysis requires adding the `SONAR_TOKEN` secret **and** disabling Automatic Analysis — Sonar rejects CI analysis while AutoScan is on.
+Static analysis runs on SonarQube Cloud (project `ventura8_Raspberry-Pi-Maintenance-Automation-Suite`, configured by [`sonar-project.properties`](sonar-project.properties)). Coverage reaches Sonar only through CI-based analysis: the coverage gate's `tests/transform_coverage.py` writes `coverage/sonar-coverage.xml` (Sonar's generic coverage format, since Sonar has no native Bash coverage importer) next to `coverage/cobertura.xml`, and the `sonarqube` job in `ci.yml` (which `needs: coverage-gate`) downloads the `coverage-gate` artifact and scans with `sonar.coverageReportPaths=coverage/sonar-coverage.xml`. That job is guarded by `if: env.SONAR_TOKEN != ''`, so it requires the `SONAR_TOKEN` repository secret **and** Automatic Analysis turned off in the SonarQube Cloud project (Administration → Analysis Method). Sonar rejects CI analysis while AutoScan is on, and AutoScan never imports coverage.
 
 Docker images pin every apt/dnf package version and fetch hadolint/actionlint via `ADD --checksum`; hadolint enforces this on all tracked Dockerfiles. Stale pins surface as lane build failures — refresh them per AGENTS.md "Docker Image Pinning".
 
@@ -87,5 +87,5 @@ The suite includes a self-healing capability (`scripts/update_self.sh`) that ens
 - [Project Overview & Directory Structure](docs/project_overview.md)
 - [Script Logic & Functionality](docs/script_logic.md)
 - [Development & Standards](docs/development_standards.md)
-- [Release Notes (GitHub description)](docs/releases/v1.1.7.md) — prepare via `.agents/skills/prepare-release`; published automatically by `.github/workflows/release.yml` when the matching tag is pushed
+- [Release Notes (GitHub description)](docs/releases/v1.1.8.md) — prepare via `.agents/skills/prepare-release`; published automatically by `.github/workflows/release.yml` when the matching tag is pushed
 - [Prompt Templates for Chat Workflows](.github/prompts/README.md)
