@@ -3,10 +3,14 @@
 # shellcheck shell=bash
 
 _UI_MSG="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/ui_msg.sh"
-if [[ -f "$_UI_MSG" ]]; then
+# Helpers already loaded (installer bootstrap evaluates libs from memory, where BASH_SOURCE does not
+# point at lib/): never go looking for ui_msg.sh relative to the current directory.
+if declare -F _pi_echo > /dev/null 2>&1; then
+    :
+elif [[ -f "$_UI_MSG" ]]; then
     # shellcheck source=lib/ui_msg.sh
     source "$_UI_MSG"
-elif ! declare -F _pi_echo > /dev/null 2>&1; then
+else
     _pi_gettext() {
         printf '%s' "$1"
         return

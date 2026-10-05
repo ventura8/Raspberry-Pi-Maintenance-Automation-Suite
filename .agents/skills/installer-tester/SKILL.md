@@ -12,7 +12,7 @@ Use when changing `install.sh`, `uninstall.sh`, installer mocks, or installer BA
 1. Classic text UI is **automatic fallback** when whiptail cannot run — not a separate legacy flag.
 1. `install.sh --update` = `check_dependencies` + `download_scripts` + `quiet_suite_cron_jobs`; no menus; cron-safe.
 1. `download_scripts` rewrites `RECIPIENT_EMAIL="..."` to the configured ssmtp/msmtp user (maintenance scripts must ship `your_email@gmail.com` only).
-1. Fresh `curl|bash` bootstraps package/mail/UI helpers from `$RAW_URL/lib/` when no local `lib/` is present.
+1. Fresh `curl|bash` bootstraps package/mail/UI helpers from `$RAW_URL/lib/` when no local `lib/` is present, evaluating them in memory (no temp files to swap); user-owned local libs are streamed from `$RAW_URL` instead of copied by `sudo install` (`_install_src_trusted`).
 1. `quiet_suite_cron_jobs` preserves cron macros (`@daily`, etc.) when rewriting redirects.
 1. `check_dependencies` installs curl, mail-transport, and whiptail (or family equivalent).
 1. Piped installs must use `/dev/tty` when available (`run_interactive` / `read_input`).
