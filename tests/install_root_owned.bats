@@ -414,3 +414,16 @@ EOS
     [[ "$output" =~ "NO_PKG" ]]
     [[ ! "$output" =~ "PLANTED_UI_MSG" ]]
 }
+
+@test "Root-owned: _install_src_trusted returns the canonical path, not a user-owned symlink" {
+    sudo -n true 2> /dev/null || skip "passwordless sudo required"
+    _make_root_parent
+    export INSTALL_DIR="$ROOT_PARENT/tree"
+    sudo -n /usr/bin/install -d -o root -g root -m 0755 "$ROOT_PARENT/lib"
+    sudo -n /usr/bin/install -o root -g root -m 0644 ./lib/os_pkg.sh "$ROOT_PARENT/lib/os_pkg.sh"
+    local link="$BATS_TEST_TMPDIR/lib-link"
+    ln -sfn "$ROOT_PARENT/lib" "$link"
+    run bash -c "export $(_env); source ./install.sh; _install_src_trusted '$link/os_pkg.sh'"
+    [ "$status" -eq 0 ]
+    [ "$output" = "$(realpath "$ROOT_PARENT/lib/os_pkg.sh")" ]
+}
