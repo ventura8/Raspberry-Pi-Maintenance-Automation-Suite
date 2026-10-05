@@ -68,12 +68,13 @@ _source_lib_dir() {
 # straight from memory. Never stage them in a user-writable temp dir and source that: same-UID
 # malware could swap the file before `source` and hijack pkg_install (the first sudo prompt).
 # Keeping the bytes off disk gives the helpers the same trust as the piped installer itself.
+# ui_msg.sh is required: without it the libs would resolve ui_msg.sh against BASH_SOURCE, which
+# is empty under eval, i.e. the current directory.
 _fetch_bootstrap_libs() {
     local lib_file content
     command -v curl > /dev/null 2>&1 || return 1
     for lib_file in ui_msg.sh os_pkg.sh mail_send.sh; do
         if ! content=$(curl -fsSL "$RAW_URL/lib/$lib_file"); then
-            [[ "$lib_file" = "ui_msg.sh" ]] && continue
             return 1
         fi
         eval "$content" || return 1
@@ -955,19 +956,27 @@ _install_atomic_curl() {
 }
 
 # A local source may feed a privileged install(1) only when the installing user cannot change it:
-# owned by root and not group/other-writable, with the same holding for its directory (no rename
-# swap). A user checkout or user-owned mktemp tree fails this and download_scripts streams that
-# file from RAW_URL instead. Unprivileged installs (writable INSTALL_DIR) cross no boundary.
+# the file and every ancestor directory are root-owned and not group/other-writable (a sticky
+# ancestor such as /tmp is fine above the parent: only its owner, root, may rename the entry).
+# A user checkout or user-owned mktemp tree fails this and download_scripts streams that file
+# from RAW_URL instead. Unprivileged installs (writable INSTALL_DIR) cross no boundary.
 _install_src_trusted() {
-    local src="$1" path perms
+    local file path perms
     if [[ "$(id -u)" -ne 0 ]] && ! _install_dir_needs_root; then
         return 0
     fi
-    for path in "$src" "$(dirname "$src")"; do
-        perms=$(stat -L -c '%u %A' "$path" 2> /dev/null) || return 1
-        [[ "${perms%% *}" = "0" ]] || return 1
-        perms="${perms#* }"
-        [[ "${perms:5:1}" != "w" ]] && [[ "${perms:8:1}" != "w" ]] || return 1
+    file=$(realpath -e -- "$1" 2> /dev/null) || return 1
+    # The file and its parent must be strictly root-only writable.
+    for path in "$file" "$(dirname "$file")"; do
+        perms=$(stat -c '%u %A' "$path" 2> /dev/null) || return 1
+        [[ "$perms" =~ ^0\ .....-..-. ]] || return 1
+    done
+    # Higher ancestors: root-owned, and either not group/other-writable or sticky.
+    path=$(dirname "$file")
+    while [[ "$path" != "/" ]]; do
+        path=$(dirname "$path")
+        perms=$(stat -c '%u %A' "$path" 2> /dev/null) || return 1
+        [[ "$perms" =~ ^0\ (.....-..-.|.........[tT])$ ]] || return 1
     done
     return 0
 }

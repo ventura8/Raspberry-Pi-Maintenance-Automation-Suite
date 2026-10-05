@@ -386,3 +386,31 @@ EOS
     [[ ! "$output" =~ "PLANTED_UI_MSG" ]]
     [ -z "$(ls -A "$user_tmp")" ]
 }
+
+@test "Root-owned: _install_src_trusted rejects a root-owned file under a user-owned ancestor" {
+    sudo -n true 2> /dev/null || skip "passwordless sudo required"
+    _make_root_parent
+    export INSTALL_DIR="$ROOT_PARENT/tree"
+    local user_dir="$BATS_TEST_TMPDIR/user-owned"
+    mkdir -p "$user_dir"
+    sudo -n /usr/bin/install -d -o root -g root -m 0755 "$user_dir/rootdir"
+    sudo -n /usr/bin/install -o root -g root -m 0644 ./lib/os_pkg.sh "$user_dir/rootdir/os_pkg.sh"
+    run bash -c "export $(_env); source ./install.sh; _install_src_trusted '$user_dir/rootdir/os_pkg.sh'"
+    sudo -n /bin/rm -rf "$user_dir/rootdir"
+    [ "$status" -ne 0 ]
+}
+
+@test "Root-owned: bootstrap fails closed when ui_msg.sh cannot be fetched" {
+    local isolated="$BATS_TEST_TMPDIR/iso_noui"
+    mkdir -p "$isolated"
+    rm -rf "$INSTALL_DIR"
+    cp ./install.sh "$isolated/install.sh"
+    cp -p "$MOCK_DIR/curl" "$MOCK_DIR/curl.real"
+    printf '#!/bin/bash\nfor a in "$@"; do case "$a" in */ui_msg.sh) exit 22;; */lib/*.sh) cat %q/lib/"${a##*/}"; exit 0;; esac; done\nexit 22\n' \
+        "$PWD" > "$MOCK_DIR/curl"
+    echo 'echo PLANTED_UI_MSG' > "$isolated/ui_msg.sh"
+    run bash -c "cd '$isolated' && export $(_env); source ./install.sh; declare -F pkg_install || echo NO_PKG"
+    mv -f "$MOCK_DIR/curl.real" "$MOCK_DIR/curl"
+    [[ "$output" =~ "NO_PKG" ]]
+    [[ ! "$output" =~ "PLANTED_UI_MSG" ]]
+}
