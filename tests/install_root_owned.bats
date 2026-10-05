@@ -427,3 +427,17 @@ EOS
     [ "$status" -eq 0 ]
     [ "$output" = "$(realpath "$ROOT_PARENT/lib/os_pkg.sh")" ]
 }
+
+@test "Root-owned: fresh install aborts when bootstrap helpers failed to load" {
+    local isolated="$BATS_TEST_TMPDIR/iso_fresh_noboot"
+    mkdir -p "$isolated"
+    rm -rf "$INSTALL_DIR"
+    cp ./install.sh "$isolated/install.sh"
+    cp -p "$MOCK_DIR/curl" "$MOCK_DIR/curl.real"
+    printf '#!/bin/bash\nexit 22\n' > "$MOCK_DIR/curl"
+    run bash -c "cd '$isolated' && export $(_env); bash ./install.sh < /dev/null"
+    mv -f "$MOCK_DIR/curl.real" "$MOCK_DIR/curl"
+    [ "$status" -eq 1 ]
+    [[ "$output" =~ "package helpers not loaded" ]]
+    [ ! -d "$INSTALL_DIR" ]
+}

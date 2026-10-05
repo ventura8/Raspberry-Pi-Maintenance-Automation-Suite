@@ -96,7 +96,7 @@ _ensure_install_helpers() {
     if declare -F pkg_install > /dev/null 2>&1 && declare -F has_mail_sender > /dev/null 2>&1; then
         return 0
     fi
-    _pi_echo "Error: package helpers not loaded. Cannot continue update."
+    _pi_echo "Error: package helpers not loaded. Cannot continue."
     return 1
 }
 
@@ -2079,6 +2079,12 @@ install_main() {
         quiet_suite_cron_jobs
         _retire_legacy_install_dirs "$legacy"
         return 0
+    fi
+
+    # Fail closed when the helper libs did not load (e.g. a bootstrap fetch failed): every
+    # install path below needs pkg_install / has_mail_sender.
+    if ! _ensure_install_helpers; then
+        return 1
     fi
 
     # Deterministic matrix/CI fresh install (no interactive prompts / menu).
