@@ -336,3 +336,53 @@ EOS
     [ "$status" -ne 0 ]
     [[ "$output" =~ "cannot create /proc/pi-scripts-impossible" ]]
 }
+
+@test "Root-owned: user-owned checkout libs are streamed from RAW_URL, never copied by sudo install" {
+    sudo -n true 2> /dev/null || skip "passwordless sudo required"
+    _make_root_parent
+    export INSTALL_DIR="$ROOT_PARENT/tree"
+    local curl_log="$BATS_TEST_TMPDIR/curl-args"
+    : > "$curl_log"
+    cp -p "$MOCK_DIR/curl" "$MOCK_DIR/curl.real"
+    printf '#!/bin/bash\necho "$*" >> %q\nexec %q "$@"\n' "$curl_log" "$MOCK_DIR/curl.real" > "$MOCK_DIR/curl"
+
+    run bash -c "export $(_env); source ./install.sh; download_scripts"
+    mv -f "$MOCK_DIR/curl.real" "$MOCK_DIR/curl"
+    [ "$status" -eq 0 ]
+    grep -q 'lib/os_pkg.sh' "$curl_log"
+    grep -q 'lib/mail_send.sh' "$curl_log"
+    [ "$(stat -c %U:%a "$INSTALL_DIR/lib/os_pkg.sh")" = "root:644" ]
+}
+
+@test "Root-owned: _install_src_trusted accepts root-owned sources only" {
+    sudo -n true 2> /dev/null || skip "passwordless sudo required"
+    _make_root_parent
+    export INSTALL_DIR="$ROOT_PARENT/tree"
+    sudo -n /usr/bin/install -o root -g root -m 0644 ./lib/os_pkg.sh "$ROOT_PARENT/os_pkg.sh"
+    run bash -c "export $(_env); source ./install.sh; _install_src_trusted '$ROOT_PARENT/os_pkg.sh'"
+    [ "$status" -eq 0 ]
+    run bash -c "export $(_env); source ./install.sh; _install_src_trusted ./lib/os_pkg.sh"
+    [ "$status" -ne 0 ]
+    run bash -c "export $(_env); source ./install.sh; _install_src_trusted '$ROOT_PARENT/missing.sh'"
+    [ "$status" -ne 0 ]
+}
+
+@test "Root-owned: curl|bash bootstrap evaluates libs in memory, never from a temp dir" {
+    local isolated="$BATS_TEST_TMPDIR/iso_boot" user_tmp="$BATS_TEST_TMPDIR/user-tmp"
+    mkdir -p "$isolated" "$user_tmp"
+    rm -rf "$INSTALL_DIR"
+    cp ./install.sh "$isolated/install.sh"
+    cp -p "$MOCK_DIR/curl" "$MOCK_DIR/curl.real"
+    printf '#!/bin/bash\nfor a in "$@"; do case "$a" in */lib/*.sh) cat %q/lib/"${a##*/}"; exit 0;; esac; done\nexit 22\n' \
+        "$PWD" > "$MOCK_DIR/curl"
+    # A planted ./ui_msg.sh in the cwd must not be sourced by the in-memory libs.
+    echo 'echo PLANTED_UI_MSG' > "$isolated/ui_msg.sh"
+
+    run bash -c "cd '$isolated' && export $(_env) TMPDIR=$user_tmp; source ./install.sh; declare -F pkg_install has_mail_sender _pi_echo"
+    mv -f "$MOCK_DIR/curl.real" "$MOCK_DIR/curl"
+    [ "$status" -eq 0 ]
+    [[ "$output" =~ "pkg_install" ]]
+    [[ "$output" =~ "has_mail_sender" ]]
+    [[ ! "$output" =~ "PLANTED_UI_MSG" ]]
+    [ -z "$(ls -A "$user_tmp")" ]
+}

@@ -64,28 +64,20 @@ _source_lib_dir() {
     return 0
 }
 
-# curl|bash has no sibling lib/; fetch package/mail/UI helpers from RAW_URL into a temp dir.
+# curl|bash has no sibling lib/; fetch package/mail/UI helpers from RAW_URL and evaluate them
+# straight from memory. Never stage them in a user-writable temp dir and source that: same-UID
+# malware could swap the file before `source` and hijack pkg_install (the first sudo prompt).
+# Keeping the bytes off disk gives the helpers the same trust as the piped installer itself.
 _fetch_bootstrap_libs() {
-    local dest lib_file tmp
+    local lib_file content
     command -v curl > /dev/null 2>&1 || return 1
-    dest=$(mktemp -d) || return 1
-    mkdir -p "$dest/lib"
-    for lib_file in os_pkg.sh mail_send.sh ui_msg.sh; do
-        tmp=$(mktemp "$dest/lib/.fetch.XXXXXX") || {
-            rm -rf "$dest"
+    for lib_file in ui_msg.sh os_pkg.sh mail_send.sh; do
+        if ! content=$(curl -fsSL "$RAW_URL/lib/$lib_file"); then
+            [[ "$lib_file" = "ui_msg.sh" ]] && continue
             return 1
-        }
-        if curl -fsSL "$RAW_URL/lib/$lib_file" -o "$tmp"; then
-            mv -f "$tmp" "$dest/lib/$lib_file"
-        else
-            rm -f "$tmp"
-            if [[ "$lib_file" = "os_pkg.sh" ]] || [[ "$lib_file" = "mail_send.sh" ]]; then
-                rm -rf "$dest"
-                return 1
-            fi
         fi
+        eval "$content" || return 1
     done
-    printf '%s' "$dest/lib"
     return 0
 }
 
@@ -95,8 +87,7 @@ _source_install_libs() {
         _source_lib_dir "$lib_root"
         return $?
     fi
-    lib_root=$(_fetch_bootstrap_libs) || return 1
-    _source_lib_dir "$lib_root"
+    _fetch_bootstrap_libs
     return
 }
 
@@ -963,6 +954,24 @@ _install_atomic_curl() {
     return
 }
 
+# A local source may feed a privileged install(1) only when the installing user cannot change it:
+# owned by root and not group/other-writable, with the same holding for its directory (no rename
+# swap). A user checkout or user-owned mktemp tree fails this and download_scripts streams that
+# file from RAW_URL instead. Unprivileged installs (writable INSTALL_DIR) cross no boundary.
+_install_src_trusted() {
+    local src="$1" path perms
+    if [[ "$(id -u)" -ne 0 ]] && ! _install_dir_needs_root; then
+        return 0
+    fi
+    for path in "$src" "$(dirname "$src")"; do
+        perms=$(stat -L -c '%u %A' "$path" 2> /dev/null) || return 1
+        [[ "${perms%% *}" = "0" ]] || return 1
+        perms="${perms#* }"
+        [[ "${perms:5:1}" != "w" ]] && [[ "${perms:8:1}" != "w" ]] || return 1
+    done
+    return 0
+}
+
 download_scripts() {
     _pi_echo "Downloading/Updating scripts..."
     local failed=0
@@ -986,7 +995,7 @@ download_scripts() {
     local lib_file lib_src
     for lib_file in os_pkg.sh mail_send.sh ui_msg.sh; do
         lib_src=""
-        if [[ -f "$_INSTALL_ROOT/lib/$lib_file" ]]; then
+        if [[ -f "$_INSTALL_ROOT/lib/$lib_file" ]] && _install_src_trusted "$_INSTALL_ROOT/lib/$lib_file"; then
             lib_src="$_INSTALL_ROOT/lib/$lib_file"
         fi
         if [[ -n "$lib_src" ]]; then
