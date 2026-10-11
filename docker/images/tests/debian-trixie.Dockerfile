@@ -40,7 +40,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     && update-locale LANG=en_US.UTF-8 LC_ALL=en_US.UTF-8 \
     && rm -rf /var/lib/apt/lists/* \
     && python3 -m pip install --break-system-packages --no-cache-dir \
-        --only-binary :all: 'lizard==1.24.0'
+        --only-binary :all: 'lizard==1.24.1'
 
 COPY docker/images/tests/scripts/common.sh /tmp/common.sh
 ARG CI_UID=1000
