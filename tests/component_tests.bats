@@ -605,6 +605,45 @@ EOF
     [[ ! "$output" =~ "FAIL_SHOULD_NOT_REBOOT" ]]
 }
 
+@test "Component: Firmware - fwupd exit 2 (nothing to do) is up to date, not a query failure" {
+    rm -f "$MOCK_DIR/rpi-eeprom-update"
+
+    # Real fwupd exits 2 (FWUPD_EXIT_CODE_NOTHING_TO_DO) when every device is current.
+    cat << 'EOF' > "$MOCK_DIR/fwupdmgr"
+#!/bin/bash
+if [[ "$1" == "refresh" ]]; then
+    exit 0
+elif [[ "$1" == "get-upgrades" ]]; then
+    echo "Devices with no available firmware updates:"
+    echo " • System Firmware"
+    echo "Devices with the latest available firmware version:"
+    echo " • UEFI dbx"
+    echo "No updates available"
+    exit 2
+elif [[ "$1" == "get-updates" ]]; then
+    echo "FAIL_SHOULD_NOT_FALL_BACK"
+    exit 1
+elif [[ "$1" == "update" ]]; then
+    echo "FAIL_SHOULD_NOT_UPDATE"
+    exit 0
+fi
+EOF
+    /bin/chmod +x "$MOCK_DIR/fwupdmgr"
+
+    cat << 'EOF' > "$MOCK_DIR/shutdown"
+#!/bin/bash
+echo "FAIL_SHOULD_NOT_REBOOT"
+EOF
+    /bin/chmod +x "$MOCK_DIR/shutdown"
+
+    run bash -c "export PATH=$MOCK_DIR:$PATH; ./scripts/update_pi_firmware.sh"
+    [[ "$output" =~ "No updates available." ]]
+    [[ ! "$output" =~ "failed to query update availability" ]]
+    [[ ! "$output" =~ "FAIL_SHOULD_NOT_FALL_BACK" ]]
+    [[ ! "$output" =~ "FAIL_SHOULD_NOT_UPDATE" ]]
+    [[ ! "$output" =~ "FAIL_SHOULD_NOT_REBOOT" ]]
+}
+
 @test "Component: Firmware - Automatic Dependency Installation" {
     # Ensure neither rpi-eeprom-update nor fwupdmgr are in PATH/MOCK_DIR
     rm -f "$MOCK_DIR/rpi-eeprom-update"
