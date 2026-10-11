@@ -103,12 +103,18 @@ main() {
             sudo fwupdmgr refresh --force 2>&1
 
             # Newer fwupd uses get-upgrades; keep get-updates as compatibility fallback.
+            # fwupd exits 2 (FWUPD_EXIT_CODE_NOTHING_TO_DO) when every device is up to date:
+            # that is a successful query, not a failure.
             _pi_echo "Checking for updates..."
             FWUPD_LIST_OUTPUT=""
             FWUPD_CHECK_OK=false
-            if FWUPD_LIST_OUTPUT=$(sudo fwupdmgr get-upgrades 2>&1); then
-                FWUPD_CHECK_OK=true
-            elif FWUPD_LIST_OUTPUT=$(sudo fwupdmgr get-updates 2>&1); then
+            FWUPD_LIST_RC=0
+            FWUPD_LIST_OUTPUT=$(sudo fwupdmgr get-upgrades 2>&1) || FWUPD_LIST_RC=$?
+            if [[ "$FWUPD_LIST_RC" -ne 0 && "$FWUPD_LIST_RC" -ne 2 ]]; then
+                FWUPD_LIST_RC=0
+                FWUPD_LIST_OUTPUT=$(sudo fwupdmgr get-updates 2>&1) || FWUPD_LIST_RC=$?
+            fi
+            if [[ "$FWUPD_LIST_RC" -eq 0 || "$FWUPD_LIST_RC" -eq 2 ]]; then
                 FWUPD_CHECK_OK=true
             fi
 

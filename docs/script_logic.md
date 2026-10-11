@@ -23,6 +23,9 @@ ______________________________________________________________________
   the absence of a "no updates" phrase — modern fwupd always prints a
   `Devices with no available firmware updates:` section for current devices even when another
   device (e.g. UEFI dbx) has a pending release.
+- `fwupdmgr get-upgrades` / `get-updates` exit code `2` (`FWUPD_EXIT_CODE_NOTHING_TO_DO`) means every
+  device is current and is treated as a successful query ("No updates available."), not as a query
+  failure; only other non-zero exits fall back to `get-updates` / report "failed to query".
 - Installs with `fwupdmgr update -y --no-reboot-check` (the real flag on fwupd 1.x and 2.x; `--no-reboot`
   does not exist and fwupd 2.x rejects it). A non-zero exit from `fwupdmgr update` is reported as an
   explicit `ERROR` in the email and never schedules a reboot. Same rule applies to the LVFS path in
