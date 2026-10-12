@@ -2,48 +2,70 @@
 # Description: One-line uninstaller for the Raspberry Pi Maintenance Suite.
 # Removes all scheduled cron jobs and deletes the installation directory.
 
-_RPI_UNINSTALL_ROOT="${PI_UNINSTALL_ROOT_OVERRIDE:-$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)}"
+# Piped curl|bash leaves BASH_SOURCE empty; process substitution uses /dev/fd — both would
+# otherwise make dirname resolve to $PWD and let a planted $PWD/lib/ui_msg.sh wrap sudo.
+_RPI_UNINSTALL_SCRIPT="${BASH_SOURCE[0]:-}"
+if [[ -n "${PI_UNINSTALL_ROOT_OVERRIDE:-}" ]]; then
+    _RPI_UNINSTALL_ROOT="$PI_UNINSTALL_ROOT_OVERRIDE"
+elif [[ -n "$_RPI_UNINSTALL_SCRIPT" && "$_RPI_UNINSTALL_SCRIPT" != /dev/* &&
+    "$_RPI_UNINSTALL_SCRIPT" != /proc/* && -f "$_RPI_UNINSTALL_SCRIPT" ]]; then
+    _RPI_UNINSTALL_ROOT="$(cd "$(dirname "$_RPI_UNINSTALL_SCRIPT")" && pwd)"
+else
+    _RPI_UNINSTALL_ROOT=""
+fi
 DEFAULT_INSTALL_DIR="/usr/local/lib/pi-maintenance"
 # Pre-v1.1.5 installs lived in a user-writable $HOME/pi-scripts; still cleaned up here.
 LEGACY_INSTALL_DIR="${LEGACY_INSTALL_DIR:-$HOME/pi-scripts}"
 
-if [[ -f "$_RPI_UNINSTALL_ROOT/lib/ui_msg.sh" ]]; then
+# Source ui_msg only from a real sibling of this script or the install tree — never from cwd
+# when BASH_SOURCE is empty. Prefer inline stubs over an untrusted planted helper.
+_uninstall_source_ui_msg() {
+    local candidate
+    if [[ -n "$_RPI_UNINSTALL_ROOT" ]] && [[ -f "$_RPI_UNINSTALL_ROOT/lib/ui_msg.sh" ]]; then
+        candidate="$_RPI_UNINSTALL_ROOT/lib/ui_msg.sh"
+    elif [[ -f "${INSTALL_DIR:-$DEFAULT_INSTALL_DIR}/lib/ui_msg.sh" ]]; then
+        candidate="${INSTALL_DIR:-$DEFAULT_INSTALL_DIR}/lib/ui_msg.sh"
+    else
+        return 1
+    fi
     # shellcheck source=lib/ui_msg.sh
-    source "$_RPI_UNINSTALL_ROOT/lib/ui_msg.sh"
-elif [[ -f "${INSTALL_DIR:-$DEFAULT_INSTALL_DIR}/lib/ui_msg.sh" ]]; then
-    # shellcheck source=lib/ui_msg.sh
-    source "${INSTALL_DIR:-$DEFAULT_INSTALL_DIR}/lib/ui_msg.sh"
-elif ! declare -F _pi_echo > /dev/null 2>&1; then
-    _pi_gettext() {
-        printf '%s' "$1"
-        return
-    }
-    _pi_gettextf() {
-        local format="$1" argument prefix suffix
-        shift
-        for argument in "$@"; do
-            case "$format" in
-                *%s*)
-                    prefix=${format%%\%s*}
-                    suffix=${format#*%s}
-                    format="${prefix}${argument}${suffix}"
-                    ;;
-                *) ;;
-            esac
-        done
-        printf '%s' "$format"
-        return
-    }
-    _pi_echo() {
-        printf '%s\n' "$1"
-        return
-    }
-    _pi_echof() {
-        local format
-        format=$(_pi_gettextf "$@")
-        printf '%s\n' "$format"
-        return
-    }
+    source "$candidate"
+    return 0
+}
+
+if ! declare -F _pi_echo > /dev/null 2>&1; then
+    if ! _uninstall_source_ui_msg; then
+        _pi_gettext() {
+            printf '%s' "$1"
+            return
+        }
+        _pi_gettextf() {
+            local format="$1" argument prefix suffix
+            shift
+            for argument in "$@"; do
+                case "$format" in
+                    *%s*)
+                        prefix=${format%%\%s*}
+                        suffix=${format#*%s}
+                        format="${prefix}${argument}${suffix}"
+                        ;;
+                    *) ;;
+                esac
+            done
+            printf '%s' "$format"
+            return
+        }
+        _pi_echo() {
+            printf '%s\n' "$1"
+            return
+        }
+        _pi_echof() {
+            local format
+            format=$(_pi_gettextf "$@")
+            printf '%s\n' "$format"
+            return
+        }
+    fi
 fi
 
 # Directory of the first suite script referenced in a crontab dump ($1 = file), or nothing.

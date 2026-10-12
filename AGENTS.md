@@ -153,6 +153,7 @@ Live logs: tee long runs under `reports/distro-logs/` when iterating on matrix/p
 1. Rewrite root/user crontabs using `mktemp` + mode `600` bak/new files — never hardcoded `/tmp/root_cron.*` or `/tmp/user_cron.*` paths (TOCTOU / crontab injection).
 1. Install-directory detection parses the script's directory from the crontab **bak** files (captured before entries are stripped), via `_cron_script_dir` (matches any of the seven suite scripts) — never re-read `crontab -l` afterwards or take the line's last field.
 1. `rm -rf` of a detected/default/legacy directory is guarded by `_dir_is_suite_only` (requires the `.version` marker and also inspects `lib/`): refuse when it contains anything the installer did not create (a manual `/home/pi/update_pi_os.sh` crontab line must never delete a home directory). The root-owned default is removed via `sudo`.
+1. Empty or `/dev`/`/proc` `BASH_SOURCE` (piped uninstall) leaves `_RPI_UNINSTALL_ROOT` empty so `$PWD/lib/ui_msg.sh` is never sourced before `sudo crontab` / `sudo rm`.
 
 ## Distro Matrix Governance
 

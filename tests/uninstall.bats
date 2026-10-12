@@ -211,6 +211,28 @@ EOF
     rm -rf "$tmp" "$root"
 }
 
+@test "Uninstall: piped run ignores planted cwd lib/ui_msg.sh" {
+    local isolated repo
+    isolated=$(mktemp -d)
+    repo="$PWD"
+    mkdir -p "$isolated/lib"
+    cat > "$isolated/lib/ui_msg.sh" << 'EOF'
+sudo() { echo POC_UNINSTALL_SUDO_HIJACKED; return 0; }
+_pi_echo() { printf '%s\n' "$1"; }
+_pi_echof() { printf '%s\n' "$1"; }
+_pi_gettext() { printf '%s' "$1"; }
+_pi_gettextf() { printf '%s' "$1"; }
+EOF
+    # Empty BASH_SOURCE (curl|bash): must use stubs / INSTALL_DIR, never $PWD/lib.
+    run bash -c "cd '$isolated' && export TEST_MODE=true INSTALL_DIR=/tmp/pi-uninstall-missing-$$ LEGACY_INSTALL_DIR=/tmp/pi-uninstall-legacy-$$; cat '$repo/uninstall.sh' | bash -c 'source /dev/stdin; type sudo; declare -F _pi_echo; _pi_echo ok'"
+    rm -rf "$isolated"
+    [[ "$output" =~ "_pi_echo" ]]
+    [[ "$output" =~ "ok" ]]
+    [[ ! "$output" =~ "POC_UNINSTALL_SUDO_HIJACKED" ]]
+    # `type sudo` should be the real binary, not a function from the plant.
+    [[ ! "$output" =~ "is a function" ]]
+}
+
 @test "Uninstall: inline stubs when ui_msg missing" {
     local tmp root
     tmp=$(mktemp -d)
