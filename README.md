@@ -92,7 +92,7 @@ Automatically checks for and applies firmware updates for Samsung NVMe SSDs. It 
 
 ### **7. Self-Update Service (`update_self.sh`)**
 
-Checks the GitHub repository for a new release. If the latest release tag differs from the locally stored version (from repo `VERSION`), it stages the tagged `install.sh`, `VERSION`, and `lib/` helpers in a temporary directory, exports that tag as `RAW_URL`, then runs the installer non-interactively via `--update` to refresh all scripts. Sends a success or failure email on completion. Cron jobs redirect stdout and stderr (`>/dev/null 2>&1`) so cron MAILTO does not duplicate those suite emails.
+Checks the GitHub repository for a new release. If the latest release tag differs from the locally stored version (from repo `VERSION`), it stages the tagged `install.sh` and `VERSION` in a temporary directory (not `lib/`), exports that tag as `RAW_URL`, then runs the installer non-interactively via `--update` to refresh all scripts from the root-owned install tree / `$RAW_URL`. Sends a success or failure email on completion. Cron jobs redirect stdout and stderr (`>/dev/null 2>&1`) so cron MAILTO does not duplicate those suite emails.
 
 - **Commands:** `curl` (GitHub Releases API), `install.sh --update`.
 

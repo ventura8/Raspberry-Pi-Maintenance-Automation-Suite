@@ -356,17 +356,43 @@ EOF
 }
 
 @test "Install: Uninstall - Local Script" {
-    # Create a mock uninstall script
-    echo "#!/bin/bash" > "./uninstall.sh"
-    echo "echo 'LOCAL_UNINSTALL_RUN'" >> "./uninstall.sh"
-    chmod +x "./uninstall.sh"
-    
-    run bash -c "export PATH=$MOCK_DIR:$PATH; source ./install.sh; main_menu <<< $'6\ny'"
-    
-    # Cleanup
-    rm -f "./uninstall.sh"
-    
+    # Trusted sibling of the installer (not an arbitrary ./uninstall.sh in cwd).
+    local td sibling
+    td=$(mktemp -d)
+    sibling="$td/uninstall.sh"
+    cp ./install.sh "$td/install.sh"
+    echo "#!/bin/bash" > "$sibling"
+    echo "echo 'LOCAL_UNINSTALL_RUN'" >> "$sibling"
+    chmod +x "$sibling"
+
+    run bash -c "export PATH=$MOCK_DIR:$PATH INSTALL_DIR=$INSTALL_DIR LEGACY_INSTALL_DIR=$LEGACY_INSTALL_DIR SSMTP_CONF=$SSMTP_CONF MSMTP_CONF=$MSMTP_CONF REVALIASES=$REVALIASES TEST_MODE=true; source '$td/install.sh'; main_menu <<< $'6\ny'"
+
+    rm -rf "$td"
+
     [[ "$output" =~ "LOCAL_UNINSTALL_RUN" ]]
+}
+
+@test "Install: Uninstall ignores planted cwd uninstall.sh" {
+    local td plant
+    td=$(mktemp -d)
+    plant=$(mktemp -d)
+    cp ./install.sh "$td/install.sh"
+    echo "#!/bin/bash" > "$plant/uninstall.sh"
+    echo "echo 'CWD_UNINSTALL_HIJACKED'" >> "$plant/uninstall.sh"
+    chmod +x "$plant/uninstall.sh"
+    cat << 'EOF' > "$MOCK_DIR/curl"
+#!/bin/bash
+echo 'echo "MOCK_REMOTE_UNINSTALL"'
+exit 0
+EOF
+    chmod +x "$MOCK_DIR/curl"
+
+    run bash -c "cd '$plant' && export PATH=$MOCK_DIR:$PATH INSTALL_DIR=$INSTALL_DIR LEGACY_INSTALL_DIR=$LEGACY_INSTALL_DIR SSMTP_CONF=$SSMTP_CONF MSMTP_CONF=$MSMTP_CONF REVALIASES=$REVALIASES TEST_MODE=true; source '$td/install.sh'; _start_uninstall"
+
+    rm -rf "$td" "$plant"
+
+    [[ "$output" =~ "MOCK_REMOTE_UNINSTALL" ]]
+    [[ ! "$output" =~ "CWD_UNINSTALL_HIJACKED" ]]
 }
 
 @test "Install: Entry Point - Detected Installed (Main Menu)" {
