@@ -67,12 +67,13 @@ exit_with_failure() {
     exit 1
 }
 
-# Stage tagged installer + VERSION + lib/ into dest (mktemp tree). Lib fetch is best-effort.
+# Stage tagged installer + VERSION into dest (mktemp tree). Do not stage lib/: the staging
+# directory is user-owned when update_self runs unprivileged, and install.sh --update must
+# source helpers from the root-owned $INSTALL_DIR/lib (or fetch via RAW_URL), never from a
+# user-writable sibling that same-UID malware could plant before sudo.
 stage_release_tree() {
     local raw_url="$1"
     local dest="$2"
-    local lib_file tmp
-    mkdir -p "$dest/lib"
     if ! curl -fsSL "$raw_url/install.sh" -o "$dest/install.sh"; then
         return 1
     fi
@@ -80,14 +81,6 @@ stage_release_tree() {
     if ! curl -fsSL "$raw_url/VERSION" -o "$dest/VERSION"; then
         return 2
     fi
-    for lib_file in os_pkg.sh mail_send.sh ui_msg.sh; do
-        tmp=$(mktemp "$dest/lib/.lib.XXXXXX") || continue
-        if curl -fsSL "$raw_url/lib/$lib_file" -o "$tmp"; then
-            mv -f "$tmp" "$dest/lib/$lib_file"
-        else
-            rm -f "$tmp"
-        fi
-    done
     return 0
 }
 

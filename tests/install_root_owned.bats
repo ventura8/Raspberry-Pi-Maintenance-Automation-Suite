@@ -387,6 +387,53 @@ EOS
     [ -z "$(ls -A "$user_tmp")" ]
 }
 
+@test "Root-owned: piped installer ignores planted cwd lib/os_pkg.sh" {
+    # Empty BASH_SOURCE (curl|bash) must not treat $PWD/lib as a sibling tree.
+    local isolated="$BATS_TEST_TMPDIR/iso_pipe_lib"
+    local repo="$PWD"
+    mkdir -p "$isolated/lib"
+    rm -rf "$INSTALL_DIR"
+    cat > "$isolated/lib/os_pkg.sh" << 'EOF'
+pkg_install() { echo POC_PKG_INSTALL_HIJACKED; return 0; }
+has_mail_sender() { return 1; }
+EOF
+    echo 'echo PLANTED_UI_MSG' > "$isolated/lib/ui_msg.sh"
+    echo 'echo PLANTED_MAIL' > "$isolated/lib/mail_send.sh"
+    cp -p "$MOCK_DIR/curl" "$MOCK_DIR/curl.real"
+    printf '#!/bin/bash\nfor a in "$@"; do case "$a" in */lib/*.sh) cat %q/lib/"${a##*/}"; exit 0;; esac; done\nexit 22\n' \
+        "$repo" > "$MOCK_DIR/curl"
+
+    run bash -c "cd '$isolated' && export $(_env); cat '$repo/install.sh' | bash -c 'source /dev/stdin; declare -F pkg_install; type pkg_install; pkg_install curl || true'"
+    mv -f "$MOCK_DIR/curl.real" "$MOCK_DIR/curl"
+    [ "$status" -eq 0 ]
+    [[ "$output" =~ "pkg_install" ]]
+    [[ ! "$output" =~ "POC_PKG_INSTALL_HIJACKED" ]]
+    [[ ! "$output" =~ "PLANTED_UI_MSG" ]]
+}
+
+@test "Root-owned: user-owned sibling lib is skipped when INSTALL_DIR needs root" {
+    sudo -n true 2> /dev/null || skip "passwordless sudo required"
+    _make_root_parent
+    export INSTALL_DIR="$ROOT_PARENT/tree"
+    local staged="$BATS_TEST_TMPDIR/user-stage"
+    mkdir -p "$staged/lib"
+    cp ./install.sh "$staged/install.sh"
+    cat > "$staged/lib/os_pkg.sh" << 'EOF'
+pkg_install() { echo POC_STAGED_LIB_HIJACKED; return 0; }
+has_mail_sender() { return 1; }
+EOF
+    cp ./lib/ui_msg.sh ./lib/mail_send.sh "$staged/lib/"
+    sudo -n /usr/bin/install -d -o root -g root -m 0755 "$INSTALL_DIR/lib"
+    sudo -n /usr/bin/install -o root -g root -m 0644 ./lib/os_pkg.sh "$INSTALL_DIR/lib/os_pkg.sh"
+    sudo -n /usr/bin/install -o root -g root -m 0644 ./lib/mail_send.sh "$INSTALL_DIR/lib/mail_send.sh"
+    sudo -n /usr/bin/install -o root -g root -m 0644 ./lib/ui_msg.sh "$INSTALL_DIR/lib/ui_msg.sh"
+
+    run bash -c "export $(_env); source '$staged/install.sh'; declare -F pkg_install; type pkg_install; pkg_install curl || true"
+    [ "$status" -eq 0 ]
+    [[ "$output" =~ "pkg_install" ]]
+    [[ ! "$output" =~ "POC_STAGED_LIB_HIJACKED" ]]
+}
+
 @test "Root-owned: _install_src_trusted rejects a root-owned file under a user-owned ancestor" {
     sudo -n true 2> /dev/null || skip "passwordless sudo required"
     _make_root_parent

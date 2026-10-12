@@ -35,15 +35,67 @@ SSMTP_CONF="${SSMTP_CONF:-/etc/ssmtp/ssmtp.conf}"
 REVALIASES="${REVALIASES:-/etc/ssmtp/revaliases}"
 MSMTP_CONF="${MSMTP_CONF:-/etc/msmtprc}"
 
-_INSTALL_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+_INSTALL_ROOT=""
+_INSTALL_SCRIPT="${BASH_SOURCE[0]:-}"
+if [[ -n "$_INSTALL_SCRIPT" && "$_INSTALL_SCRIPT" != /dev/* && "$_INSTALL_SCRIPT" != /proc/* && -f "$_INSTALL_SCRIPT" ]]; then
+    _INSTALL_ROOT="$(cd "$(dirname "$_INSTALL_SCRIPT")" && pwd)"
+fi
 
-# Prefer libs next to this installer (repo or staged tree); else the installed copy.
+# --- Install tree (root-owned) helpers ---
+# The default INSTALL_DIR sits under a root-owned tree, so writes go through sudo (unless already
+# root) and installed files are forced to root:root. A user-writable INSTALL_DIR (tests, explicit
+# override) is written directly and its ownership left alone.
+# Defined early: parse-time lib sourcing calls _install_src_trusted before any sudo.
+_install_dir_needs_root() {
+    local dir="${INSTALL_DIR:-}"
+    [[ -n "$dir" ]] || return 0
+    while [[ ! -e "$dir" ]] && [[ "$dir" != "/" ]]; do
+        dir=$(dirname "$dir")
+    done
+    [[ ! -w "$dir" ]]
+    return
+}
+
+# A local source may feed a privileged install(1) or be sourced as a suite helper only when the
+# installing user cannot change it: the file and every ancestor directory are root-owned and not
+# group/other-writable (a sticky ancestor such as /tmp is fine above the parent: only its owner,
+# root, may rename the entry). A user checkout or user-owned mktemp tree fails this and
+# download_scripts streams that file from RAW_URL instead. Unprivileged installs (writable
+# INSTALL_DIR) cross no boundary.
+# Prints the path to source/copy from: the validated canonical path, so a user-replaceable symlink
+# on the original pathname cannot be retargeted between this check and the privileged operation.
+_install_src_trusted() {
+    local file path perms
+    if [[ "$(id -u)" -ne 0 ]] && ! _install_dir_needs_root; then
+        printf '%s' "$1"
+        return 0
+    fi
+    file=$(realpath -e -- "$1" 2> /dev/null) || return 1
+    # The file and its parent must be strictly root-only writable.
+    for path in "$file" "$(dirname "$file")"; do
+        perms=$(stat -c '%u %A' "$path" 2> /dev/null) || return 1
+        [[ "$perms" =~ ^0\ .....-..-. ]] || return 1
+    done
+    # Higher ancestors: root-owned, and either not group/other-writable or sticky.
+    path=$(dirname "$file")
+    while [[ "$path" != "/" ]]; do
+        path=$(dirname "$path")
+        perms=$(stat -c '%u %A' "$path" 2> /dev/null) || return 1
+        [[ "$perms" =~ ^0\ (.....-..-.|.........[tT])$ ]] || return 1
+    done
+    printf '%s' "$file"
+    return 0
+}
+
+# Prefer trusted libs next to this installer (repo or staged tree); else the installed copy.
 _install_lib_root() {
-    if [[ -f "$_INSTALL_ROOT/lib/os_pkg.sh" ]]; then
+    if [[ -n "$_INSTALL_ROOT" ]] && [[ -f "$_INSTALL_ROOT/lib/os_pkg.sh" ]] &&
+        _install_src_trusted "$_INSTALL_ROOT/lib/os_pkg.sh" > /dev/null 2>&1; then
         printf '%s' "$_INSTALL_ROOT/lib"
         return 0
     fi
-    if [[ -n "${INSTALL_DIR:-}" ]] && [[ -f "$INSTALL_DIR/lib/os_pkg.sh" ]]; then
+    if [[ -n "${INSTALL_DIR:-}" ]] && [[ -f "$INSTALL_DIR/lib/os_pkg.sh" ]] &&
+        _install_src_trusted "$INSTALL_DIR/lib/os_pkg.sh" > /dev/null 2>&1; then
         printf '%s' "$INSTALL_DIR/lib"
         return 0
     fi
@@ -52,15 +104,17 @@ _install_lib_root() {
 
 _source_lib_dir() {
     local lib_root="$1"
+    local lib_file trusted_file
     [[ -n "$lib_root" ]] && [[ -f "$lib_root/os_pkg.sh" ]] || return 1
-    if [[ -f "$lib_root/ui_msg.sh" ]]; then
-        # shellcheck source=lib/ui_msg.sh
-        source "$lib_root/ui_msg.sh"
-    fi
-    # shellcheck source=lib/os_pkg.sh
-    source "$lib_root/os_pkg.sh"
-    # shellcheck source=lib/mail_send.sh
-    source "$lib_root/mail_send.sh"
+    for lib_file in ui_msg.sh os_pkg.sh mail_send.sh; do
+        if [[ -f "$lib_root/$lib_file" ]]; then
+            trusted_file=$(_install_src_trusted "$lib_root/$lib_file") || return 1
+            # shellcheck source=/dev/null
+            source "$trusted_file"
+        elif [[ "$lib_file" != "ui_msg.sh" ]]; then
+            return 1
+        fi
+    done
     return 0
 }
 
@@ -85,8 +139,9 @@ _fetch_bootstrap_libs() {
 _source_install_libs() {
     local lib_root
     if lib_root=$(_install_lib_root); then
-        _source_lib_dir "$lib_root"
-        return $?
+        if _source_lib_dir "$lib_root"; then
+            return 0
+        fi
     fi
     _fetch_bootstrap_libs
     return
@@ -102,9 +157,13 @@ _ensure_install_helpers() {
 
 _source_install_libs || true
 if ! declare -F _pi_gettext > /dev/null 2>&1; then
-    # shellcheck source=lib/ui_msg.sh
-    if [[ -f "$_INSTALL_ROOT/lib/ui_msg.sh" ]]; then
-        source "$_INSTALL_ROOT/lib/ui_msg.sh"
+    _ui_msg_src=""
+    if [[ -n "$_INSTALL_ROOT" ]] && [[ -f "$_INSTALL_ROOT/lib/ui_msg.sh" ]]; then
+        _ui_msg_src=$(_install_src_trusted "$_INSTALL_ROOT/lib/ui_msg.sh") || _ui_msg_src=""
+    fi
+    if [[ -n "$_ui_msg_src" ]]; then
+        # shellcheck source=lib/ui_msg.sh
+        source "$_ui_msg_src"
     else
         _pi_gettext() {
             printf '%s' "$1"
@@ -137,6 +196,7 @@ if ! declare -F _pi_gettext > /dev/null 2>&1; then
             return
         }
     fi
+    unset _ui_msg_src
 fi
 
 if ! declare -F pkg_install > /dev/null 2>&1 || ! declare -F has_mail_sender > /dev/null 2>&1; then
@@ -860,18 +920,6 @@ show_email_config() {
 }
 
 # --- Install tree (root-owned) helpers ---
-# The default INSTALL_DIR sits under a root-owned tree, so writes go through sudo (unless already
-# root) and installed files are forced to root:root. A user-writable INSTALL_DIR (tests, explicit
-# override) is written directly and its ownership left alone.
-_install_dir_needs_root() {
-    local dir="$INSTALL_DIR"
-    while [[ ! -e "$dir" ]] && [[ "$dir" != "/" ]]; do
-        dir=$(dirname "$dir")
-    done
-    [[ ! -w "$dir" ]]
-    return
-}
-
 _install_run() {
     if _install_dir_needs_root; then
         sudo "$@"
@@ -955,36 +1003,6 @@ _install_atomic_curl() {
     return
 }
 
-# A local source may feed a privileged install(1) only when the installing user cannot change it:
-# the file and every ancestor directory are root-owned and not group/other-writable (a sticky
-# ancestor such as /tmp is fine above the parent: only its owner, root, may rename the entry).
-# A user checkout or user-owned mktemp tree fails this and download_scripts streams that file
-# from RAW_URL instead. Unprivileged installs (writable INSTALL_DIR) cross no boundary.
-# Prints the path to copy from: the validated canonical path, so a user-replaceable symlink on
-# the original pathname cannot be retargeted between this check and the privileged install(1).
-_install_src_trusted() {
-    local file path perms
-    if [[ "$(id -u)" -ne 0 ]] && ! _install_dir_needs_root; then
-        printf '%s' "$1"
-        return 0
-    fi
-    file=$(realpath -e -- "$1" 2> /dev/null) || return 1
-    # The file and its parent must be strictly root-only writable.
-    for path in "$file" "$(dirname "$file")"; do
-        perms=$(stat -c '%u %A' "$path" 2> /dev/null) || return 1
-        [[ "$perms" =~ ^0\ .....-..-. ]] || return 1
-    done
-    # Higher ancestors: root-owned, and either not group/other-writable or sticky.
-    path=$(dirname "$file")
-    while [[ "$path" != "/" ]]; do
-        path=$(dirname "$path")
-        perms=$(stat -c '%u %A' "$path" 2> /dev/null) || return 1
-        [[ "$perms" =~ ^0\ (.....-..-.|.........[tT])$ ]] || return 1
-    done
-    printf '%s' "$file"
-    return 0
-}
-
 download_scripts() {
     _pi_echo "Downloading/Updating scripts..."
     local failed=0
@@ -1008,7 +1026,7 @@ download_scripts() {
     local lib_file lib_src
     for lib_file in os_pkg.sh mail_send.sh ui_msg.sh; do
         lib_src=""
-        if [[ -f "$_INSTALL_ROOT/lib/$lib_file" ]]; then
+        if [[ -n "$_INSTALL_ROOT" ]] && [[ -f "$_INSTALL_ROOT/lib/$lib_file" ]]; then
             lib_src=$(_install_src_trusted "$_INSTALL_ROOT/lib/$lib_file") || lib_src=""
         fi
         if [[ -n "$lib_src" ]]; then
@@ -1205,7 +1223,7 @@ read_suite_version() {
         return 0
     fi
 
-    if [[ -f "$_INSTALL_ROOT/VERSION" ]]; then
+    if [[ -n "$_INSTALL_ROOT" ]] && [[ -f "$_INSTALL_ROOT/VERSION" ]]; then
         version=$(tr -d "$TR_SPACE" < "$_INSTALL_ROOT/VERSION")
     elif [[ -f "${INSTALL_DIR:-}/.version" ]]; then
         version=$(tr -d "$TR_SPACE" < "$INSTALL_DIR/.version")
@@ -1225,7 +1243,7 @@ write_installed_version() {
     _pi_echo "Updating version tracking..."
     SUITE_VERSION=""
 
-    if [[ -f "$_INSTALL_ROOT/VERSION" ]]; then
+    if [[ -n "$_INSTALL_ROOT" ]] && [[ -f "$_INSTALL_ROOT/VERSION" ]]; then
         version=$(tr -d "$TR_SPACE" < "$_INSTALL_ROOT/VERSION")
     else
         version=$(curl -fsSL --max-time 10 "$RAW_URL/VERSION" 2> /dev/null | tr -d "$TR_SPACE" || true)
@@ -1887,10 +1905,14 @@ run_fresh_install() {
 }
 
 _start_uninstall() {
+    local uninstall_src=""
     _pi_echo "Starting uninstallation process..."
     sleep 1
-    if [[ -f "./uninstall.sh" ]]; then
-        bash ./uninstall.sh
+    if [[ -n "$_INSTALL_ROOT" ]] && [[ -f "$_INSTALL_ROOT/uninstall.sh" ]]; then
+        uninstall_src=$(_install_src_trusted "$_INSTALL_ROOT/uninstall.sh") || uninstall_src=""
+    fi
+    if [[ -n "$uninstall_src" ]]; then
+        bash "$uninstall_src"
     else
         curl -sSL "$RAW_URL/uninstall.sh" | bash
     fi

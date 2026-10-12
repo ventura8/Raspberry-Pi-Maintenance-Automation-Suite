@@ -77,7 +77,7 @@ The suite includes a self-healing capability (`scripts/update_self.sh`) that ens
 - **Update Logic**:
   1. `update_self.sh` checks the GitHub API (`releases/latest`).
   1. Compares the remote tag with the local `.version` file.
-  1. On mismatch: stages tagged `install.sh`, `VERSION`, and `lib/` in a temp directory, exports `RAW_URL` for that tag, then runs `bash install.sh --update` (no stdin pipe). `--update` sources `$INSTALL_DIR/lib` when the installer has no sibling `lib/`, replaces scripts atomically (`mktemp` + `mv`), and rewrites crontab lines to `>/dev/null 2>&1`.
+  1. On mismatch: stages tagged `install.sh` and `VERSION` in a temp directory (not `lib/`), exports `RAW_URL` for that tag, then runs `bash install.sh --update` (no stdin pipe). `--update` sources a trusted `$INSTALL_DIR/lib` (or fetches via `$RAW_URL`) when the installer has no trusted sibling `lib/`, replaces scripts atomically (`mktemp` + `mv`), and rewrites crontab lines to `>/dev/null 2>&1`.
 - **Notifications**: success / up-to-date / failure emails.
 - **Testing**: `tests/component_tests_self_update.bats`
 - **Skill**: [.agents/skills/self-update-tester/SKILL.md](.agents/skills/self-update-tester/SKILL.md)
@@ -87,5 +87,5 @@ The suite includes a self-healing capability (`scripts/update_self.sh`) that ens
 - [Project Overview & Directory Structure](docs/project_overview.md)
 - [Script Logic & Functionality](docs/script_logic.md)
 - [Development & Standards](docs/development_standards.md)
-- [Release Notes (GitHub description)](docs/releases/v1.1.11.md) — prepare via `.agents/skills/prepare-release`; published automatically by `.github/workflows/release.yml` when the matching tag is pushed
+- [Release Notes (GitHub description)](docs/releases/v1.1.12.md) — prepare via `.agents/skills/prepare-release`; published automatically by `.github/workflows/release.yml` when the matching tag is pushed
 - [Prompt Templates for Chat Workflows](.github/prompts/README.md)
