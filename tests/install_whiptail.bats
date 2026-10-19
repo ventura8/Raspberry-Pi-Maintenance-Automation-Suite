@@ -189,3 +189,49 @@ teardown() {
     run cat "$MOCK_DIR/root_cron"
     [[ "$output" =~ "update_pi_os.sh" ]]
 }
+
+@test "Whiptail: wt_passwordbox does not invoke mktemp or leak to temp files" {
+    printf '%s\n' "secret_app_pass" > "$MOCK_DIR/whiptail_input"
+
+    # Plant a failing mktemp wrapper in PATH to verify mktemp is not called
+    cat << 'EOF' > "$MOCK_DIR/mktemp"
+#!/bin/bash
+echo "mktemp called unexpectedly" >&2
+exit 99
+EOF
+    chmod +x "$MOCK_DIR/mktemp"
+
+    run bash -c "
+        export PATH=$MOCK_DIR:\$PATH INSTALL_USE_WHIPTAIL=1
+        source ./install.sh
+        wt_passwordbox 'Title' 'Message' 10 70
+        echo RC=\$?
+    "
+
+    rm -f "$MOCK_DIR/mktemp"
+    [[ "$output" =~ "secret_app_pass" ]]
+    [[ "$output" =~ "RC=0" ]]
+    [[ ! "$output" =~ "mktemp called unexpectedly" ]]
+}
+
+@test "Install: secret input in text UI does not invoke xargs" {
+    cat << 'EOF' > "$MOCK_DIR/xargs"
+#!/bin/bash
+echo "xargs called with args: $*" >&2
+exit 98
+EOF
+    chmod +x "$MOCK_DIR/xargs"
+
+    run bash -c "
+        export PATH=$MOCK_DIR:\$PATH
+        source ./install.sh
+        secret_val=''
+        read_input '' secret_val 'true' <<< $'  my_secret_token  \r'
+        echo \"VAL=[\$secret_val]\"
+    "
+
+    rm -f "$MOCK_DIR/xargs"
+    [[ "$status" -eq 0 ]]
+    [[ "$output" =~ "VAL=[my_secret_token]" ]]
+    [[ ! "$output" =~ "xargs called" ]]
+}
