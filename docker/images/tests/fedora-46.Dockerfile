@@ -10,7 +10,7 @@ RUN dnf install -y \
     bc-1.08.2 \
     ca-certificates-2026.2.90_v9.0.317 \
     cronie-1.7.2 \
-    curl-8.23.0~rc3 \
+    curl-8.23.0 \
     git-2.56.0 \
     glibc-langpack-en-2.44.9000 \
     msmtp-1.8.34 \

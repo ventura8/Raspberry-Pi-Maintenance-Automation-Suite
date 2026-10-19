@@ -306,8 +306,14 @@ read_input() {
         fi
     fi
 
-    # Clean up the input: strip carriage returns and leading/trailing whitespace
-    user_val=$(echo "$user_val" | tr -d '\r' | xargs)
+    # Clean up the input: strip carriage returns and leading/trailing whitespace without piping secrets to xargs
+    user_val="${user_val//$'\r'/}"
+    if [[ "$is_secret" == "true" ]]; then
+        user_val="${user_val#"${user_val%%[![:space:]]*}"}"
+        user_val="${user_val%"${user_val##*[![:space:]]}"}"
+    else
+        user_val=$(echo "$user_val" | xargs)
+    fi
     printf -v "$var_name" "%s" "$user_val"
     return $status
 }
@@ -499,19 +505,16 @@ _run_whiptail() {
 }
 
 _wt_capture() {
-    # Runs a value-returning dialog; prints result on stdout. Returns whiptail status.
-    local tmp result rc=0
-    tmp=$(mktemp) || return 2
-    _run_whiptail "$tmp" "$@"
-    rc=$?
-    if [[ "$rc" -eq 0 ]]; then
-        result=$(cat "$tmp")
-        rm -f "$tmp"
-        printf '%s' "$result"
-        return 0
+    # Runs a value-returning dialog; prints result on stdout via FD 3 without creating temp files.
+    # KCOV_EXCL_START
+    if _has_open_wizard_ui_fds && [[ "${INSTALL_UI_IN_FD}" != "0" ]]; then
+        whiptail "$@" --output-fd 3 \
+            3>&1 <&"$INSTALL_UI_IN_FD" >&"$INSTALL_UI_OUT_FD" 2>&"$INSTALL_UI_OUT_FD"
+    else
+        # KCOV_EXCL_STOP
+        whiptail "$@" --output-fd 3 3>&1
     fi
-    rm -f "$tmp"
-    return "$rc"
+    return $?
 }
 
 wt_msgbox() {
@@ -782,8 +785,9 @@ configure_email_text() {
     _pi_echo "Enter App Password (16-char, input hidden):"
     local app_pass=""
     read_input "" app_pass "true"
-    # Remove all spaces (Google displays them as 'aaaa bbbb cccc dddd')
-    app_pass=$(echo "$app_pass" | tr -d ' ')
+    # Remove all spaces and CRs without spawning subprocesses (Google displays them as 'aaaa bbbb cccc dddd')
+    app_pass="${app_pass//$'\r'/}"
+    app_pass="${app_pass//[[:space:]]/}"
     echo "" # Newline after secret input
 
     if [[ -z "$app_pass" ]]; then
@@ -831,7 +835,8 @@ configure_email_whiptail() {
         _is_whiptail_cancel "$rc" && return 1
         return 2
     }
-    app_pass=$(echo "$app_pass" | tr -d ' ' | tr -d '\r')
+    app_pass="${app_pass//$'\r'/}"
+    app_pass="${app_pass//[[:space:]]/}"
     if [[ -z "$app_pass" ]]; then
         wt_msgbox "$(_pi_gettext "$MSG_EMAIL_CONFIG")" "$(_pi_gettext "Password empty. Returning.")" 8 50 || true
         return 0
