@@ -1,6 +1,6 @@
 # Dated snapshot (DL3007) rather than :latest. `pacman -Syu` below upgrades
 # to current rolling Arch, so the lane still tracks rolling Arch.
-FROM archlinux:base-20261004.0.606936
+FROM archlinux:base-20261018.0.612668
 
 # Prefer a generated UTF-8 locale for predictable test environments.
 ENV LANG=en_US.UTF-8
