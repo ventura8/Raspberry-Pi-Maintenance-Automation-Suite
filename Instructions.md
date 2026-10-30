@@ -52,7 +52,7 @@ Scripts use `lib/os_pkg.sh` to install dependencies via `apt`, `dnf`, or `pacman
 
 The interactive installer (`install.sh`) installs UI/runtime dependencies up front: `curl`, mail-transport, and `whiptail`. For `curl|bash` with no adjacent or installed `lib/`, it fetches `os_pkg.sh` / `mail_send.sh` / `ui_msg.sh` from `$RAW_URL/lib/` before `check_dependencies`. The suite version from root `VERSION` is shown from the start (text header and whiptail welcome/menu). Whiptail fresh install offers **Continue/Cancel** and **Download/Cancel** (plus Esc on email/checklist) so the user can abort without completing setup. If whiptail cannot be installed or cannot run, the installer automatically uses the classic text UI. `install.sh --update` remains non-interactive and cron-safe.
 
-Maintenance scripts ship `RECIPIENT_EMAIL="your_email@gmail.com"`. `download_scripts` rewrites that assignment to the configured ssmtp/msmtp user (same `RECIPIENT_EMAIL="..."` substitution as `save_email_configuration`), so fresh install and `--update` never leave a hardcoded third-party inbox.
+Maintenance scripts ship `RECIPIENT_EMAIL="your_email@gmail.com"`. `download_scripts` rewrites that assignment to the configured ssmtp/msmtp user (same `RECIPIENT_EMAIL="..."` substitution as `save_email_configuration`), so fresh install and `--update` never leave a hardcoded third-party inbox. Only values passing `validate_email_address` are injected (otherwise the placeholder is kept), the value is sed-escaped, and `MSMTP_CONF` / `SSMTP_CONF` / `REVALIASES` env overrides are honoured only when `TEST_MODE=true`.
 
 ## Samsung SSD Firmware Updates
 

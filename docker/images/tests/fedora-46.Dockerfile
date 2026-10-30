@@ -8,7 +8,7 @@ RUN dnf install -y \
     bash-5.3.20 \
     bats-1.14.0 \
     bc-1.08.2 \
-    ca-certificates-2026.2.90_v9.0.317 \
+    ca-certificates-2026.2.92_v9.0.319 \
     cronie-1.7.2 \
     curl-8.23.0 \
     git-2.56.0 \
@@ -16,13 +16,13 @@ RUN dnf install -y \
     msmtp-1.8.34 \
     newt-0.52.25 \
     procps-ng-4.0.7 \
-    python3-3.15.0 \
+    python3-3.15.2 \
     python3-pip-26.2.1 \
     s-nail-14.9.25 \
     sudo-1.9.17 \
     && dnf clean all \
     && python3 -m pip install --no-cache-dir \
-        --only-binary :all: 'lizard==1.24.1'
+        --only-binary :all: 'lizard==1.24.3'
 
 COPY docker/images/tests/scripts/common.sh /tmp/common.sh
 ARG CI_UID=1000

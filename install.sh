@@ -31,9 +31,17 @@ INSTALL_DIR="${INSTALL_DIR:-$DEFAULT_INSTALL_DIR}"
 if [[ "$INSTALL_DIR" = "$HOME/pi-scripts" ]]; then
     INSTALL_DIR="$DEFAULT_INSTALL_DIR"
 fi
-SSMTP_CONF="${SSMTP_CONF:-/etc/ssmtp/ssmtp.conf}"
-REVALIASES="${REVALIASES:-/etc/ssmtp/revaliases}"
-MSMTP_CONF="${MSMTP_CONF:-/etc/msmtprc}"
+# The mail config paths feed the RECIPIENT_EMAIL rewrite of root-cron scripts, so outside TEST_MODE
+# they are fixed: an implant exporting MSMTP_CONF=~/evil must not choose what download_scripts reads.
+if [[ "${TEST_MODE:-}" = "true" ]]; then
+    SSMTP_CONF="${SSMTP_CONF:-/etc/ssmtp/ssmtp.conf}"
+    REVALIASES="${REVALIASES:-/etc/ssmtp/revaliases}"
+    MSMTP_CONF="${MSMTP_CONF:-/etc/msmtprc}"
+else
+    SSMTP_CONF="/etc/ssmtp/ssmtp.conf"
+    REVALIASES="/etc/ssmtp/revaliases"
+    MSMTP_CONF="/etc/msmtprc"
+fi
 
 _INSTALL_ROOT=""
 _INSTALL_SCRIPT="${BASH_SOURCE[0]:-}"
@@ -606,10 +614,30 @@ validate_email_address() {
     return
 }
 
+# Escape $1 for use as a sed s/// replacement with "/" as delimiter (\, / and & are special).
+_sed_replacement_escape() {
+    local value="$1"
+    printf '%s' "$value" | sed -e 's/[\\/&]/\\&/g'
+    return
+}
+
+# Print a RECIPIENT_EMAIL rewrite sed expression for $1, refusing anything that is not a plain
+# email address: the value lands inside a double-quoted assignment in scripts root cron executes.
+_recipient_email_sed_expr() {
+    local email="$1"
+    validate_email_address "$email" || return 1
+    printf 's/RECIPIENT_EMAIL=".*"/RECIPIENT_EMAIL="%s"/' "$(_sed_replacement_escape "$email")"
+    return
+}
+
 save_email_configuration() {
     local user_email="$1"
     local app_pass="$2"
 
+    if ! validate_email_address "$user_email"; then
+        _pi_echo "Error: Invalid email format. Configuration not saved."
+        return 1
+    fi
     _pi_echo "Saving configuration..."
     if command -v write_mail_config > /dev/null 2>&1; then
         write_mail_config "$user_email" "$app_pass"
@@ -656,9 +684,11 @@ EOF
 
     # Update scripts with new email
     if [[ -d "$INSTALL_DIR" ]]; then
+        local sed_expr
+        sed_expr=$(_recipient_email_sed_expr "$user_email") || return 1
         for file in "$INSTALL_DIR"/*.sh; do
             [[ -f "$file" ]] || continue
-            _install_run sed -i "s/RECIPIENT_EMAIL=\".*\"/RECIPIENT_EMAIL=\"$user_email\"/" "$file"
+            _install_run sed -i "$sed_expr" "$file"
         done
     fi
 
@@ -995,9 +1025,12 @@ _install_atomic_curl() {
     local dest="$2"
     local mode="${3:-0755}"
     local email="${4:-}"
-    local staged flags rc=0
+    local staged flags sed_expr rc=0
     local filter=(cat)
-    [[ -n "$email" ]] && filter=(sed "s/RECIPIENT_EMAIL=\".*\"/RECIPIENT_EMAIL=\"$email\"/")
+    if [[ -n "$email" ]]; then
+        sed_expr=$(_recipient_email_sed_expr "$email") || return 1
+        filter=(sed "$sed_expr")
+    fi
     staged=$(_install_staged_path "$dest")
     _install_owner_flags flags
     (
@@ -1025,6 +1058,11 @@ download_scripts() {
         local ssmtp_user
         ssmtp_user=$(sudo grep "^AuthUser=" "$SSMTP_CONF" 2> /dev/null | cut -d= -f2)
         [[ -n "$ssmtp_user" ]] && email_to_inject="$ssmtp_user"
+    fi
+    # The mail config is not trusted input: anything but a plain address keeps the placeholder.
+    if ! validate_email_address "$email_to_inject"; then
+        _pi_echo "Warning: configured mail user is not a valid email address; keeping placeholder recipient."
+        email_to_inject="your_email@gmail.com"
     fi
 
     # Shared libraries used by maintenance scripts (apt/dnf/pacman + mail + UI helpers)
@@ -1793,7 +1831,7 @@ run_fresh_install_matrix() {
     _pi_echo "Matrix/non-interactive fresh install."
     echo ""
     check_dependencies
-    save_email_configuration "$email" "$pass"
+    save_email_configuration "$email" "$pass" || return 1
     download_scripts
     _enable_default_fresh_tasks
     echo ""

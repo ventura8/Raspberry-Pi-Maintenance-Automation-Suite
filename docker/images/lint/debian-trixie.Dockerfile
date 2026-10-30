@@ -36,7 +36,7 @@ RUN chmod +x /usr/local/bin/hadolint \
     && rm -f /tmp/actionlint.tar.gz \
     && python3 -m pip install --break-system-packages --no-cache-dir \
         --only-binary :all: \
-        'mdformat==1.0.0' 'mdformat-gfm==1.0.0' 'lizard==1.24.1'
+        'mdformat==1.0.0' 'mdformat-gfm==1.0.0' 'lizard==1.24.3'
 
 WORKDIR /workspace
 # Narrow copy: lint-in-docker.sh bind-mounts the repo over /workspace, so

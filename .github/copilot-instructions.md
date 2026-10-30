@@ -27,7 +27,7 @@ Authoritative rules: [`AGENTS.md`](../AGENTS.md). Task playbooks: [`.agents/skil
 
 1. Whiptail default UI; text UI automatic fallback when whiptail cannot run.
 1. `install.sh --update` is non-interactive and must remain cron-safe for `update_self.sh` (stage tagged installer + `VERSION` in `mktemp` without `lib/`, source trusted `$INSTALL_DIR/lib` or fetch via `$RAW_URL`, atomic script replace, crontab `>/dev/null 2>&1`).
-1. Maintenance scripts ship `RECIPIENT_EMAIL="your_email@gmail.com"`; `download_scripts` rewrites that assignment to the configured mail user.
+1. Maintenance scripts ship `RECIPIENT_EMAIL="your_email@gmail.com"`; `download_scripts` rewrites that assignment to the configured mail user. Only values passing `validate_email_address` are injected (otherwise the placeholder is kept), the value is sed-escaped, and `MSMTP_CONF` / `SSMTP_CONF` / `REVALIASES` env overrides are honoured only when `TEST_MODE=true`.
 1. Suite version SSOT is root `VERSION`; GitHub tags and `$INSTALL_DIR/.version` must match it.
 1. `INSTALL_DIR` defaults to the root-owned `/usr/local/lib/pi-maintenance`; root cron runs those scripts, so writes must go through `_install_run` / `_install_atomic_mv` (root:root, 0755/0644) and no `$HOME`-based default may return; downloads stream into the privileged `install` (`_install_atomic_curl`), never via a user-owned `/tmp` staging file. Legacy `~/pi-scripts` trees are migrated (re-download, crontab repoint; the old directory is removed only when it holds nothing but suite files); tests isolate `LEGACY_INSTALL_DIR`.
 1. Distro matrix: `debian:trixie`, `ubuntu:26.04`, `fedora:46`, `rocky:9`, `archlinux:latest`.

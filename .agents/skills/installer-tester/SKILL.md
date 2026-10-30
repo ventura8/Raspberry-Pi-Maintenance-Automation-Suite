@@ -11,7 +11,7 @@ Use when changing `install.sh`, `uninstall.sh`, installer mocks, or installer BA
 1. Whiptail is the **default** interactive UI.
 1. Classic text UI is **automatic fallback** when whiptail cannot run — not a separate legacy flag.
 1. `install.sh --update` = `check_dependencies` + `download_scripts` + `quiet_suite_cron_jobs`; no menus; cron-safe.
-1. `download_scripts` rewrites `RECIPIENT_EMAIL="..."` to the configured ssmtp/msmtp user (maintenance scripts must ship `your_email@gmail.com` only).
+1. `download_scripts` rewrites `RECIPIENT_EMAIL="..."` to the configured ssmtp/msmtp user (maintenance scripts must ship `your_email@gmail.com` only). Only values passing `validate_email_address` are injected (otherwise the placeholder is kept), the value is sed-escaped, and `MSMTP_CONF` / `SSMTP_CONF` / `REVALIASES` env overrides are honoured only when `TEST_MODE=true`. Tests that override those paths must export `TEST_MODE=true`.
 1. Fresh `curl|bash` bootstraps package/mail/UI helpers from `$RAW_URL/lib/` when no trusted local `lib/` is present, evaluating them in memory (no temp files to swap). Empty/`/dev`/`/proc` `BASH_SOURCE` must leave `_INSTALL_ROOT` empty (no `$PWD/lib` sibling). On-disk libs are sourced only after `_install_src_trusted`; user-owned local libs are streamed from `$RAW_URL` instead of copied by `sudo install`. Uninstall must not run `./uninstall.sh` from cwd.
 1. `quiet_suite_cron_jobs` preserves cron macros (`@daily`, etc.) when rewriting redirects.
 1. `check_dependencies` installs curl, mail-transport, and whiptail (or family equivalent).

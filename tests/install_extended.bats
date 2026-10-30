@@ -222,3 +222,52 @@ EOF
     run bash -c "export TEST_MODE=false; source ./install.sh; run_interactive echo 'test_interactive'"
     [[ "$output" =~ "test_interactive" ]]
 }
+
+@test "Install: download_scripts refuses a shell-injecting msmtp user (keeps placeholder)" {
+    mkdir -p "$INSTALL_DIR"
+    printf 'account default\nhost smtp.gmail.com\nuser x@x.com";touch /tmp/pwned_rcpt;RECIPIENT_EMAIL="x@x.com\n' > "$MSMTP_CONF"
+    rm -f /tmp/pwned_rcpt
+    run bash -c "export $(_install_env); source ./install.sh; download_scripts"
+    [[ "$output" =~ "not a valid email address" ]]
+    grep -q '^RECIPIENT_EMAIL="your_email@gmail.com"$' "$INSTALL_DIR/update_pi_os.sh"
+    ! grep -q 'pwned_rcpt' "$INSTALL_DIR"/*.sh
+    [[ ! -e /tmp/pwned_rcpt ]]
+}
+
+@test "Install: download_scripts injects a valid msmtp user verbatim" {
+    mkdir -p "$INSTALL_DIR"
+    printf 'account default\nhost smtp.gmail.com\nuser first.last+pi@example.com\n' > "$MSMTP_CONF"
+    run bash -c "export $(_install_env); source ./install.sh; download_scripts"
+    [[ "$output" =~ "Scripts updated" ]]
+    grep -q '^RECIPIENT_EMAIL="first.last+pi@example.com"$' "$INSTALL_DIR/update_pi_os.sh"
+}
+
+@test "Install: _install_atomic_curl refuses an invalid RECIPIENT_EMAIL" {
+    mkdir -p "$INSTALL_DIR"
+    run bash -c "export $(_install_env); source ./install.sh; _install_atomic_curl \"\$RAW_URL/scripts/update_pi_os.sh\" \"$INSTALL_DIR/update_pi_os.sh\" 0755 'a@b.co\";id;\"'"
+    [[ "$status" -ne 0 ]]
+    [[ ! -e "$INSTALL_DIR/update_pi_os.sh" ]]
+}
+
+@test "Install: save_email_configuration rejects an invalid address" {
+    run bash -c "export $(_install_env); source ./install.sh; save_email_configuration \$'a@b.co\\nid' pass"
+    [[ "$status" -ne 0 ]]
+    [[ "$output" =~ "Invalid email format" ]]
+}
+
+@test "Install: _sed_replacement_escape escapes sed specials" {
+    run bash -c "source ./install.sh; _sed_replacement_escape 'a/b&c\\d'"
+    [[ "$output" == 'a\/b\&c\\d' ]]
+}
+
+@test "Install: mail config paths ignore the environment outside TEST_MODE" {
+    run bash -c "export TEST_MODE=false MSMTP_CONF=/tmp/evil SSMTP_CONF=/tmp/evil2 REVALIASES=/tmp/evil3; source ./install.sh; echo \"\$MSMTP_CONF \$SSMTP_CONF \$REVALIASES\""
+    [[ "$output" == *"/etc/msmtprc /etc/ssmtp/ssmtp.conf /etc/ssmtp/revaliases"* ]]
+}
+
+@test "Install: matrix fresh install aborts on an invalid MATRIX_EMAIL" {
+    run bash -c "export $(_install_env) MATRIX_EMAIL='bad\";id;\"' MATRIX_PASS=pass; source ./install.sh; run_fresh_install_matrix"
+    [[ "$status" -ne 0 ]]
+    [[ "$output" =~ "Invalid email format" ]]
+    [[ ! "$output" =~ "Installation Complete!" ]]
+}

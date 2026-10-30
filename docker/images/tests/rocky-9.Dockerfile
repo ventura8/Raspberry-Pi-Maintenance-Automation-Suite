@@ -9,7 +9,7 @@ RUN dnf install -y epel-release-9 \
     bash-5.1.8 \
     bats-1.8.0 \
     bc-1.07.1 \
-    ca-certificates-2025.2.80_v9.0.305 \
+    ca-certificates-2026.2.92_v9.0.319 \
     cronie-1.5.7 \
     curl-7.76.1 \
     git-2.52.0 \
@@ -23,7 +23,7 @@ RUN dnf install -y epel-release-9 \
     sudo-1.9.17p2 \
     && dnf clean all \
     && python3 -m pip install --no-cache-dir \
-        --only-binary :all: 'lizard==1.24.1'
+        --only-binary :all: 'lizard==1.24.3'
 
 COPY docker/images/tests/scripts/common.sh /tmp/common.sh
 ARG CI_UID=1000
