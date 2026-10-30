@@ -9,7 +9,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     'bash=5.3*' \
     'bats=1.13.0*' \
     'bc=1.07.1*' \
-    'ca-certificates=20260601~26.04.1*' \
+    'ca-certificates=20260816ubuntu0.26.04.1*' \
     'cron=3.0pl1*' \
     'curl=8.18.0*' \
     'git=1:2.53.0*' \
@@ -29,9 +29,9 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     && update-locale LANG=en_US.UTF-8 LC_ALL=en_US.UTF-8 \
     && rm -rf /var/lib/apt/lists/* \
     && { python3 -m pip install --break-system-packages --no-cache-dir \
-            --only-binary :all: 'lizard==1.24.1' \
+            --only-binary :all: 'lizard==1.24.3' \
         || python3 -m pip install --no-cache-dir \
-            --only-binary :all: 'lizard==1.24.1'; }
+            --only-binary :all: 'lizard==1.24.3'; }
 
 COPY docker/images/tests/scripts/common.sh /tmp/common.sh
 ARG CI_UID=1000

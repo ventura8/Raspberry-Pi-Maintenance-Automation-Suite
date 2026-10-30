@@ -1,6 +1,6 @@
 # Dated snapshot (DL3007) rather than :latest. `pacman -Syu` below upgrades
 # to current rolling Arch, so the lane still tracks rolling Arch.
-FROM archlinux:base-20261004.0.606936
+FROM archlinux:base-20261025.0.616225
 
 # Prefer a generated UTF-8 locale for predictable test environments.
 ENV LANG=en_US.UTF-8
@@ -15,9 +15,9 @@ RUN pacman -Syu --noconfirm \
     && locale-gen \
     && pacman -Scc --noconfirm \
     && { python -m pip install --break-system-packages --no-cache-dir \
-            --only-binary :all: 'lizard==1.24.1' \
+            --only-binary :all: 'lizard==1.24.3' \
         || pip install --no-cache-dir \
-            --only-binary :all: 'lizard==1.24.1'; }
+            --only-binary :all: 'lizard==1.24.3'; }
 
 COPY docker/images/tests/scripts/common.sh /tmp/common.sh
 ARG CI_UID=1000
