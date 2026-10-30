@@ -616,7 +616,8 @@ validate_email_address() {
 
 # Escape $1 for use as a sed s/// replacement with "/" as delimiter (\, / and & are special).
 _sed_replacement_escape() {
-    printf '%s' "$1" | sed -e 's/[\\/&]/\\&/g'
+    local value="$1"
+    printf '%s' "$value" | sed -e 's/[\\/&]/\\&/g'
     return
 }
 
