@@ -264,3 +264,10 @@ EOF
     run bash -c "export TEST_MODE=false MSMTP_CONF=/tmp/evil SSMTP_CONF=/tmp/evil2 REVALIASES=/tmp/evil3; source ./install.sh; echo \"\$MSMTP_CONF \$SSMTP_CONF \$REVALIASES\""
     [[ "$output" == *"/etc/msmtprc /etc/ssmtp/ssmtp.conf /etc/ssmtp/revaliases"* ]]
 }
+
+@test "Install: matrix fresh install aborts on an invalid MATRIX_EMAIL" {
+    run bash -c "export $(_install_env) MATRIX_EMAIL='bad\";id;\"' MATRIX_PASS=pass; source ./install.sh; run_fresh_install_matrix"
+    [[ "$status" -ne 0 ]]
+    [[ "$output" =~ "Invalid email format" ]]
+    [[ ! "$output" =~ "Installation Complete!" ]]
+}

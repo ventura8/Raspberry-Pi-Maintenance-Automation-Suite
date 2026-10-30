@@ -1831,7 +1831,7 @@ run_fresh_install_matrix() {
     _pi_echo "Matrix/non-interactive fresh install."
     echo ""
     check_dependencies
-    save_email_configuration "$email" "$pass"
+    save_email_configuration "$email" "$pass" || return 1
     download_scripts
     _enable_default_fresh_tasks
     echo ""
