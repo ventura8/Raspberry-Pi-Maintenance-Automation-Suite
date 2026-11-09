@@ -43,7 +43,7 @@ matrix_run_text_fresh_install "e2e@example.com" "app-password-test"
 matrix_assert_installed
 
 echo "=== E2E: non-interactive --update ==="
-bash ./install.sh --update
+bash ./tests/helpers/install_test_paths.sh --update
 matrix_assert_installed
 
 echo "=== E2E: Pi / non-Pi toggles via MOCK_IS_PI ==="

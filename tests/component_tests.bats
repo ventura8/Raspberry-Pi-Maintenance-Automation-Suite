@@ -97,7 +97,7 @@ EOF
     # Ensure INSTALL_DIR exists and is writable
     mkdir -p "$INSTALL_DIR"
 
-    run bash -c "export PATH=$MOCK_DIR:$PATH; source \"$MOCK_DIR/install_lib.sh\"; SCRIPTS[1]='test_script.sh'; download_scripts"
+    run bash -c "export PATH=$MOCK_DIR:$PATH; INSTALL_SH=\"$MOCK_DIR/install_lib.sh\" source $BATS_TEST_DIRNAME/helpers/install_test_paths.sh; SCRIPTS[1]='test_script.sh'; download_scripts"
     
     # Cleanup
     rm -f "test_script.sh"
@@ -126,7 +126,7 @@ EOF
     echo "AuthUser=existing@test.com" > "$SSMTP_CONF"
     mkdir -p "$INSTALL_DIR"
 
-    run bash -c "export PATH=$MOCK_DIR:$PATH; source \"$MOCK_DIR/install_lib.sh\"; SCRIPTS[1]='test_script.sh'; download_scripts"
+    run bash -c "export PATH=$MOCK_DIR:$PATH; INSTALL_SH=\"$MOCK_DIR/install_lib.sh\" source $BATS_TEST_DIRNAME/helpers/install_test_paths.sh; SCRIPTS[1]='test_script.sh'; download_scripts"
 
     [ "$status" -eq 0 ]
     [[ "$output" =~ "Scripts updated" ]]
@@ -150,7 +150,7 @@ fi
 EOF
     chmod +x "$MOCK_DIR/crontab"
 
-    run bash -c "export PATH=$MOCK_DIR:$PATH; source \"$MOCK_DIR/install_lib.sh\"; get_task_status 'test_script.sh' 'false'"
+    run bash -c "export PATH=$MOCK_DIR:$PATH; INSTALL_SH=\"$MOCK_DIR/install_lib.sh\" source $BATS_TEST_DIRNAME/helpers/install_test_paths.sh; get_task_status 'test_script.sh' 'false'"
     
     [[ "$output" =~ "ENABLED|0 0 * * *" ]]
 }
@@ -731,7 +731,7 @@ EOF
     echo "AuthUser=existing@test.com" > "$SSMTP_CONF"
     mkdir -p "$INSTALL_DIR"
 
-    run bash -c "export PATH=$MOCK_DIR:$PATH; source \"$MOCK_DIR/install_lib.sh\"; SCRIPTS[1]='test_script.sh'; download_scripts"
+    run bash -c "export PATH=$MOCK_DIR:$PATH; INSTALL_SH=\"$MOCK_DIR/install_lib.sh\" source $BATS_TEST_DIRNAME/helpers/install_test_paths.sh; SCRIPTS[1]='test_script.sh'; download_scripts"
 
     [[ -f "$INSTALL_DIR/.version" ]]
     [[ "$(cat "$INSTALL_DIR/.version")" == "v1.1.0" ]]
@@ -762,7 +762,7 @@ exit 0
 EOF
     chmod +x "$MOCK_DIR/curl"
 
-    run bash -c "export PATH=$MOCK_DIR:$PATH; source \"$MOCK_DIR/install_lib.sh\"; SCRIPTS[1]='test_script.sh'; download_scripts"
+    run bash -c "export PATH=$MOCK_DIR:$PATH; INSTALL_SH=\"$MOCK_DIR/install_lib.sh\" source $BATS_TEST_DIRNAME/helpers/install_test_paths.sh; SCRIPTS[1]='test_script.sh'; download_scripts"
     [[ "$output" =~ "Error downloading lib/" ]]
 }
 
@@ -794,7 +794,7 @@ EOF
     echo "AuthUser=existing@test.com" > "$SSMTP_CONF"
     mkdir -p "$INSTALL_DIR"
 
-    run bash -c "export PATH=$MOCK_DIR:$PATH; unset SUITE_VERSION; source \"$MOCK_DIR/install_lib.sh\"; SCRIPTS[1]='test_script.sh'; download_scripts"
+    run bash -c "export PATH=$MOCK_DIR:$PATH; unset SUITE_VERSION; INSTALL_SH=\"$MOCK_DIR/install_lib.sh\" source $BATS_TEST_DIRNAME/helpers/install_test_paths.sh; SCRIPTS[1]='test_script.sh'; download_scripts"
 
     [[ -f "$INSTALL_DIR/.version" ]]
     [[ "$(cat "$INSTALL_DIR/.version")" == "v1.0.2" ]]
@@ -805,7 +805,7 @@ EOF
     echo "v1.1.0" > "$MOCK_DIR/VERSION"
     unset SUITE_VERSION
 
-    run bash -c "export PATH=$MOCK_DIR:$PATH; unset SUITE_VERSION; source \"$MOCK_DIR/install_lib.sh\"; print_header"
+    run bash -c "export PATH=$MOCK_DIR:$PATH; unset SUITE_VERSION; INSTALL_SH=\"$MOCK_DIR/install_lib.sh\" source $BATS_TEST_DIRNAME/helpers/install_test_paths.sh; print_header"
 
     [[ "$output" =~ "Raspberry Pi Maintenance Suite Manager" ]]
     [[ "$output" =~ "v1.1.0" ]]

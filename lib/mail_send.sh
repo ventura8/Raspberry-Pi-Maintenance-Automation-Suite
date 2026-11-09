@@ -44,6 +44,8 @@ else
 fi
 unset _UI_MSG
 
+# install.sh pins these to /etc before sourcing this lib, so the defaults below only take effect
+# for the root-cron maintenance scripts (cron environment) and their BATS tests.
 SSMTP_CONF="${SSMTP_CONF:-/etc/ssmtp/ssmtp.conf}"
 REVALIASES="${REVALIASES:-/etc/ssmtp/revaliases}"
 MSMTP_CONF="${MSMTP_CONF:-/etc/msmtprc}"

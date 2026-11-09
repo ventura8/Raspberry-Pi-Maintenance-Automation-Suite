@@ -21,7 +21,7 @@ setup() {
 
 @test "Install: Hardware Detection - Raspberry Pi Mode" {
     # Source install.sh with MOCK_IS_PI=true
-    run bash -c "export PATH=$MOCK_DIR:$PATH; export TEST_MODE=true; export MOCK_IS_PI=true; source ./install.sh; echo \"IS_PI: \$IS_PI\""
+    run bash -c "export PATH=$MOCK_DIR:$PATH; export TEST_MODE=true; export MOCK_IS_PI=true; source $BATS_TEST_DIRNAME/helpers/install_test_paths.sh; echo \"IS_PI: \$IS_PI\""
     [[ "$output" =~ "IS_PI: true" ]]
 }
 
@@ -41,7 +41,7 @@ exit 0
 EOF
     chmod +x "$MOCK_DIR/curl"
 
-    run bash -c "export PATH=$MOCK_DIR:$PATH; export TEST_MODE=true; export MOCK_IS_PI=true; source ./install.sh; download_scripts"
+    run bash -c "export PATH=$MOCK_DIR:$PATH; export TEST_MODE=true; export MOCK_IS_PI=true; source $BATS_TEST_DIRNAME/helpers/install_test_paths.sh; download_scripts"
     
     # In Pi Mode, it should NOT skip firmware/pip
     # We check if it attempted to download them. 
@@ -59,7 +59,7 @@ EOF
     # We run manage_tasks_ui and check output for Firmware/Pip
     # Input 0 to exit immediately
     
-    run bash -c "export PATH=$MOCK_DIR:$PATH; export TEST_MODE=true; export MOCK_IS_PI=true; source ./install.sh; manage_tasks_ui <<< '0'"
+    run bash -c "export PATH=$MOCK_DIR:$PATH; export TEST_MODE=true; export MOCK_IS_PI=true; source $BATS_TEST_DIRNAME/helpers/install_test_paths.sh; manage_tasks_ui <<< '0'"
     
     [[ "$output" =~ "Firmware Update" ]]
     [[ "$output" =~ "Python Pip Update" ]]

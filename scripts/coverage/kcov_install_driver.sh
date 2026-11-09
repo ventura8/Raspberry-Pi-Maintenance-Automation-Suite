@@ -17,6 +17,11 @@ cp -a lib/*.sh "$INSTALL_DIR/lib/" 2> /dev/null || true
 
 # shellcheck source=../../install.sh
 source ./install.sh
+# install.sh pins its mail config paths to /etc; re-point them at the mock filesystem.
+mkdir -p "$MOCK_FS/etc/ssmtp"
+SSMTP_CONF="$MOCK_FS/etc/ssmtp/ssmtp.conf"
+REVALIASES="$MOCK_FS/etc/ssmtp/revaliases"
+MSMTP_CONF="$MOCK_FS/etc/msmtprc"
 
 skip_pi_only_task "update_pip.sh" || true
 MOCK_IS_PI=false
