@@ -273,7 +273,7 @@ EOF
             echo "0"
             sleep 0.5
             echo "0"
-        ) | ./install.sh
+        ) | bash ./tests/helpers/install_test_paths.sh
     fi
     echo "--- [VERIFY] Checking Phase 1 State ---"
     # msmtp is preferred whenever installed; ssmtp is only the fallback. Check whichever the

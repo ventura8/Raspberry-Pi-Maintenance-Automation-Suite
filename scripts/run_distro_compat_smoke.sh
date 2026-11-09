@@ -58,7 +58,7 @@ matrix_run_uninstall || _smoke_fail "uninstall after fresh install failed"
 
 _smoke_log "Running non-interactive install.sh --update"
 matrix_prepare_install_env
-bash ./install.sh --update
+bash ./tests/helpers/install_test_paths.sh --update
 matrix_assert_installed || _smoke_fail "--update install assertions failed"
 
 _smoke_log "Running uninstall after --update"
