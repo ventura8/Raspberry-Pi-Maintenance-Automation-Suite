@@ -47,14 +47,14 @@ teardown() {
 }
 
 @test "Install: Configure Email - Invalid Email" {
-    run bash -c "export PATH=$MOCK_DIR:$PATH; source ./install.sh; configure_email_interactive <<< $'Y\ninvalid-email\n\n'"
+    run bash -c "export PATH=$MOCK_DIR:$PATH; source $BATS_TEST_DIRNAME/helpers/install_test_paths.sh; configure_email_interactive <<< $'Y\ninvalid-email\n\n'"
     [[ "$output" =~ "Invalid email" ]]
 }
 
 @test "Install: Configure Email - Valid Config (New)" {
     # No prior valid config exists (SSMTP_CONF/MSMTP_CONF are empty placeholders), so the
     # reconfigure-confirm prompt does not fire and the first line is the email directly.
-    run bash -c "export PATH=$MOCK_DIR:$PATH; source ./install.sh; configure_email_interactive <<< $'test@test.com\npassword'"
+    run bash -c "export PATH=$MOCK_DIR:$PATH; source $BATS_TEST_DIRNAME/helpers/install_test_paths.sh; configure_email_interactive <<< $'test@test.com\npassword'"
     [[ "$output" =~ "Email configured successfully" ]]
     
     # Verify MAILTO was written to mock crontab
@@ -64,7 +64,7 @@ teardown() {
 
 @test "Install: Configure Email - Existing Config (No Update)" {
     echo "AuthUser=existing@test.com" > "$SSMTP_CONF"
-    run bash -c "export PATH=$MOCK_DIR:$PATH; source ./install.sh; configure_email_interactive <<< $'n'"
+    run bash -c "export PATH=$MOCK_DIR:$PATH; source $BATS_TEST_DIRNAME/helpers/install_test_paths.sh; configure_email_interactive <<< $'n'"
     # Should return early without asking for email
     [[ ! "$output" =~ "Enter Gmail address" ]]
 }
@@ -72,7 +72,7 @@ teardown() {
 @test "Install: Configure Email (text) - msmtp-only config shows current address" {
     rm -f "$SSMTP_CONF"
     printf 'account default\nhost smtp.gmail.com\nuser msmtp-only@test.com\n' > "$MSMTP_CONF"
-    run bash -c "export PATH=$MOCK_DIR:\$PATH INSTALL_FORCE_TEXT_UI=1; source ./install.sh; configure_email_text <<< $'n'"
+    run bash -c "export PATH=$MOCK_DIR:\$PATH INSTALL_FORCE_TEXT_UI=1; source $BATS_TEST_DIRNAME/helpers/install_test_paths.sh; configure_email_text <<< $'n'"
     [[ "$output" =~ "Current Configured Email: msmtp-only@test.com" ]]
     [[ ! "$output" =~ "Enter Gmail address" ]]
 }
@@ -86,7 +86,7 @@ teardown() {
     printf '%s\n' "no" > "$MOCK_DIR/whiptail_yesno"
     printf 'new@test.com\nnewpass\n' > "$MOCK_DIR/whiptail_input"
     run bash -c \
-        "export PATH=$MOCK_DIR:\$PATH INSTALL_USE_WHIPTAIL=1; source ./install.sh; \
+        "export PATH=$MOCK_DIR:\$PATH INSTALL_USE_WHIPTAIL=1; source $BATS_TEST_DIRNAME/helpers/install_test_paths.sh; \
 configure_email_whiptail; grep -E '^user[[:space:]]+' \"$MSMTP_CONF\""
     [[ "$status" -eq 0 ]]
     [[ "$output" =~ "msmtp-only@test.com" ]]
@@ -96,20 +96,20 @@ configure_email_whiptail; grep -E '^user[[:space:]]+' \"$MSMTP_CONF\""
 @test "Install: Toggle Task - Enable Disabled Task" {
     # Ensure task 1 is disabled (remove from mock root cron)
     rm -f "$MOCK_DIR/root_cron"
-    run bash -c "export PATH=$MOCK_DIR:$PATH; source ./install.sh; toggle_task 1 <<< $'y\n0 0 * * *'"
+    run bash -c "export PATH=$MOCK_DIR:$PATH; source $BATS_TEST_DIRNAME/helpers/install_test_paths.sh; toggle_task 1 <<< $'y\n0 0 * * *'"
     [[ "$output" =~ "Task enabled" ]]
 }
 
 @test "Install: Toggle Task - Disable Enabled Task" {
     # Add task 1 to mock root cron
     echo "0 0 * * * $INSTALL_DIR/update_pi_os.sh >/dev/null" > "$MOCK_DIR/root_cron"
-    run bash -c "export PATH=$MOCK_DIR:$PATH; source ./install.sh; toggle_task 1 <<< $'y'"
+    run bash -c "export PATH=$MOCK_DIR:$PATH; source $BATS_TEST_DIRNAME/helpers/install_test_paths.sh; toggle_task 1 <<< $'y'"
     [[ "$output" =~ "Task disabled" ]]
 }
 
 @test "Install: Toggle Task - Edit Enabled Task" {
     echo "0 0 * * * $INSTALL_DIR/update_pi_os.sh >/dev/null" > "$MOCK_DIR/root_cron"
-    run bash -c "export PATH=$MOCK_DIR:$PATH; source ./install.sh; toggle_task 1 <<< $'e\n1 1 * * *'"
+    run bash -c "export PATH=$MOCK_DIR:$PATH; source $BATS_TEST_DIRNAME/helpers/install_test_paths.sh; toggle_task 1 <<< $'e\n1 1 * * *'"
     [[ "$output" =~ "Schedule updated" ]]
 }
 
@@ -130,7 +130,7 @@ EOF
     chmod +x "$MOCK_DIR/curl"
     
     mkdir -p "$INSTALL_DIR"
-    run bash -c "export PATH=$MOCK_DIR:$PATH; source ./install.sh; download_scripts"
+    run bash -c "export PATH=$MOCK_DIR:$PATH; source $BATS_TEST_DIRNAME/helpers/install_test_paths.sh; download_scripts"
     [[ "$output" =~ "Error downloading update_pi_firmware.sh" ]]
     [[ "$output" =~ "Scripts updated" ]]
 }
@@ -142,7 +142,7 @@ EOF
     # 4-9. \n x6 (Accept all 6 tasks)
     # 10. \n (Press Enter to open Manager)
     # 11. 0 (Exit)
-    run bash -c "export PATH=$MOCK_DIR:$PATH; source ./install.sh; run_fresh_install <<< $'Y\ntest@fresh.com\npassword\n\n\n\n\n\n\n\n0'"
+    run bash -c "export PATH=$MOCK_DIR:$PATH; source $BATS_TEST_DIRNAME/helpers/install_test_paths.sh; run_fresh_install <<< $'Y\ntest@fresh.com\npassword\n\n\n\n\n\n\n\n0'"
     
     [[ "$output" =~ "Welcome to the One-Line Installer" ]]
     [[ "$output" =~ "$SUITE_VERSION" ]]
@@ -151,18 +151,18 @@ EOF
 
 @test "Install: Configure Email - Reconfigure Opt-out" {
     echo "AuthUser=existing@test.com" > "$SSMTP_CONF"
-    run bash -c "export PATH=$MOCK_DIR:$PATH; source ./install.sh; configure_email_interactive <<< $'n'"
+    run bash -c "export PATH=$MOCK_DIR:$PATH; source $BATS_TEST_DIRNAME/helpers/install_test_paths.sh; configure_email_interactive <<< $'n'"
     [[ ! "$output" =~ "Enter Gmail address" ]]
 }
 
 @test "Install: Configure Email - Empty Password" {
-    run bash -c "export PATH=$MOCK_DIR:$PATH; source ./install.sh; configure_email_interactive <<< $'test@test.com\n\n'"
+    run bash -c "export PATH=$MOCK_DIR:$PATH; source $BATS_TEST_DIRNAME/helpers/install_test_paths.sh; configure_email_interactive <<< $'test@test.com\n\n'"
     [[ "$output" =~ "Password empty" ]]
 }
 
 @test "Install: Show Email Config - Missing File" {
     rm -f "$SSMTP_CONF" "$MSMTP_CONF"
-    run bash -c "export PATH=$MOCK_DIR:$PATH; source ./install.sh; show_email_config <<< $''"
+    run bash -c "export PATH=$MOCK_DIR:$PATH; source $BATS_TEST_DIRNAME/helpers/install_test_paths.sh; show_email_config <<< $''"
     [[ "$output" =~ "No mail configuration found" ]]
 }
 
@@ -174,17 +174,17 @@ EOF
     # 5-9. \n x5 (Accept others)
     # 10. \n (Press Enter)
     # 11. 0 (Exit)
-    run bash -c "export PATH=$MOCK_DIR:$PATH; source ./install.sh; run_fresh_install <<< $'Y\ntest@fresh.com\npassword\nn\n\n\n\n\n\n\n0'"
+    run bash -c "export PATH=$MOCK_DIR:$PATH; source $BATS_TEST_DIRNAME/helpers/install_test_paths.sh; run_fresh_install <<< $'Y\ntest@fresh.com\npassword\nn\n\n\n\n\n\n\n0'"
     [[ "$output" =~ "Skipped System OS Update" ]]
 }
 
 @test "Install: Main Menu - Invalid Option" {
-    run bash -c "export PATH=$MOCK_DIR:$PATH; source ./install.sh; main_menu <<< $'9\n0'"
+    run bash -c "export PATH=$MOCK_DIR:$PATH; source $BATS_TEST_DIRNAME/helpers/install_test_paths.sh; main_menu <<< $'9\n0'"
     [[ "$output" =~ "Invalid option" ]]
 }
 
 @test "Install: Main Menu - Uninstall No" {
-    run bash -c "export PATH=$MOCK_DIR:$PATH; source ./install.sh; main_menu <<< $'6\nn\n0'"
+    run bash -c "export PATH=$MOCK_DIR:$PATH; source $BATS_TEST_DIRNAME/helpers/install_test_paths.sh; main_menu <<< $'6\nn\n0'"
     [[ "$output" =~ "Configure Email Settings" ]] # Should still be in menu
 }
 
@@ -203,7 +203,7 @@ EOF
     cp ./install.sh "$TD/"
     cd "$TD"
     
-    run bash -c "export PATH=$MOCK_DIR:$PATH; source ./install.sh; main_menu <<< $'6\ny'"
+    run bash -c "export PATH=$MOCK_DIR:$PATH; source $BATS_TEST_DIRNAME/helpers/install_test_paths.sh; main_menu <<< $'6\ny'"
     
     cd - >/dev/null
     rm -rf "$TD"
@@ -212,7 +212,7 @@ EOF
 }
 
 @test "Install: Main Menu - EOF" {
-    run bash -c "export PATH=$MOCK_DIR:$PATH; source ./install.sh; main_menu < /dev/null"
+    run bash -c "export PATH=$MOCK_DIR:$PATH; source $BATS_TEST_DIRNAME/helpers/install_test_paths.sh; main_menu < /dev/null"
     [[ "$output" =~ "EOF detected" ]]
 }
 
@@ -226,7 +226,7 @@ EOF
 
     run bash -c "
         export PATH=$MOCK_DIR:\$PATH
-        source ./install.sh
+        source $BATS_TEST_DIRNAME/helpers/install_test_paths.sh
         
         # Override AFTER sourcing to force mail-transport install path
         has_mail_sender() { return 1; }
@@ -258,7 +258,7 @@ EOF
     chmod +x "$MOCK_DIR/crontab"
 
     # Toggle Pi-Apps (Disable)
-    run bash -c "export PATH=$MOCK_DIR:\$PATH; source ./install.sh; toggle_task 5 <<< \$'y'"
+    run bash -c "export PATH=$MOCK_DIR:\$PATH; source $BATS_TEST_DIRNAME/helpers/install_test_paths.sh; toggle_task 5 <<< \$'y'"
 
     [[ "$output" =~ "Task disabled" ]]
     # Verify file is empty/line removed
@@ -280,7 +280,7 @@ EOF
 EOF
 
     # Just viewing the menu exercises cron_to_human via manage_tasks_ui
-    run bash -c "export PATH=$MOCK_DIR:$PATH; source ./install.sh; manage_tasks_ui <<< $'0'"
+    run bash -c "export PATH=$MOCK_DIR:$PATH; source $BATS_TEST_DIRNAME/helpers/install_test_paths.sh; manage_tasks_ui <<< $'0'"
     
     [[ "$output" =~ "Daily" ]]
     [[ "$output" =~ "Monthly" ]]
@@ -292,7 +292,7 @@ EOF
     echo "AuthUser=test@test.com" > "$SSMTP_CONF"
     echo "mailhub=smtp.test.com" >> "$SSMTP_CONF"
     
-    run bash -c "export PATH=$MOCK_DIR:$PATH; source ./install.sh; show_email_config <<< $''"
+    run bash -c "export PATH=$MOCK_DIR:$PATH; source $BATS_TEST_DIRNAME/helpers/install_test_paths.sh; show_email_config <<< $''"
 
     [[ "$output" =~ "User:     test@test.com" ]]
 }
@@ -323,7 +323,7 @@ EOF
 
     run bash -c "
         export PATH=$MOCK_DIR:\$PATH INSTALL_DIR=$INSTALL_DIR
-        source ./install.sh
+        source $BATS_TEST_DIRNAME/helpers/install_test_paths.sh
         migrate_mail_config_to_msmtp
         write_mail_config 'new@test.com' 'newpass'
         get_current_email_user
@@ -350,7 +350,7 @@ password secret
 
 account default : personal
 EOF
-    run bash -c "export PATH=$MOCK_DIR:\$PATH; source ./install.sh; get_current_email_user"
+    run bash -c "export PATH=$MOCK_DIR:\$PATH; source $BATS_TEST_DIRNAME/helpers/install_test_paths.sh; get_current_email_user"
     [[ "$status" -eq 0 ]]
     [[ "$output" == "inherited@test.com" ]]
 }
@@ -399,7 +399,7 @@ EOF
     mkdir -p "$INSTALL_DIR"
     # Execute directly, do NOT source.
     # Pass 0 to exit menu.
-    run ./install.sh <<< $'0'
+    run bash $BATS_TEST_DIRNAME/helpers/install_test_paths.sh <<< $'0'
     [[ "$output" =~ "Raspberry Pi Maintenance Suite Manager" ]]
 }
 
@@ -421,7 +421,7 @@ EOF
     echo "0 3 * * 0 $INSTALL_DIR/update_pi_os.sh >/dev/null" > "$MOCK_DIR/root_cron"
     echo "0 5 * * 0 $INSTALL_DIR/update_pi_apps.sh >/dev/null" > "$MOCK_DIR/user_cron"
 
-    run bash -c "export PATH=$MOCK_DIR:$PATH; source ./install.sh; run_enabled_tasks_now <<< $'y\\n\\n'"
+    run bash -c "export PATH=$MOCK_DIR:$PATH; source $BATS_TEST_DIRNAME/helpers/install_test_paths.sh; run_enabled_tasks_now <<< $'y\\n\\n'"
 
     [[ "$output" =~ "RUN_OS_UPDATE" ]]
     [[ "$output" =~ "RUN_PI_APPS_UPDATE" ]]
@@ -439,7 +439,7 @@ EOF
 
     echo "0 3 * * 0 $INSTALL_DIR/update_pi_os.sh >/dev/null" > "$MOCK_DIR/root_cron"
 
-    run bash -c "export PATH=$MOCK_DIR:$PATH; source ./install.sh; run_enabled_tasks_now <<< $'n\\n\\n'"
+    run bash -c "export PATH=$MOCK_DIR:$PATH; source $BATS_TEST_DIRNAME/helpers/install_test_paths.sh; run_enabled_tasks_now <<< $'n\\n\\n'"
 
     [[ "$output" =~ "Warning: One or more enabled tasks may reboot" ]]
     [[ "$output" =~ "Cancelled: Enabled tasks were not run" ]]
@@ -449,7 +449,7 @@ EOF
 @test "Install: Run Enabled Tasks Now - No Enabled Tasks" {
     rm -f "$MOCK_DIR/root_cron" "$MOCK_DIR/user_cron"
 
-    run bash -c "export PATH=$MOCK_DIR:$PATH; source ./install.sh; run_enabled_tasks_now <<< $'\\n'"
+    run bash -c "export PATH=$MOCK_DIR:$PATH; source $BATS_TEST_DIRNAME/helpers/install_test_paths.sh; run_enabled_tasks_now <<< $'\\n'"
 
     [[ "$output" =~ "No enabled tasks found" ]]
 }
@@ -461,7 +461,7 @@ EOF
     # Enable a reboot-capable root task, but intentionally do not create the script file.
     echo "0 3 * * 0 $INSTALL_DIR/update_pi_os.sh >/dev/null" > "$MOCK_DIR/root_cron"
 
-    run bash -c "export PATH=$MOCK_DIR:$PATH; source ./install.sh; run_enabled_tasks_now <<< $'y\\n\\n'"
+    run bash -c "export PATH=$MOCK_DIR:$PATH; source $BATS_TEST_DIRNAME/helpers/install_test_paths.sh; run_enabled_tasks_now <<< $'y\\n\\n'"
 
     [[ "$output" =~ "Skipped: Script not found" ]]
     [[ "$output" =~ "Completed with failures" ]]
@@ -478,14 +478,14 @@ EOF
 
     echo "0 3 * * 0 $INSTALL_DIR/update_pi_os.sh >/dev/null" > "$MOCK_DIR/root_cron"
 
-    run bash -c "export PATH=$MOCK_DIR:$PATH; source ./install.sh; main_menu <<< $'5\\ny\\n\\n0'"
+    run bash -c "export PATH=$MOCK_DIR:$PATH; source $BATS_TEST_DIRNAME/helpers/install_test_paths.sh; main_menu <<< $'5\\ny\\n\\n0'"
 
     [[ "$output" =~ "Run Enabled Tasks Now" ]]
     [[ "$output" =~ "RUN_OS_UPDATE_MENU" ]]
 }
 
 @test "Install: Main Menu - Force Update Scripts Option" {
-    run bash -c "export PATH=$MOCK_DIR:$PATH; source ./install.sh; main_menu <<< $'4\n0'"
+    run bash -c "export PATH=$MOCK_DIR:$PATH; source $BATS_TEST_DIRNAME/helpers/install_test_paths.sh; main_menu <<< $'4\n0'"
 
     [[ "$output" =~ "Downloading/Updating scripts" ]]
     [[ "$output" =~ "Scripts updated" ]]
@@ -495,7 +495,7 @@ EOF
     rm -rf "$INSTALL_DIR"
     # Execute directly.
     # Pass inputs for fresh install (Y, email, pass, accept tasks..., enter, 0 exit menu)
-    run ./install.sh <<< $'Y\ntest@entry.com\npassword\n\n\n\n\n\n\n\n\n0'
+    run bash $BATS_TEST_DIRNAME/helpers/install_test_paths.sh <<< $'Y\ntest@entry.com\npassword\n\n\n\n\n\n\n\n\n0'
     
     [[ "$output" =~ "Raspberry Pi Maintenance Suite $SUITE_VERSION" ]]
     [[ "$output" =~ "Welcome to the One-Line Installer" ]]
@@ -505,7 +505,7 @@ EOF
     # Define an email and password with spaces and CRs
     # In bash $'...' strings, \r correctly inserts a carriage return
     # We want to verify that " test@test.com  " and " pass word " become "test@test.com" and "password"
-    run bash -c "export PATH=$MOCK_DIR:$PATH; source ./install.sh; configure_email_interactive <<< $' test@test.com \r\n pass word \r'"
+    run bash -c "export PATH=$MOCK_DIR:$PATH; source $BATS_TEST_DIRNAME/helpers/install_test_paths.sh; configure_email_interactive <<< $' test@test.com \r\n pass word \r'"
     
     # Verify via show_email_config or checking the file directly
     [[ "$output" =~ "Email configured successfully" ]]
@@ -519,7 +519,7 @@ EOF
 }
 @test "Install: Configure Email - Strips Internal Spaces from App Password" {
     # Test internal spaces removal (Google format: 'aaaa bbbb cccc dddd')
-    run bash -c "export PATH=$MOCK_DIR:$PATH; source ./install.sh; configure_email_interactive <<< $'test@test.com\naaaa bbbb cccc dddd'"
+    run bash -c "export PATH=$MOCK_DIR:$PATH; source $BATS_TEST_DIRNAME/helpers/install_test_paths.sh; configure_email_interactive <<< $'test@test.com\naaaa bbbb cccc dddd'"
     
     [[ "$output" =~ "Email configured successfully" ]]
     
@@ -534,7 +534,7 @@ EOF
         MATRIX_EMAIL="matrix@test.com" MATRIX_PASS="secretpass" \
         INSTALL_DIR="$INSTALL_DIR" SSMTP_CONF="$SSMTP_CONF" REVALIASES="$REVALIASES" \
         TEST_MODE=true INSTALL_FORCE_TEXT_UI=1 \
-        ./install.sh
+        bash $BATS_TEST_DIRNAME/helpers/install_test_paths.sh
 
     [[ "$status" -eq 0 ]]
     [[ "$output" =~ "Matrix/non-interactive fresh install" ]]
@@ -563,6 +563,6 @@ done
 exit 0
 EOF
     chmod +x "$MOCK_DIR/curl"
-    run bash -c "export PATH=$MOCK_DIR:\$PATH; source ./install.sh; download_scripts"
+    run bash -c "export PATH=$MOCK_DIR:\$PATH; source $BATS_TEST_DIRNAME/helpers/install_test_paths.sh; download_scripts"
     [[ "$output" =~ "Error downloading lib/" ]]
 }

@@ -27,7 +27,7 @@ teardown() {
 }
 
 @test "install.sh --update installs scripts and lib helpers" {
-    run bash ./install.sh --update
+    run bash ./tests/helpers/install_test_paths.sh --update
     [ "$status" -eq 0 ]
     [ -f "$INSTALL_DIR/update_pi_os.sh" ]
     [ -f "$INSTALL_DIR/lib/os_pkg.sh" ]

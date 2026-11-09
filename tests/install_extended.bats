@@ -29,51 +29,51 @@ _install_env() {
 }
 
 @test "Install: Manage Tasks UI - Return to Menu" {
-    run bash -c "export PATH=$MOCK_DIR:$PATH; source ./install.sh; manage_tasks_ui <<< '0'"
+    run bash -c "export PATH=$MOCK_DIR:$PATH; source $BATS_TEST_DIRNAME/helpers/install_test_paths.sh; manage_tasks_ui <<< '0'"
     [[ "$output" =~ "Enter ID to toggle" ]]
 }
 
 @test "Install: Manage Tasks UI - Invalid ID" {
-    run bash -c "export PATH=$MOCK_DIR:$PATH; source ./install.sh; manage_tasks_ui <<< $'99\n0'"
+    run bash -c "export PATH=$MOCK_DIR:$PATH; source $BATS_TEST_DIRNAME/helpers/install_test_paths.sh; manage_tasks_ui <<< $'99\n0'"
     [[ "$output" =~ "Enter ID to toggle" ]]
 }
 
 @test "Install: Toggle Task - User Cron (Pi-Apps Enable)" {
     rm -f "$MOCK_DIR/user_cron"
-    run bash -c "export PATH=$MOCK_DIR:$PATH; source ./install.sh; toggle_task 5 <<< $'y\n0 6 * * *'"
+    run bash -c "export PATH=$MOCK_DIR:$PATH; source $BATS_TEST_DIRNAME/helpers/install_test_paths.sh; toggle_task 5 <<< $'y\n0 6 * * *'"
     [[ "$output" =~ "Pi-Apps Update" ]]
     [[ "$output" =~ "Task enabled" ]]
 }
 
 @test "Install: Show Email Config - Missing File" {
-    run bash -c "export $(_install_env); source ./install.sh; show_email_config <<< ''"
+    run bash -c "export $(_install_env); source $BATS_TEST_DIRNAME/helpers/install_test_paths.sh; show_email_config <<< ''"
     [[ "$output" =~ "No mail configuration found" ]]
 }
 
 @test "Install: Download Scripts - All Success" {
     # Scripts should ALREADY be present if mocked correctly or we can touch them
     mkdir -p "$INSTALL_DIR"
-    run bash -c "export PATH=$MOCK_DIR:$PATH; export INSTALL_DIR=$INSTALL_DIR; source ./install.sh; download_scripts"
+    run bash -c "export PATH=$MOCK_DIR:$PATH; export INSTALL_DIR=$INSTALL_DIR; source $BATS_TEST_DIRNAME/helpers/install_test_paths.sh; download_scripts"
     [[ "$output" =~ "Scripts updated" ]]
 }
 
 @test "Install: Main Menu - View Email Config (Missing)" {
-    run bash -c "export $(_install_env); source ./install.sh; main_menu <<< \$'2\n\n0'"
+    run bash -c "export $(_install_env); source $BATS_TEST_DIRNAME/helpers/install_test_paths.sh; main_menu <<< \$'2\n\n0'"
     [[ "$output" =~ "No mail configuration found" ]]
 }
 
 @test "Install: Main Menu - Manage Tasks" {
-    run bash -c "export $(_install_env); source ./install.sh; main_menu <<< \$'3\n0\n0'"
+    run bash -c "export $(_install_env); source $BATS_TEST_DIRNAME/helpers/install_test_paths.sh; main_menu <<< \$'3\n0\n0'"
     [[ "$output" =~ "Task Status Manager" ]]
 }
 
 @test "Install: Cron to Human - Invalid Day" {
-    run bash -c "source ./install.sh; cron_to_human '0 0 * * 8'"
+    run bash -c "source $BATS_TEST_DIRNAME/helpers/install_test_paths.sh; cron_to_human '0 0 * * 8'"
     [[ "$output" =~ "Dow 8" ]]
 }
 
 @test "Install: Manage Tasks UI - Toggle Task 1" {
-    run bash -c "export PATH=$MOCK_DIR:$PATH; source ./install.sh; manage_tasks_ui <<< $'1\ny\n\n0'"
+    run bash -c "export PATH=$MOCK_DIR:$PATH; source $BATS_TEST_DIRNAME/helpers/install_test_paths.sh; manage_tasks_ui <<< $'1\ny\n\n0'"
     [[ "$output" =~ "Task: System OS Update" ]]
 }
 
@@ -89,7 +89,7 @@ EOF
     cp ./install.sh "$TD/"
     cd "$TD"
     
-    run bash -c "export $(_install_env) RAW_URL='http://mock'; source ./install.sh; main_menu <<< \$'6\ny'"
+    run bash -c "export $(_install_env) RAW_URL='http://mock'; source $BATS_TEST_DIRNAME/helpers/install_test_paths.sh; main_menu <<< \$'6\ny'"
     
     cd - > /dev/null
     rm -rf "$TD"
@@ -175,7 +175,7 @@ EOF
 
 @test "Install: apply_task_schedule redirects stdout and stderr" {
     : > "$MOCK_DIR/root_cron"
-    run bash -c "export PATH=$MOCK_DIR:$PATH; source ./install.sh; apply_task_schedule update_pi_os.sh '0 3 * * 0'"
+    run bash -c "export PATH=$MOCK_DIR:$PATH; source $BATS_TEST_DIRNAME/helpers/install_test_paths.sh; apply_task_schedule update_pi_os.sh '0 3 * * 0'"
     [[ "$status" -eq 0 ]]
     grep -q 'update_pi_os.sh >/dev/null 2>&1' "$MOCK_DIR/root_cron"
 }
@@ -183,7 +183,7 @@ EOF
 @test "Install: quiet_suite_cron_jobs rewrites lines without redirect" {
     echo "0 1 * * 0 $INSTALL_DIR/update_self.sh" > "$MOCK_DIR/root_cron"
     echo "0 5 * * 0 $INSTALL_DIR/update_pi_apps.sh >/dev/null" > "$MOCK_DIR/user_cron"
-    run bash -c "export PATH=$MOCK_DIR:$PATH; source ./install.sh; quiet_suite_cron_jobs"
+    run bash -c "export PATH=$MOCK_DIR:$PATH; source $BATS_TEST_DIRNAME/helpers/install_test_paths.sh; quiet_suite_cron_jobs"
     [[ "$status" -eq 0 ]]
     grep -q 'update_self.sh >/dev/null 2>&1' "$MOCK_DIR/root_cron"
     grep -q 'update_pi_apps.sh >/dev/null 2>&1' "$MOCK_DIR/user_cron"
@@ -191,7 +191,7 @@ EOF
 
 @test "Install: quiet_suite_cron_jobs preserves @daily macro schedules" {
     echo "@daily $INSTALL_DIR/update_self.sh" > "$MOCK_DIR/root_cron"
-    run bash -c "export PATH=$MOCK_DIR:$PATH; source ./install.sh; quiet_suite_cron_jobs"
+    run bash -c "export PATH=$MOCK_DIR:$PATH; source $BATS_TEST_DIRNAME/helpers/install_test_paths.sh; quiet_suite_cron_jobs"
     [[ "$status" -eq 0 ]]
     grep -qE '^@daily .*update_self\.sh >/dev/null 2>&1$' "$MOCK_DIR/root_cron"
 }
@@ -210,7 +210,7 @@ EOF
     bash "$INSTALL_DIR/update_self.sh" > "$runner_out" &
     local pid=$!
     sleep 0.15
-    run bash -c "export PATH=$MOCK_DIR:$PATH; source ./install.sh; download_scripts"
+    run bash -c "export PATH=$MOCK_DIR:$PATH; source $BATS_TEST_DIRNAME/helpers/install_test_paths.sh; download_scripts"
     local wait_rc=0
     wait "$pid" || wait_rc=$?
     [[ "$wait_rc" -eq 0 ]]
@@ -219,7 +219,7 @@ EOF
 
 @test "Install: run_interactive coverage" {
     # Exercise the non-test-mode branches of run_interactive
-    run bash -c "export TEST_MODE=false; source ./install.sh; run_interactive echo 'test_interactive'"
+    run bash -c "export TEST_MODE=false; source $BATS_TEST_DIRNAME/helpers/install_test_paths.sh; run_interactive echo 'test_interactive'"
     [[ "$output" =~ "test_interactive" ]]
 }
 
@@ -227,7 +227,7 @@ EOF
     mkdir -p "$INSTALL_DIR"
     printf 'account default\nhost smtp.gmail.com\nuser x@x.com";touch /tmp/pwned_rcpt;RECIPIENT_EMAIL="x@x.com\n' > "$MSMTP_CONF"
     rm -f /tmp/pwned_rcpt
-    run bash -c "export $(_install_env); source ./install.sh; download_scripts"
+    run bash -c "export $(_install_env); source $BATS_TEST_DIRNAME/helpers/install_test_paths.sh; download_scripts"
     [[ "$output" =~ "not a valid email address" ]]
     grep -q '^RECIPIENT_EMAIL="your_email@gmail.com"$' "$INSTALL_DIR/update_pi_os.sh"
     ! grep -q 'pwned_rcpt' "$INSTALL_DIR"/*.sh
@@ -237,36 +237,41 @@ EOF
 @test "Install: download_scripts injects a valid msmtp user verbatim" {
     mkdir -p "$INSTALL_DIR"
     printf 'account default\nhost smtp.gmail.com\nuser first.last+pi@example.com\n' > "$MSMTP_CONF"
-    run bash -c "export $(_install_env); source ./install.sh; download_scripts"
+    run bash -c "export $(_install_env); source $BATS_TEST_DIRNAME/helpers/install_test_paths.sh; download_scripts"
     [[ "$output" =~ "Scripts updated" ]]
     grep -q '^RECIPIENT_EMAIL="first.last+pi@example.com"$' "$INSTALL_DIR/update_pi_os.sh"
 }
 
 @test "Install: _install_atomic_curl refuses an invalid RECIPIENT_EMAIL" {
     mkdir -p "$INSTALL_DIR"
-    run bash -c "export $(_install_env); source ./install.sh; _install_atomic_curl \"\$RAW_URL/scripts/update_pi_os.sh\" \"$INSTALL_DIR/update_pi_os.sh\" 0755 'a@b.co\";id;\"'"
+    run bash -c "export $(_install_env); source $BATS_TEST_DIRNAME/helpers/install_test_paths.sh; _install_atomic_curl \"\$RAW_URL/scripts/update_pi_os.sh\" \"$INSTALL_DIR/update_pi_os.sh\" 0755 'a@b.co\";id;\"'"
     [[ "$status" -ne 0 ]]
     [[ ! -e "$INSTALL_DIR/update_pi_os.sh" ]]
 }
 
 @test "Install: save_email_configuration rejects an invalid address" {
-    run bash -c "export $(_install_env); source ./install.sh; save_email_configuration \$'a@b.co\\nid' pass"
+    run bash -c "export $(_install_env); source $BATS_TEST_DIRNAME/helpers/install_test_paths.sh; save_email_configuration \$'a@b.co\\nid' pass"
     [[ "$status" -ne 0 ]]
     [[ "$output" =~ "Invalid email format" ]]
 }
 
 @test "Install: _sed_replacement_escape escapes sed specials" {
-    run bash -c "source ./install.sh; _sed_replacement_escape 'a/b&c\\d'"
+    run bash -c "source $BATS_TEST_DIRNAME/helpers/install_test_paths.sh; _sed_replacement_escape 'a/b&c\\d'"
     [[ "$output" == 'a\/b\&c\\d' ]]
 }
 
-@test "Install: mail config paths ignore the environment outside TEST_MODE" {
-    run bash -c "export TEST_MODE=false MSMTP_CONF=/tmp/evil SSMTP_CONF=/tmp/evil2 REVALIASES=/tmp/evil3; source ./install.sh; echo \"\$MSMTP_CONF \$SSMTP_CONF \$REVALIASES\""
-    [[ "$output" == *"/etc/msmtprc /etc/ssmtp/ssmtp.conf /etc/ssmtp/revaliases"* ]]
+@test "Install: mail config paths ignore the environment even with TEST_MODE=true" {
+    local mode
+    for mode in true false; do
+        run bash -c "export TEST_MODE=$mode MSMTP_CONF=/tmp/evil SSMTP_CONF=/tmp/evil2 REVALIASES=/tmp/evil3; \
+source ./install.sh; echo \"\$MSMTP_CONF \$SSMTP_CONF \$REVALIASES\""
+        [[ "$output" == *"/etc/msmtprc /etc/ssmtp/ssmtp.conf /etc/ssmtp/revaliases"* ]]
+        [[ "$output" != *"/tmp/evil"* ]]
+    done
 }
 
 @test "Install: matrix fresh install aborts on an invalid MATRIX_EMAIL" {
-    run bash -c "export $(_install_env) MATRIX_EMAIL='bad\";id;\"' MATRIX_PASS=pass; source ./install.sh; run_fresh_install_matrix"
+    run bash -c "export $(_install_env) MATRIX_EMAIL='bad\";id;\"' MATRIX_PASS=pass; source $BATS_TEST_DIRNAME/helpers/install_test_paths.sh; run_fresh_install_matrix"
     [[ "$status" -ne 0 ]]
     [[ "$output" =~ "Invalid email format" ]]
     [[ ! "$output" =~ "Installation Complete!" ]]

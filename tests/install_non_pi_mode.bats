@@ -17,7 +17,7 @@ setup() {
 }
 
 @test "Install: Hardware Detection - Non-Pi Mode" {
-    run bash -c "export PATH=$MOCK_DIR:$PATH; export TEST_MODE=true; export MOCK_IS_PI=false; source ./install.sh; echo \"IS_PI: \$IS_PI\""
+    run bash -c "export PATH=$MOCK_DIR:$PATH; export TEST_MODE=true; export MOCK_IS_PI=false; source $BATS_TEST_DIRNAME/helpers/install_test_paths.sh; echo \"IS_PI: \$IS_PI\""
     [ "$status" -eq 0 ]
     [[ "$output" =~ "IS_PI: false" ]]
 }
@@ -35,7 +35,7 @@ exit 0
 EOF
     chmod +x "$MOCK_DIR/curl"
 
-    run bash -c "export PATH=$MOCK_DIR:$PATH; export TEST_MODE=true; export MOCK_IS_PI=false; export INSTALL_DIR=$INSTALL_DIR; source ./install.sh; download_scripts"
+    run bash -c "export PATH=$MOCK_DIR:$PATH; export TEST_MODE=true; export MOCK_IS_PI=false; export INSTALL_DIR=$INSTALL_DIR; source $BATS_TEST_DIRNAME/helpers/install_test_paths.sh; download_scripts"
     [ "$status" -eq 0 ]
 
     [[ -f "$INSTALL_DIR/update_pi_firmware.sh" ]]
@@ -44,7 +44,7 @@ EOF
 }
 
 @test "Install: Manager UI - Non-Pi (Shows Firmware, Hides Pip)" {
-    run bash -c "export PATH=$MOCK_DIR:$PATH; export TEST_MODE=true; export MOCK_IS_PI=false; source ./install.sh; manage_tasks_ui <<< '0'"
+    run bash -c "export PATH=$MOCK_DIR:$PATH; export TEST_MODE=true; export MOCK_IS_PI=false; source $BATS_TEST_DIRNAME/helpers/install_test_paths.sh; manage_tasks_ui <<< '0'"
     [ "$status" -eq 0 ]
 
     [[ "$output" =~ "Firmware Update" ]]
@@ -62,7 +62,7 @@ EOF
 
     echo "0 4 * * 0 $INSTALL_DIR/update_pip.sh >/dev/null" > "$MOCK_DIR/root_cron"
 
-    run bash -c "export PATH=$MOCK_DIR:$PATH; export TEST_MODE=true; export MOCK_IS_PI=false; export INSTALL_DIR=$INSTALL_DIR; source ./install.sh; run_enabled_tasks_now <<< $'\\n'"
+    run bash -c "export PATH=$MOCK_DIR:$PATH; export TEST_MODE=true; export MOCK_IS_PI=false; export INSTALL_DIR=$INSTALL_DIR; source $BATS_TEST_DIRNAME/helpers/install_test_paths.sh; run_enabled_tasks_now <<< $'\\n'"
     [ "$status" -eq 0 ]
 
     [[ "$output" =~ "No enabled tasks found" ]]
