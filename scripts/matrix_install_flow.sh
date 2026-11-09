@@ -24,7 +24,8 @@ matrix_prepare_install_env() {
             ;;
     esac
 
-    # Always use fresh conf paths — write_mail_config may leave root-only files behind.
+    # Always use fresh conf paths — write_mail_config may leave root-only files behind. install.sh
+    # ignores these exports; tests/helpers/install_test_paths.sh re-points them after sourcing it.
     export SSMTP_CONF="/tmp/matrix-ssmtp-${RANDOM}-$$.conf"
     export REVALIASES="/tmp/matrix-revaliases-${RANDOM}-$$"
     export MSMTP_CONF="/tmp/matrix-msmtprc-${RANDOM}-$$"
@@ -48,7 +49,7 @@ matrix_run_text_fresh_install() {
     export INSTALL_FORCE_TEXT_UI=1
     export TEST_MODE="${TEST_MODE:-true}"
 
-    bash ./install.sh || rc=$?
+    bash ./tests/helpers/install_test_paths.sh || rc=$?
     unset INSTALL_MATRIX_FRESH MATRIX_EMAIL MATRIX_PASS
     return "$rc"
 }

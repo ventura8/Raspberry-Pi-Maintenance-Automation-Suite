@@ -54,19 +54,19 @@ _make_legacy_tree() {
 }
 
 @test "Root-owned: default INSTALL_DIR is /usr/local/lib/pi-maintenance" {
-    run env -u INSTALL_DIR bash -c "source ./install.sh; printf '%s' \"\$INSTALL_DIR\""
+    run env -u INSTALL_DIR bash -c "source $BATS_TEST_DIRNAME/helpers/install_test_paths.sh; printf '%s' \"\$INSTALL_DIR\""
     [ "$status" -eq 0 ]
     [ "$output" = "/usr/local/lib/pi-maintenance" ]
 }
 
 @test "Root-owned: legacy \$HOME/pi-scripts INSTALL_DIR is redirected to the default" {
-    run env INSTALL_DIR="$HOME/pi-scripts" bash -c "source ./install.sh; printf '%s' \"\$INSTALL_DIR\""
+    run env INSTALL_DIR="$HOME/pi-scripts" bash -c "source $BATS_TEST_DIRNAME/helpers/install_test_paths.sh; printf '%s' \"\$INSTALL_DIR\""
     [ "$status" -eq 0 ]
     [ "$output" = "/usr/local/lib/pi-maintenance" ]
 }
 
 @test "Root-owned: explicit INSTALL_DIR override is honoured" {
-    run env INSTALL_DIR="/tmp/pi-scripts-custom" bash -c "source ./install.sh; printf '%s' \"\$INSTALL_DIR\""
+    run env INSTALL_DIR="/tmp/pi-scripts-custom" bash -c "source $BATS_TEST_DIRNAME/helpers/install_test_paths.sh; printf '%s' \"\$INSTALL_DIR\""
     [ "$output" = "/tmp/pi-scripts-custom" ]
 }
 
@@ -75,7 +75,7 @@ _make_legacy_tree() {
     _make_root_parent
     export INSTALL_DIR="$ROOT_PARENT/tree"
 
-    run bash -c "export $(_env); source ./install.sh; download_scripts"
+    run bash -c "export $(_env); source $BATS_TEST_DIRNAME/helpers/install_test_paths.sh; download_scripts"
     [ "$status" -eq 0 ]
     [[ "$output" =~ "Scripts updated" ]]
 
@@ -101,7 +101,7 @@ _make_legacy_tree() {
     cp -p "$MOCK_DIR/curl" "$MOCK_DIR/curl.real"
     printf '#!/bin/bash\necho "$*" >> %q\nexec %q "$@"\n' "$curl_log" "$MOCK_DIR/curl.real" > "$MOCK_DIR/curl"
 
-    run bash -c "export $(_env) TMPDIR=$user_tmp; source ./install.sh; download_scripts"
+    run bash -c "export $(_env) TMPDIR=$user_tmp; source $BATS_TEST_DIRNAME/helpers/install_test_paths.sh; download_scripts"
     mv -f "$MOCK_DIR/curl.real" "$MOCK_DIR/curl"
     [ "$status" -eq 0 ]
     # Script downloads went to stdout (piped into sudo install), never to an -o file.
@@ -120,7 +120,7 @@ _make_legacy_tree() {
     echo "old" > "$INSTALL_DIR/update_pi_os.sh"
     printf '#!/bin/bash\necho partial\nexit 22\n' > "$MOCK_DIR/curl"
 
-    run bash -c "export $(_env); source ./install.sh; _install_atomic_curl https://example.invalid/x \"\$INSTALL_DIR/update_pi_os.sh\" 0755 a@b.c"
+    run bash -c "export $(_env); source $BATS_TEST_DIRNAME/helpers/install_test_paths.sh; _install_atomic_curl https://example.invalid/x \"\$INSTALL_DIR/update_pi_os.sh\" 0755 a@b.c"
     [ "$status" -ne 0 ]
     [ "$(cat "$INSTALL_DIR/update_pi_os.sh")" = "old" ]
     [ -z "$(find "$INSTALL_DIR" -name '*.rpi-new.*')" ]
@@ -129,7 +129,7 @@ _make_legacy_tree() {
 @test "Root-owned: failed .version write is reported and leaves SUITE_VERSION unset" {
     export INSTALL_DIR="$BATS_TEST_TMPDIR/missing-tree"
 
-    run bash -c "export $(_env); source ./install.sh; write_installed_version; rc=\$?; echo \"rc=\$rc sv=[\$SUITE_VERSION]\""
+    run bash -c "export $(_env); source $BATS_TEST_DIRNAME/helpers/install_test_paths.sh; write_installed_version; rc=\$?; echo \"rc=\$rc sv=[\$SUITE_VERSION]\""
     [[ "$output" =~ "Error: could not write" ]]
     [[ "$output" =~ "rc=1 sv=[]" ]]
     [[ ! "$output" =~ "Version set to" ]]
@@ -140,7 +140,7 @@ _make_legacy_tree() {
     _make_root_parent
     export INSTALL_DIR="$ROOT_PARENT/tree"
 
-    run bash -c "export $(_env); source ./install.sh; download_scripts > /dev/null; save_email_configuration mail@example.com secret"
+    run bash -c "export $(_env); source $BATS_TEST_DIRNAME/helpers/install_test_paths.sh; download_scripts > /dev/null; save_email_configuration mail@example.com secret"
     [ "$status" -eq 0 ]
     grep -q 'RECIPIENT_EMAIL="mail@example.com"' "$INSTALL_DIR/update_pi_os.sh"
     [ "$(stat -c %U "$INSTALL_DIR/update_pi_os.sh")" = "root" ]
@@ -153,7 +153,7 @@ echo "SUDO_CALLED $*" >&2
 exit 1
 EOS
     chmod +x "$MOCK_DIR/sudo"
-    run bash -c "export $(_env); source ./install.sh; download_scripts"
+    run bash -c "export $(_env); source $BATS_TEST_DIRNAME/helpers/install_test_paths.sh; download_scripts"
     [ "$status" -eq 0 ]
     [[ ! "$output" =~ "SUDO_CALLED install" ]]
     [ -f "$INSTALL_DIR/update_pi_os.sh" ]
@@ -163,7 +163,7 @@ EOS
 
 @test "Root-owned: --update migrates a legacy tree and repoints both crontabs" {
     _make_legacy_tree
-    run bash -c "export $(_env); bash ./install.sh --update"
+    run bash -c "export $(_env); bash $BATS_TEST_DIRNAME/helpers/install_test_paths.sh --update"
     [ "$status" -eq 0 ]
     [[ "$output" =~ "Removed legacy install directory $LEGACY_INSTALL_DIR" ]]
     [ ! -d "$LEGACY_INSTALL_DIR" ]
@@ -175,7 +175,7 @@ EOS
 }
 
 @test "Root-owned: --update with no legacy tree leaves nothing to retire" {
-    run bash -c "export $(_env); bash ./install.sh --update"
+    run bash -c "export $(_env); bash $BATS_TEST_DIRNAME/helpers/install_test_paths.sh --update"
     [ "$status" -eq 0 ]
     [[ ! "$output" =~ "Removed legacy" ]]
     [ -f "$INSTALL_DIR/.version" ]
@@ -200,7 +200,7 @@ EOS
     mkdir -p "$LEGACY_INSTALL_DIR"
     echo "keep" > "$LEGACY_INSTALL_DIR/notes.txt"
     echo "0 3 * * 0 $LEGACY_INSTALL_DIR/update_pi_os.sh >/dev/null 2>&1" > "$MOCK_DIR/root_cron"
-    run bash -c "export $(_env); source ./install.sh; _retire_legacy_install_dirs \"\$(_legacy_install_dirs)\""
+    run bash -c "export $(_env); source $BATS_TEST_DIRNAME/helpers/install_test_paths.sh; _retire_legacy_install_dirs \"\$(_legacy_install_dirs)\""
     [ "$status" -eq 0 ]
     [[ "$output" =~ "Left $LEGACY_INSTALL_DIR in place" ]]
     [ -f "$LEGACY_INSTALL_DIR/notes.txt" ]
@@ -211,7 +211,7 @@ EOS
     # README's manual crontab example points at /home/pi/update_pi_os.sh — the parent is a home dir.
     _make_legacy_tree
     echo "user data" > "$LEGACY_INSTALL_DIR/thesis.txt"
-    run bash -c "export $(_env); bash ./install.sh --update"
+    run bash -c "export $(_env); bash $BATS_TEST_DIRNAME/helpers/install_test_paths.sh --update"
     [ "$status" -eq 0 ]
     [[ "$output" =~ "Left $LEGACY_INSTALL_DIR in place" ]]
     [[ ! "$output" =~ "Removed legacy" ]]
@@ -224,24 +224,24 @@ EOS
 @test "Root-owned: _legacy_dir_is_suite_only accepts the installer layout only" {
     _make_legacy_tree
     touch "$LEGACY_INSTALL_DIR/.rpi-install.abc123" "$LEGACY_INSTALL_DIR/update_self.sh"
-    run bash -c "export $(_env); source ./install.sh; _legacy_dir_is_suite_only \"$LEGACY_INSTALL_DIR\""
+    run bash -c "export $(_env); source $BATS_TEST_DIRNAME/helpers/install_test_paths.sh; _legacy_dir_is_suite_only \"$LEGACY_INSTALL_DIR\""
     [ "$status" -eq 0 ]
     rm -f "$LEGACY_INSTALL_DIR/.version"
-    run bash -c "export $(_env); source ./install.sh; _legacy_dir_is_suite_only \"$LEGACY_INSTALL_DIR\""
+    run bash -c "export $(_env); source $BATS_TEST_DIRNAME/helpers/install_test_paths.sh; _legacy_dir_is_suite_only \"$LEGACY_INSTALL_DIR\""
     [ "$status" -ne 0 ]
 }
 
 @test "Root-owned: _legacy_install_dirs ignores INSTALL_DIR and dedupes" {
     _make_legacy_tree
     echo "0 4 * * 0 $INSTALL_DIR/docker_cleanup.sh >/dev/null 2>&1" >> "$MOCK_DIR/root_cron"
-    run bash -c "export $(_env); source ./install.sh; _legacy_install_dirs"
+    run bash -c "export $(_env); source $BATS_TEST_DIRNAME/helpers/install_test_paths.sh; _legacy_install_dirs"
     [ "$status" -eq 0 ]
     [ "$output" = "$LEGACY_INSTALL_DIR" ]
 }
 
 @test "Root-owned: get_task_status reads the schedule from a legacy-path line" {
     echo "0 3 * * 0 $LEGACY_INSTALL_DIR/update_pi_os.sh >/dev/null 2>&1" > "$MOCK_DIR/root_cron"
-    run bash -c "export $(_env); source ./install.sh; get_task_status update_pi_os.sh true"
+    run bash -c "export $(_env); source $BATS_TEST_DIRNAME/helpers/install_test_paths.sh; get_task_status update_pi_os.sh true"
     [ "$output" = "ENABLED|0 3 * * 0" ]
 }
 
@@ -253,7 +253,7 @@ EOS
     sudo -n /usr/bin/install -o root -g root -m 0644 ./VERSION "$LEGACY_INSTALL_DIR/.version"
     echo "0 3 * * 0 $LEGACY_INSTALL_DIR/update_pi_os.sh >/dev/null 2>&1" > "$MOCK_DIR/root_cron"
 
-    run bash -c "export $(_env); bash ./install.sh --update"
+    run bash -c "export $(_env); bash $BATS_TEST_DIRNAME/helpers/install_test_paths.sh --update"
     [ "$status" -eq 0 ]
     [[ "$output" =~ "Removed legacy install directory $LEGACY_INSTALL_DIR" ]]
     [ ! -d "$LEGACY_INSTALL_DIR" ]
@@ -264,7 +264,7 @@ EOS
     # Shadow rm with a no-op so the (writable) tree survives the delete attempt.
     printf '#!/bin/bash\nexit 0\n' > "$MOCK_DIR/rm"
     /bin/chmod +x "$MOCK_DIR/rm"
-    run bash -c "export $(_env); source ./install.sh; _retire_legacy_install_dirs \"$LEGACY_INSTALL_DIR\""
+    run bash -c "export $(_env); source $BATS_TEST_DIRNAME/helpers/install_test_paths.sh; _retire_legacy_install_dirs \"$LEGACY_INSTALL_DIR\""
     /bin/rm -f "$MOCK_DIR/rm"
     [ "$status" -eq 0 ]
     [[ "$output" =~ "Warning: could not remove legacy install directory $LEGACY_INSTALL_DIR" ]]
@@ -274,7 +274,7 @@ EOS
 @test "Root-owned: legacy lib/ holding non-suite files blocks deletion" {
     _make_legacy_tree
     echo "mine" > "$LEGACY_INSTALL_DIR/lib/notes"
-    run bash -c "export $(_env); bash ./install.sh --update"
+    run bash -c "export $(_env); bash $BATS_TEST_DIRNAME/helpers/install_test_paths.sh --update"
     [ "$status" -eq 0 ]
     [[ "$output" =~ "Left $LEGACY_INSTALL_DIR in place" ]]
     [ -f "$LEGACY_INSTALL_DIR/lib/notes" ]
@@ -288,7 +288,7 @@ EOS
 exit 22
 EOS
     /bin/chmod +x "$MOCK_DIR/curl"
-    run bash -c "export $(_env); bash ./install.sh --update"
+    run bash -c "export $(_env); bash $BATS_TEST_DIRNAME/helpers/install_test_paths.sh --update"
     [ "$status" -ne 0 ]
     [[ "$output" =~ "Update incomplete" ]]
     [ -d "$LEGACY_INSTALL_DIR" ]
@@ -303,7 +303,7 @@ EOS
 exit 22
 EOS
     /bin/chmod +x "$MOCK_DIR/curl"
-    run bash -c "export $(_env); source ./install.sh; migrate_legacy_install"
+    run bash -c "export $(_env); source $BATS_TEST_DIRNAME/helpers/install_test_paths.sh; migrate_legacy_install"
     [ "$status" -ne 0 ]
     [[ "$output" =~ "Migration aborted" ]]
     [ -d "$LEGACY_INSTALL_DIR" ]
@@ -319,7 +319,7 @@ if [ "\$1" = "-l" ]; then echo "0 3 * * 0 $LEGACY_INSTALL_DIR/update_pi_os.sh >/
 exit 0
 EOS
     /bin/chmod +x "$MOCK_DIR/crontab"
-    run bash -c "export $(_env); source ./install.sh; _retire_legacy_install_dirs \"$LEGACY_INSTALL_DIR\""
+    run bash -c "export $(_env); source $BATS_TEST_DIRNAME/helpers/install_test_paths.sh; _retire_legacy_install_dirs \"$LEGACY_INSTALL_DIR\""
     [ "$status" -eq 0 ]
     [[ "$output" =~ "crontab entries still reference $LEGACY_INSTALL_DIR" ]]
     [ -d "$LEGACY_INSTALL_DIR" ]
@@ -332,7 +332,7 @@ EOS
 exit 1
 EOS
     /bin/chmod +x "$MOCK_DIR/sudo"
-    run bash -c "export $(_env); source ./install.sh; download_scripts"
+    run bash -c "export $(_env); source $BATS_TEST_DIRNAME/helpers/install_test_paths.sh; download_scripts"
     [ "$status" -ne 0 ]
     [[ "$output" =~ "cannot create /proc/pi-scripts-impossible" ]]
 }
@@ -346,7 +346,7 @@ EOS
     cp -p "$MOCK_DIR/curl" "$MOCK_DIR/curl.real"
     printf '#!/bin/bash\necho "$*" >> %q\nexec %q "$@"\n' "$curl_log" "$MOCK_DIR/curl.real" > "$MOCK_DIR/curl"
 
-    run bash -c "export $(_env); source ./install.sh; download_scripts"
+    run bash -c "export $(_env); source $BATS_TEST_DIRNAME/helpers/install_test_paths.sh; download_scripts"
     mv -f "$MOCK_DIR/curl.real" "$MOCK_DIR/curl"
     [ "$status" -eq 0 ]
     grep -q 'lib/os_pkg.sh' "$curl_log"
@@ -359,11 +359,11 @@ EOS
     _make_root_parent
     export INSTALL_DIR="$ROOT_PARENT/tree"
     sudo -n /usr/bin/install -o root -g root -m 0644 ./lib/os_pkg.sh "$ROOT_PARENT/os_pkg.sh"
-    run bash -c "export $(_env); source ./install.sh; _install_src_trusted '$ROOT_PARENT/os_pkg.sh'"
+    run bash -c "export $(_env); source $BATS_TEST_DIRNAME/helpers/install_test_paths.sh; _install_src_trusted '$ROOT_PARENT/os_pkg.sh'"
     [ "$status" -eq 0 ]
-    run bash -c "export $(_env); source ./install.sh; _install_src_trusted ./lib/os_pkg.sh"
+    run bash -c "export $(_env); source $BATS_TEST_DIRNAME/helpers/install_test_paths.sh; _install_src_trusted ./lib/os_pkg.sh"
     [ "$status" -ne 0 ]
-    run bash -c "export $(_env); source ./install.sh; _install_src_trusted '$ROOT_PARENT/missing.sh'"
+    run bash -c "export $(_env); source $BATS_TEST_DIRNAME/helpers/install_test_paths.sh; _install_src_trusted '$ROOT_PARENT/missing.sh'"
     [ "$status" -ne 0 ]
 }
 
@@ -378,7 +378,7 @@ EOS
     # A planted ./ui_msg.sh in the cwd must not be sourced by the in-memory libs.
     echo 'echo PLANTED_UI_MSG' > "$isolated/ui_msg.sh"
 
-    run bash -c "cd '$isolated' && export $(_env) TMPDIR=$user_tmp; source ./install.sh; declare -F pkg_install has_mail_sender _pi_echo"
+    run bash -c "cd '$isolated' && export $(_env) TMPDIR=$user_tmp; source $BATS_TEST_DIRNAME/helpers/install_test_paths.sh; declare -F pkg_install has_mail_sender _pi_echo"
     mv -f "$MOCK_DIR/curl.real" "$MOCK_DIR/curl"
     [ "$status" -eq 0 ]
     [[ "$output" =~ "pkg_install" ]]
@@ -442,7 +442,7 @@ EOF
     mkdir -p "$user_dir"
     sudo -n /usr/bin/install -d -o root -g root -m 0755 "$user_dir/rootdir"
     sudo -n /usr/bin/install -o root -g root -m 0644 ./lib/os_pkg.sh "$user_dir/rootdir/os_pkg.sh"
-    run bash -c "export $(_env); source ./install.sh; _install_src_trusted '$user_dir/rootdir/os_pkg.sh'"
+    run bash -c "export $(_env); source $BATS_TEST_DIRNAME/helpers/install_test_paths.sh; _install_src_trusted '$user_dir/rootdir/os_pkg.sh'"
     sudo -n /bin/rm -rf "$user_dir/rootdir"
     [ "$status" -ne 0 ]
 }
@@ -456,7 +456,7 @@ EOF
     printf '#!/bin/bash\nfor a in "$@"; do case "$a" in */ui_msg.sh) exit 22;; */lib/*.sh) cat %q/lib/"${a##*/}"; exit 0;; esac; done\nexit 22\n' \
         "$PWD" > "$MOCK_DIR/curl"
     echo 'echo PLANTED_UI_MSG' > "$isolated/ui_msg.sh"
-    run bash -c "cd '$isolated' && export $(_env); source ./install.sh; declare -F pkg_install || echo NO_PKG"
+    run bash -c "cd '$isolated' && export $(_env); source $BATS_TEST_DIRNAME/helpers/install_test_paths.sh; declare -F pkg_install || echo NO_PKG"
     mv -f "$MOCK_DIR/curl.real" "$MOCK_DIR/curl"
     [[ "$output" =~ "NO_PKG" ]]
     [[ ! "$output" =~ "PLANTED_UI_MSG" ]]
@@ -470,7 +470,7 @@ EOF
     sudo -n /usr/bin/install -o root -g root -m 0644 ./lib/os_pkg.sh "$ROOT_PARENT/lib/os_pkg.sh"
     local link="$BATS_TEST_TMPDIR/lib-link"
     ln -sfn "$ROOT_PARENT/lib" "$link"
-    run bash -c "export $(_env); source ./install.sh; _install_src_trusted '$link/os_pkg.sh'"
+    run bash -c "export $(_env); source $BATS_TEST_DIRNAME/helpers/install_test_paths.sh; _install_src_trusted '$link/os_pkg.sh'"
     [ "$status" -eq 0 ]
     [ "$output" = "$(realpath "$ROOT_PARENT/lib/os_pkg.sh")" ]
 }

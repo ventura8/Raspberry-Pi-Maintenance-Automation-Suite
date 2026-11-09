@@ -661,7 +661,7 @@ FAKESUDO
 
     run env INSTALL_DIR="$update_install_dir" SSMTP_CONF="$SSMTP_CONF" \
         REVALIASES="$REVALIASES" MSMTP_CONF="$MSMTP_CONF" TEST_MODE=true \
-        bash ./install.sh --update < /dev/null
+        bash ./tests/helpers/install_test_paths.sh --update < /dev/null
     [ "$status" -eq 0 ]
 
     run real_msmtp_default_ok

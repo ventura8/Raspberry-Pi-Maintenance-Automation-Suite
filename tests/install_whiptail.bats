@@ -49,7 +49,7 @@ teardown() {
     printf '%s\n' "1" "4" "7" > "$MOCK_DIR/whiptail_checklist"
 
     run bash -c "export PATH=$MOCK_DIR:\$PATH; export INSTALL_USE_WHIPTAIL=1; \
-        source ./install.sh; run_fresh_install"
+        source $BATS_TEST_DIRNAME/helpers/install_test_paths.sh; run_fresh_install"
 
     [[ "$output" =~ "Suite version: $SUITE_VERSION" || "$output" =~ "$SUITE_VERSION" ]]
     [[ "$output" =~ "Email configured successfully" ]]
@@ -67,7 +67,7 @@ teardown() {
     printf '%s\n' "no" > "$MOCK_DIR/whiptail_yesno"
 
     run bash -c "export PATH=$MOCK_DIR:\$PATH; export INSTALL_USE_WHIPTAIL=1; \
-        source ./install.sh; run_fresh_install; echo RC=\$?"
+        source $BATS_TEST_DIRNAME/helpers/install_test_paths.sh; run_fresh_install; echo RC=\$?"
 
     [[ "$output" =~ "Installation cancelled before setup" ]]
     [[ "$output" =~ "RC=1" ]]
@@ -79,7 +79,7 @@ teardown() {
     printf '%s\n' "whip@test.com" "apppassword" > "$MOCK_DIR/whiptail_input"
 
     run bash -c "export PATH=$MOCK_DIR:\$PATH; export INSTALL_USE_WHIPTAIL=1; \
-        source ./install.sh; run_fresh_install; echo RC=\$?"
+        source $BATS_TEST_DIRNAME/helpers/install_test_paths.sh; run_fresh_install; echo RC=\$?"
 
     [[ "$output" =~ "Installation cancelled before downloading scripts" ]]
     [[ "$output" =~ "RC=1" ]]
@@ -92,7 +92,7 @@ teardown() {
 
     run bash -c "
         export PATH=$MOCK_DIR:\$PATH INSTALL_USE_WHIPTAIL=1
-        source ./install.sh
+        source $BATS_TEST_DIRNAME/helpers/install_test_paths.sh
         download_scripts() {
             mkdir -p \"\$INSTALL_DIR\"
             printf '%s\n' 'v1.1.0' > \"\$INSTALL_DIR/.version\"
@@ -110,7 +110,7 @@ teardown() {
     echo "cancel" > "$MOCK_DIR/whiptail_mode"
 
     run bash -c "export PATH=$MOCK_DIR:\$PATH; export INSTALL_USE_WHIPTAIL=1; \
-        source ./install.sh; select_ui_mode; _enable_selected_fresh_tasks_whiptail; echo RC=\$?"
+        source $BATS_TEST_DIRNAME/helpers/install_test_paths.sh; select_ui_mode; _enable_selected_fresh_tasks_whiptail; echo RC=\$?"
 
     [[ "$output" =~ "RC=1" ]]
 }
@@ -120,7 +120,7 @@ teardown() {
     printf '%s\n' "1" "menu@test.com" "secretpass" "0" > "$MOCK_DIR/whiptail_input"
 
     run bash -c "export PATH=$MOCK_DIR:\$PATH; export INSTALL_USE_WHIPTAIL=1; \
-        source ./install.sh; main_menu"
+        source $BATS_TEST_DIRNAME/helpers/install_test_paths.sh; main_menu"
 
     [[ "$output" =~ "Email configured successfully" ]]
     run grep "^user" "$MSMTP_CONF"
@@ -133,7 +133,7 @@ teardown() {
 
     run bash -c "export PATH=$MOCK_DIR:\$PATH; export INSTALL_USE_WHIPTAIL=1; \
         export SSMTP_CONF=$SSMTP_CONF; \
-        source ./install.sh; configure_email_interactive" <<< $'fallback@test.com\npassword'
+        source $BATS_TEST_DIRNAME/helpers/install_test_paths.sh; configure_email_interactive" <<< $'fallback@test.com\npassword'
 
     [[ "$output" =~ "switching to text interface" ]]
     [[ "$output" =~ "Email configured successfully" ]]
@@ -145,7 +145,7 @@ teardown() {
 
     run bash -c "export PATH=$MOCK_DIR:\$PATH; export INSTALL_USE_WHIPTAIL=1; \
         export SSMTP_CONF=$SSMTP_CONF; \
-        source ./install.sh; configure_email_interactive; echo RC=\$?"
+        source $BATS_TEST_DIRNAME/helpers/install_test_paths.sh; configure_email_interactive; echo RC=\$?"
 
     [[ "$output" =~ "RC=1" ]]
     [[ ! "$output" =~ "Enter Gmail address" ]]
@@ -156,7 +156,7 @@ teardown() {
 
     run bash -c "export PATH=$MOCK_DIR:\$PATH; export INSTALL_USE_WHIPTAIL=1; \
         export INSTALL_FORCE_TEXT_UI=1; \
-        source ./install.sh; configure_email_interactive <<< $'text@test.com\npassword'"
+        source $BATS_TEST_DIRNAME/helpers/install_test_paths.sh; configure_email_interactive <<< $'text@test.com\npassword'"
 
     [[ "$output" =~ "Enter Gmail address" ]]
     [[ "$output" =~ "Email configured successfully" ]]
@@ -166,7 +166,7 @@ teardown() {
 @test "Dependencies: installs whiptail when missing" {
     run bash -c "
         export PATH=$MOCK_DIR:\$PATH
-        source ./install.sh
+        source $BATS_TEST_DIRNAME/helpers/install_test_paths.sh
         is_installed() {
             if [[ \"\$1\" == \"whiptail\" ]]; then return 1; fi
             command -v \"\$1\" &> /dev/null
@@ -183,7 +183,7 @@ teardown() {
     echo "yes" > "$MOCK_DIR/whiptail_yesno"
 
     run bash -c "export PATH=$MOCK_DIR:\$PATH; export INSTALL_USE_WHIPTAIL=1; \
-        source ./install.sh; manage_tasks_ui"
+        source $BATS_TEST_DIRNAME/helpers/install_test_paths.sh; manage_tasks_ui"
 
     [[ "$output" =~ "Task enabled" ]]
     run cat "$MOCK_DIR/root_cron"
@@ -203,7 +203,7 @@ EOF
 
     run bash -c "
         export PATH=$MOCK_DIR:\$PATH INSTALL_USE_WHIPTAIL=1
-        source ./install.sh
+        source $BATS_TEST_DIRNAME/helpers/install_test_paths.sh
         wt_passwordbox 'Title' 'Message' 10 70
         echo RC=\$?
     "
@@ -224,7 +224,7 @@ EOF
 
     run bash -c "
         export PATH=$MOCK_DIR:\$PATH
-        source ./install.sh
+        source $BATS_TEST_DIRNAME/helpers/install_test_paths.sh
         secret_val=''
         read_input '' secret_val 'true' <<< $'  my_secret_token  \r'
         echo \"VAL=[\$secret_val]\"

@@ -31,17 +31,13 @@ INSTALL_DIR="${INSTALL_DIR:-$DEFAULT_INSTALL_DIR}"
 if [[ "$INSTALL_DIR" = "$HOME/pi-scripts" ]]; then
     INSTALL_DIR="$DEFAULT_INSTALL_DIR"
 fi
-# The mail config paths feed the RECIPIENT_EMAIL rewrite of root-cron scripts, so outside TEST_MODE
-# they are fixed: an implant exporting MSMTP_CONF=~/evil must not choose what download_scripts reads.
-if [[ "${TEST_MODE:-}" = "true" ]]; then
-    SSMTP_CONF="${SSMTP_CONF:-/etc/ssmtp/ssmtp.conf}"
-    REVALIASES="${REVALIASES:-/etc/ssmtp/revaliases}"
-    MSMTP_CONF="${MSMTP_CONF:-/etc/msmtprc}"
-else
-    SSMTP_CONF="/etc/ssmtp/ssmtp.conf"
-    REVALIASES="/etc/ssmtp/revaliases"
-    MSMTP_CONF="/etc/msmtprc"
-fi
+# The mail config paths feed the RECIPIENT_EMAIL rewrite of root-cron scripts and the `sudo tee`
+# that stores the app password, so they are fixed: an implant exporting MSMTP_CONF=~/evil (or
+# TEST_MODE=true) must not choose what download_scripts reads or where the password is written.
+# Tests re-point them after sourcing this file (tests/helpers/install_test_paths.sh).
+SSMTP_CONF="/etc/ssmtp/ssmtp.conf"
+REVALIASES="/etc/ssmtp/revaliases"
+MSMTP_CONF="/etc/msmtprc"
 
 _INSTALL_ROOT=""
 _INSTALL_SCRIPT="${BASH_SOURCE[0]:-}"

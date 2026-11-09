@@ -9,7 +9,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     'bash=5.3*' \
     'bats=1.13.0*' \
     'bc=1.07.1*' \
-    'ca-certificates=20260816ubuntu0.26.04.1*' \
+    'ca-certificates=20260816*' \
     'cron=3.0pl1*' \
     'curl=8.18.0*' \
     'git=1:2.53.0*' \
