@@ -1,4 +1,4 @@
-FROM rockylinux:9
+FROM rockylinux:10
 
 # Prefer a generated UTF-8 locale for predictable test environments.
 ENV LANG=en_US.UTF-8
