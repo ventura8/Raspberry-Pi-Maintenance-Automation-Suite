@@ -270,6 +270,47 @@ source ./install.sh; echo \"\$MSMTP_CONF \$SSMTP_CONF \$REVALIASES\""
     done
 }
 
+@test "Install: untrusted RAW_URL override is ignored (even with TEST_MODE=true)" {
+    local url
+    for url in 'https://attacker.example/tree' 'http://raw.githubusercontent.com/ventura8/Raspberry-Pi-Maintenance-Automation-Suite/main' \
+        'https://raw.githubusercontent.com/ventura8/Raspberry-Pi-Maintenance-Automation-Suite/evil-branch' \
+        'https://raw.githubusercontent.com/ventura8/Raspberry-Pi-Maintenance-Automation-Suite/v1.2.3/../x' \
+        'https://raw.githubusercontent.com/attacker/Raspberry-Pi-Maintenance-Automation-Suite/main'; do
+        run bash -c "export TEST_MODE=true RAW_URL='$url'; source ./install.sh 2>&1; echo \"URL=\$RAW_URL\""
+        [[ "$output" == *"ignoring untrusted RAW_URL"* ]]
+        [[ "$output" == *"URL=https://raw.githubusercontent.com/ventura8/Raspberry-Pi-Maintenance-Automation-Suite/main"* ]]
+    done
+}
+
+@test "Install: release-tag RAW_URL from update_self.sh is honoured" {
+    local url='https://raw.githubusercontent.com/ventura8/Raspberry-Pi-Maintenance-Automation-Suite/v1.2.3'
+    run bash -c "export RAW_URL='$url'; source ./install.sh 2>&1; echo \"URL=\$RAW_URL\""
+    [[ "$output" != *"ignoring untrusted RAW_URL"* ]]
+    [[ "$output" == *"URL=$url"* ]]
+}
+
+@test "Install: INSTALL_DIR from the environment is ignored (even with TEST_MODE=true)" {
+    run bash -c "export TEST_MODE=true INSTALL_DIR=/tmp/pi-scripts-implant; source ./install.sh; echo \"DIR=\$INSTALL_DIR\""
+    [[ "$output" == *"DIR=/usr/local/lib/pi-maintenance"* ]]
+}
+
+@test "Install: planted user-writable INSTALL_DIR libs are never sourced before sudo" {
+    local plant
+    plant=$(mktemp -d)
+    mkdir -p "$plant/lib"
+    for f in ui_msg.sh os_pkg.sh mail_send.sh; do
+        printf 'pkg_install() { echo POC_PKG_INSTALL_HIJACKED; }\nhas_mail_sender() { return 0; }\n' > "$plant/lib/$f"
+    done
+    run bash -c "cd / && export PATH='$PATH' TEST_MODE=true INSTALL_DIR='$plant'; cat '$PWD/install.sh' | bash -c 'source /dev/stdin; pkg_install curl'"
+    rm -rf "$plant"
+    [[ "$output" != *"POC_PKG_INSTALL_HIJACKED"* ]]
+}
+
+@test "Install: every curl fetch is pinned to HTTPS" {
+    run bash -c "grep -nE '(^|[^_])curl ' ./install.sh | grep -vE 'CURL_HTTPS|command -v curl|^[0-9]+: *#'"
+    [ -z "$output" ]
+}
+
 @test "Install: matrix fresh install aborts on an invalid MATRIX_EMAIL" {
     run bash -c "export $(_install_env) MATRIX_EMAIL='bad\";id;\"' MATRIX_PASS=pass; source $BATS_TEST_DIRNAME/helpers/install_test_paths.sh; run_fresh_install_matrix"
     [[ "$status" -ne 0 ]]

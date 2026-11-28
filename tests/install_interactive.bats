@@ -365,7 +365,7 @@ EOF
     echo "echo 'LOCAL_UNINSTALL_RUN'" >> "$sibling"
     chmod +x "$sibling"
 
-    run bash -c "export PATH=$MOCK_DIR:$PATH INSTALL_DIR=$INSTALL_DIR LEGACY_INSTALL_DIR=$LEGACY_INSTALL_DIR SSMTP_CONF=$SSMTP_CONF MSMTP_CONF=$MSMTP_CONF REVALIASES=$REVALIASES TEST_MODE=true; source '$td/install.sh'; main_menu <<< $'6\ny'"
+    run bash -c "export PATH=$MOCK_DIR:$PATH INSTALL_DIR=$INSTALL_DIR LEGACY_INSTALL_DIR=$LEGACY_INSTALL_DIR SSMTP_CONF=$SSMTP_CONF MSMTP_CONF=$MSMTP_CONF REVALIASES=$REVALIASES TEST_MODE=true INSTALL_SH='$td/install.sh'; source '$BATS_TEST_DIRNAME/helpers/install_test_paths.sh'; main_menu <<< $'6\ny'"
 
     rm -rf "$td"
 

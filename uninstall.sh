@@ -17,8 +17,30 @@ DEFAULT_INSTALL_DIR="/usr/local/lib/pi-maintenance"
 # Pre-v1.1.5 installs lived in a user-writable $HOME/pi-scripts; still cleaned up here.
 LEGACY_INSTALL_DIR="${LEGACY_INSTALL_DIR:-$HOME/pi-scripts}"
 
-# Source ui_msg only from a real sibling of this script or the install tree — never from cwd
-# when BASH_SOURCE is empty. Prefer inline stubs over an untrusted planted helper.
+# A helper sourced before `sudo crontab` / `sudo rm` must be something the login user cannot
+# change: the file and its parent root-owned and not group/other-writable, every higher ancestor
+# root-owned and either not group/other-writable or sticky. Prints the validated canonical path.
+# There is no bypass (not even TEST_MODE): an exported INSTALL_DIR / PI_UNINSTALL_ROOT_OVERRIDE
+# can only ever select a root-owned helper; anything else falls back to the inline stubs.
+_uninstall_src_trusted() {
+    local file path perms
+    file=$(realpath -e -- "$1" 2> /dev/null) || return 1
+    for path in "$file" "$(dirname "$file")"; do
+        perms=$(stat -c '%u %A' "$path" 2> /dev/null) || return 1
+        [[ "$perms" =~ ^0\ .....-..-. ]] || return 1
+    done
+    path=$(dirname "$file")
+    while [[ "$path" != "/" ]]; do
+        path=$(dirname "$path")
+        perms=$(stat -c '%u %A' "$path" 2> /dev/null) || return 1
+        [[ "$perms" =~ ^0\ (.....-..-.|.........[tT])$ ]] || return 1
+    done
+    printf '%s' "$file"
+    return 0
+}
+
+# Source ui_msg only from a trusted sibling of this script or the install tree — never from cwd
+# when BASH_SOURCE is empty, and never from a user-writable tree. Prefer inline stubs otherwise.
 _uninstall_source_ui_msg() {
     local candidate
     if [[ -n "$_RPI_UNINSTALL_ROOT" ]] && [[ -f "$_RPI_UNINSTALL_ROOT/lib/ui_msg.sh" ]]; then
@@ -28,6 +50,7 @@ _uninstall_source_ui_msg() {
     else
         return 1
     fi
+    candidate=$(_uninstall_src_trusted "$candidate") || return 1
     # shellcheck source=lib/ui_msg.sh
     source "$candidate"
     return 0
