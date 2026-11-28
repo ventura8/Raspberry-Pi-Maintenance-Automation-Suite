@@ -233,6 +233,35 @@ EOF
     [[ ! "$output" =~ "is a function" ]]
 }
 
+@test "Uninstall: user-writable INSTALL_DIR ui_msg is never sourced outside TEST_MODE" {
+    local plant
+    plant=$(mktemp -d)
+    mkdir -p "$plant/lib"
+    printf 'sudo() { echo POC_UNINSTALL_SUDO_HIJACKED; }\n_pi_echo() { echo POC_UNINSTALL_SUDO_HIJACKED; }\n' > "$plant/lib/ui_msg.sh"
+    # Piped (empty BASH_SOURCE): env INSTALL_DIR is pinned to the default outside TEST_MODE.
+    run bash -c "cd / && export TEST_MODE=false INSTALL_DIR='$plant' PI_UNINSTALL_ROOT_OVERRIDE='$plant'; cat '$PWD/uninstall.sh' | bash -c 'source /dev/stdin; type sudo; _pi_echo ok; echo DIR=\$INSTALL_DIR'"
+    [[ "$output" != *"POC_UNINSTALL_SUDO_HIJACKED"* ]]
+    [[ "$output" == *"DIR=/usr/local/lib/pi-maintenance"* ]]
+    # Run as a script next to the plant: the user-owned sibling fails the trust check.
+    cp ./uninstall.sh "$plant/uninstall.sh"
+    run bash -c "export TEST_MODE=false; source '$plant/uninstall.sh'; type sudo; _pi_echo ok"
+    rm -rf "$plant"
+    [[ "$output" != *"POC_UNINSTALL_SUDO_HIJACKED"* ]]
+    [[ "$output" == *"ok"* ]]
+}
+
+@test "Uninstall: root-owned sibling ui_msg is sourced outside TEST_MODE" {
+    sudo -n true 2> /dev/null || skip "passwordless sudo required"
+    local parent
+    parent=$(mktemp -d "${TMPDIR:-/tmp}/pi-uninstall-trusted.XXXXXX")
+    sudo -n /usr/bin/install -d -o root -g root -m 0755 "$parent" "$parent/lib"
+    sudo -n /usr/bin/install -o root -g root -m 0755 ./uninstall.sh "$parent/uninstall.sh"
+    printf '_pi_echo() { echo "TRUSTED_UI:$1"; }\n' | sudo -n /usr/bin/install -o root -g root -m 0644 /dev/stdin "$parent/lib/ui_msg.sh"
+    run bash -c "export TEST_MODE=false; source '$parent/uninstall.sh'; _pi_echo ok"
+    sudo -n /bin/rm -rf "$parent"
+    [[ "$output" == *"TRUSTED_UI:ok"* ]]
+}
+
 @test "Uninstall: inline stubs when ui_msg missing" {
     local tmp root
     tmp=$(mktemp -d)

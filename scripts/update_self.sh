@@ -74,11 +74,11 @@ exit_with_failure() {
 stage_release_tree() {
     local raw_url="$1"
     local dest="$2"
-    if ! curl -fsSL "$raw_url/install.sh" -o "$dest/install.sh"; then
+    if ! curl --proto '=https' --proto-redir '=https' -fsSL "$raw_url/install.sh" -o "$dest/install.sh"; then
         return 1
     fi
     chmod +x "$dest/install.sh"
-    if ! curl -fsSL "$raw_url/VERSION" -o "$dest/VERSION"; then
+    if ! curl --proto '=https' --proto-redir '=https' -fsSL "$raw_url/VERSION" -o "$dest/VERSION"; then
         return 2
     fi
     return 0
@@ -107,6 +107,11 @@ main() {
         # Fallback: Check if it's a rate limit or other error in JSON
         log "Debug Response: $REMOTE_JSON"
         exit_with_failure "$(_pi_gettext "Could not parse remote tag from GitHub response.")"
+    fi
+
+    # The tag becomes part of RAW_URL (code fetched for root cron); accept release tags only.
+    if [[ ! "$REMOTE_TAG" =~ ^v[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+        exit_with_failure "$(_pi_gettextf "Refusing unexpected release tag: %s" "$REMOTE_TAG")"
     fi
 
     log "Remote Version: $REMOTE_TAG"

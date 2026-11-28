@@ -43,7 +43,8 @@ bats tests/component_tests_self_update.bats
 
 1. Mock `curl` for Releases API JSON, tagged `install.sh`, and `VERSION`.
 1. Assert argv is `bash <staged>/install.sh --update` without pipe.
-1. Keep `RAW_URL` / `INSTALL_DIR` overridable in tests; the default `INSTALL_DIR` is the script's own directory (`BASH_SOURCE`), never `$HOME/pi-scripts`.
+1. `REMOTE_TAG` must match `vX.Y.Z` before it is used to build `RAW_URL` (fail closed otherwise); `install.sh` only honours tagged `RAW_URL` values for this repository outside `TEST_MODE`.
+1. Keep `RAW_URL` / `INSTALL_DIR` overridable in tests (`TEST_MODE=true`); the default `INSTALL_DIR` is the script's own directory (`BASH_SOURCE`), never `$HOME/pi-scripts`.
 
 ## Output
 

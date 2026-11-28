@@ -19,13 +19,44 @@ MSG_EMAIL_CONFIG="Email Configuration"
 MSG_PRESS_ENTER="Press Enter to return..."
 MSG_RUN_ENABLED_TASKS="Run Enabled Tasks Now"
 MSG_TASKS_CANCELLED="Cancelled: Enabled tasks were not run."
-RAW_URL="${RAW_URL:-https://raw.githubusercontent.com/$GITHUB_USER/$REPO_NAME/$BRANCH}"
+# Every fetch is HTTPS-only, redirects included: a downgrade to http:// would let a network attacker
+# feed code that is evaluated here and installed into the root-cron tree.
+CURL_HTTPS=(--proto '=https' --proto-redir '=https')
+_RAW_URL_PREFIX="https://raw.githubusercontent.com/$GITHUB_USER/$REPO_NAME/"
+DEFAULT_RAW_URL="${_RAW_URL_PREFIX}${BRANCH}"
+
+# RAW_URL decides which bytes are eval'ed and installed for root cron, so an ambient override is
+# only honoured when it points at this repository on $BRANCH or a vX.Y.Z release tag (what
+# update_self.sh exports). TEST_MODE (mocked curl) may point it anywhere.
+_raw_url_allowed() {
+    local url="$1" ref
+    [[ "$url" == "$_RAW_URL_PREFIX"* ]] || return 1
+    ref="${url#"$_RAW_URL_PREFIX"}"
+    [[ "$ref" == "$BRANCH" ]] || [[ "$ref" =~ ^v[0-9]+\.[0-9]+\.[0-9]+$ ]]
+    return
+}
+
+if [[ "${TEST_MODE:-}" = "true" ]]; then
+    RAW_URL="${RAW_URL:-$DEFAULT_RAW_URL}"
+elif [[ -n "${RAW_URL:-}" ]] && ! _raw_url_allowed "$RAW_URL"; then
+    printf 'Warning: ignoring untrusted RAW_URL override; using %s\n' "$DEFAULT_RAW_URL" >&2
+    RAW_URL="$DEFAULT_RAW_URL"
+else
+    RAW_URL="${RAW_URL:-$DEFAULT_RAW_URL}"
+fi
 
 # Root cron executes these scripts, so they must live under a root-owned tree: a user-writable
 # location (the pre-v1.1.5 default $HOME/pi-scripts) lets the login user swap in code that root runs.
+# Outside TEST_MODE the location is fixed: an implant exporting INSTALL_DIR=~/x must not pick a
+# user-writable tree for root cron (or for the helpers sourced before the first sudo). Custom
+# trees from older releases still referenced by crontab are migrated as legacy installs.
 DEFAULT_INSTALL_DIR="/usr/local/lib/pi-maintenance"
 LEGACY_INSTALL_DIR="${LEGACY_INSTALL_DIR:-$HOME/pi-scripts}"
-INSTALL_DIR="${INSTALL_DIR:-$DEFAULT_INSTALL_DIR}"
+if [[ "${TEST_MODE:-}" = "true" ]]; then
+    INSTALL_DIR="${INSTALL_DIR:-$DEFAULT_INSTALL_DIR}"
+else
+    INSTALL_DIR="$DEFAULT_INSTALL_DIR"
+fi
 # update_self.sh <= v1.1.4 exported INSTALL_DIR="$HOME/pi-scripts" (=/root/pi-scripts under root
 # cron); redirect that legacy default so self-update lands in the root-owned tree.
 if [[ "$INSTALL_DIR" = "$HOME/pi-scripts" ]]; then
@@ -51,8 +82,8 @@ fi
 
 # --- Install tree (root-owned) helpers ---
 # The default INSTALL_DIR sits under a root-owned tree, so writes go through sudo (unless already
-# root) and installed files are forced to root:root. A user-writable INSTALL_DIR (tests, explicit
-# override) is written directly and its ownership left alone.
+# root) and installed files are forced to root:root. A user-writable INSTALL_DIR (TEST_MODE
+# fixtures only; outside tests it is pinned) is written directly and its ownership left alone.
 # Defined early: parse-time lib sourcing calls _install_src_trusted before any sudo.
 _install_dir_needs_root() {
     local dir="${INSTALL_DIR:-}"
@@ -68,13 +99,14 @@ _install_dir_needs_root() {
 # installing user cannot change it: the file and every ancestor directory are root-owned and not
 # group/other-writable (a sticky ancestor such as /tmp is fine above the parent: only its owner,
 # root, may rename the entry). A user checkout or user-owned mktemp tree fails this and
-# download_scripts streams that file from RAW_URL instead. Unprivileged installs (writable
-# INSTALL_DIR) cross no boundary.
+# download_scripts streams that file from RAW_URL instead. Only TEST_MODE runs with a writable
+# INSTALL_DIR skip the check: outside tests INSTALL_DIR is pinned, and helpers sourced before the
+# first sudo must never come from a tree the login user controls.
 # Prints the path to source/copy from: the validated canonical path, so a user-replaceable symlink
 # on the original pathname cannot be retargeted between this check and the privileged operation.
 _install_src_trusted() {
     local file path perms
-    if [[ "$(id -u)" -ne 0 ]] && ! _install_dir_needs_root; then
+    if [[ "${TEST_MODE:-}" = "true" ]] && [[ "$(id -u)" -ne 0 ]] && ! _install_dir_needs_root; then
         printf '%s' "$1"
         return 0
     fi
@@ -136,7 +168,7 @@ _fetch_bootstrap_libs() {
     local lib_file content
     command -v curl > /dev/null 2>&1 || return 1
     for lib_file in ui_msg.sh os_pkg.sh mail_send.sh; do
-        if ! content=$(curl -fsSL "$RAW_URL/lib/$lib_file"); then
+        if ! content=$(curl "${CURL_HTTPS[@]}" -fsSL "$RAW_URL/lib/$lib_file"); then
             return 1
         fi
         eval "$content" || return 1
@@ -1035,7 +1067,7 @@ _install_atomic_curl() {
     _install_owner_flags flags
     (
         set -o pipefail
-        curl -fsSL "$url" | "${filter[@]}" | _install_run install "${flags[@]}" -m "$mode" /dev/stdin "$staged"
+        curl "${CURL_HTTPS[@]}" -fsSL "$url" | "${filter[@]}" | _install_run install "${flags[@]}" -m "$mode" /dev/stdin "$staged"
     ) || rc=$?
     _install_publish "$staged" "$dest" "$rc"
     return
@@ -1271,7 +1303,7 @@ read_suite_version() {
     elif [[ -f "${INSTALL_DIR:-}/.version" ]]; then
         version=$(tr -d "$TR_SPACE" < "$INSTALL_DIR/.version")
     else
-        version=$(curl -fsSL --max-time 10 "$RAW_URL/VERSION" 2> /dev/null | tr -d "$TR_SPACE" || true)
+        version=$(curl "${CURL_HTTPS[@]}" -fsSL --max-time 10 "$RAW_URL/VERSION" 2> /dev/null | tr -d "$TR_SPACE" || true)
     fi
 
     SUITE_VERSION="${version:-unknown}"
@@ -1289,7 +1321,7 @@ write_installed_version() {
     if [[ -n "$_INSTALL_ROOT" ]] && [[ -f "$_INSTALL_ROOT/VERSION" ]]; then
         version=$(tr -d "$TR_SPACE" < "$_INSTALL_ROOT/VERSION")
     else
-        version=$(curl -fsSL --max-time 10 "$RAW_URL/VERSION" 2> /dev/null | tr -d "$TR_SPACE" || true)
+        version=$(curl "${CURL_HTTPS[@]}" -fsSL --max-time 10 "$RAW_URL/VERSION" 2> /dev/null | tr -d "$TR_SPACE" || true)
     fi
 
     if [[ -n "$version" ]]; then
@@ -1957,7 +1989,7 @@ _start_uninstall() {
     if [[ -n "$uninstall_src" ]]; then
         bash "$uninstall_src"
     else
-        curl -sSL "$RAW_URL/uninstall.sh" | bash
+        curl "${CURL_HTTPS[@]}" -fsSL "$RAW_URL/uninstall.sh" | bash
     fi
     # Leave the process after uninstall when executed as a script; return in tests.
     if [[ "${TEST_MODE}" == "true" ]]; then
