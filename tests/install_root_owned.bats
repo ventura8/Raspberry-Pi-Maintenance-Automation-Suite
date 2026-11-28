@@ -60,12 +60,14 @@ _make_legacy_tree() {
 }
 
 @test "Root-owned: legacy \$HOME/pi-scripts INSTALL_DIR is redirected to the default" {
-    run env INSTALL_DIR="$HOME/pi-scripts" bash -c "source $BATS_TEST_DIRNAME/helpers/install_test_paths.sh; printf '%s' \"\$INSTALL_DIR\""
+    run env INSTALL_DIR="$HOME/pi-scripts" bash -c "source ./install.sh; printf '%s' \"\$INSTALL_DIR\""
     [ "$status" -eq 0 ]
     [ "$output" = "/usr/local/lib/pi-maintenance" ]
 }
 
-@test "Root-owned: explicit INSTALL_DIR override is honoured" {
+@test "Root-owned: exported INSTALL_DIR is ignored; only the test harness re-points it" {
+    run env TEST_MODE=true INSTALL_DIR="/tmp/pi-scripts-custom" bash -c "source ./install.sh; printf '%s' \"\$INSTALL_DIR\""
+    [ "$output" = "/usr/local/lib/pi-maintenance" ]
     run env INSTALL_DIR="/tmp/pi-scripts-custom" bash -c "source $BATS_TEST_DIRNAME/helpers/install_test_paths.sh; printf '%s' \"\$INSTALL_DIR\""
     [ "$output" = "/tmp/pi-scripts-custom" ]
 }
@@ -187,7 +189,7 @@ EOS
     cp ./install.sh "$tmp_install"
     sed -i 's/^        run_interactive main_menu$/        echo "MENU_REACHED"/' "$tmp_install"
 
-    run bash -c "export $(_env); bash $tmp_install <<< '0'"
+    run bash -c "export $(_env) INSTALL_SH='$tmp_install'; bash $BATS_TEST_DIRNAME/helpers/install_test_paths.sh <<< '0'"
     rm -f "$tmp_install"
     [ "$status" -eq 0 ]
     [[ "$output" =~ "Migrating scripts to root-owned $INSTALL_DIR" ]]
@@ -482,7 +484,7 @@ EOF
     cp ./install.sh "$isolated/install.sh"
     cp -p "$MOCK_DIR/curl" "$MOCK_DIR/curl.real"
     printf '#!/bin/bash\nexit 22\n' > "$MOCK_DIR/curl"
-    run bash -c "cd '$isolated' && export $(_env); bash ./install.sh < /dev/null"
+    run bash -c "cd '$isolated' && export $(_env); bash $BATS_TEST_DIRNAME/helpers/install_test_paths.sh < /dev/null"
     mv -f "$MOCK_DIR/curl.real" "$MOCK_DIR/curl"
     [ "$status" -eq 1 ]
     [[ "$output" =~ "package helpers not loaded" ]]

@@ -101,7 +101,7 @@ Checks the GitHub repository for a new release. If the latest release tag differ
 The installer configures two separate crontabs to ensure proper permissions:
 
 > [!IMPORTANT]\
-> Scripts are installed to the **root-owned** directory `/usr/local/lib/pi-maintenance` (`root:root`, `0755` scripts / `0644` libs). Root cron executes them, so they must not live in a user-writable location such as `~/pi-scripts` — otherwise anyone who can write as your login user could replace them and gain root on the next scheduled run. Installs from releases before v1.1.5 (in `~/pi-scripts`) are migrated automatically the next time `install.sh` or the weekly self-update runs: scripts are re-downloaded into the root-owned tree, crontab entries are repointed, and the old user-writable copy is removed — but only if it contains nothing except suite files; a directory holding anything else is left in place (with a notice) and just stops being referenced by cron. Override the location with `INSTALL_DIR=/path` only if that path is itself root-owned.
+> Scripts are installed to the **root-owned** directory `/usr/local/lib/pi-maintenance` (`root:root`, `0755` scripts / `0644` libs). Root cron executes them, so they must not live in a user-writable location such as `~/pi-scripts` — otherwise anyone who can write as your login user could replace them and gain root on the next scheduled run. Installs from releases before v1.1.5 (in `~/pi-scripts`) are migrated automatically the next time `install.sh` or the weekly self-update runs: scripts are re-downloaded into the root-owned tree, crontab entries are repointed, and the old user-writable copy is removed — but only if it contains nothing except suite files; a directory holding anything else is left in place (with a notice) and just stops being referenced by cron. The location is fixed: `install.sh` ignores an exported `INSTALL_DIR` (and any `RAW_URL` that is not this repository's `main` branch or a `vX.Y.Z` release tag) so a user-level implant cannot redirect root cron to a user-writable tree or to attacker-hosted code. Older installs in a custom directory still referenced by crontab are migrated like `~/pi-scripts`.
 
 ### **Root Crontab (`sudo crontab -e`)**
 
@@ -453,7 +453,7 @@ This repository includes workspace-level Copilot customization for implementatio
 
 For release-ready GitHub description text, see:
 
-- `docs/releases/v1.1.15.md` — current example for this release (prepare with the `prepare-release` skill)
+- `docs/releases/v1.1.16.md` — current example for this release (prepare with the `prepare-release` skill)
 - Future releases: `docs/releases/vX.Y.Z.md` must match the pushed tag / root `VERSION` exactly
 
 Pushing tag `vX.Y.Z` (matching root `VERSION`, after merge to the default branch) runs

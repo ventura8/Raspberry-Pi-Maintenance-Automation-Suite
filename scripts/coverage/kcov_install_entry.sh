@@ -11,10 +11,20 @@ cd "$ROOT" || exit 1
 _cov_ssmtp_conf="${SSMTP_CONF:-/etc/ssmtp/ssmtp.conf}"
 _cov_revaliases="${REVALIASES:-/etc/ssmtp/revaliases}"
 _cov_msmtp_conf="${MSMTP_CONF:-/etc/msmtprc}"
+_cov_install_dir="${INSTALL_DIR:-}"
+_cov_raw_url="${RAW_URL:-}"
 
 # shellcheck source=../../install.sh
 source "$ROOT/install.sh"
 SSMTP_CONF="$_cov_ssmtp_conf"
 REVALIASES="$_cov_revaliases"
 MSMTP_CONF="$_cov_msmtp_conf"
+# INSTALL_DIR / RAW_URL are pinned by install.sh too; re-point and re-resolve the helper libs.
+if [[ -n "$_cov_install_dir" ]]; then
+    INSTALL_DIR="$_cov_install_dir"
+    _source_install_libs > /dev/null 2>&1 || true
+fi
+if [[ -n "$_cov_raw_url" ]]; then
+    RAW_URL="$_cov_raw_url"
+fi
 install_main "$@"

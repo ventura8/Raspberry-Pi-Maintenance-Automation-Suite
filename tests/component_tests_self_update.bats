@@ -412,3 +412,19 @@ EOF
     [[ "$output" =~ "Local Version:  v1.0.0" ]]
     [[ "$output" =~ "System is up to date" ]]
 }
+
+@test "Self Update: non-release tag from the API is refused before staging" {
+    echo "v1.0.0" > "$INSTALL_DIR/.version"
+    export TEST_REMOTE_TAG="../../attacker/evil"
+
+    _mock_curl_self_update
+
+    export SSMTP_CONF="$MOCK_DIR/ssmtp.conf"
+    echo "root=mock_admin@test.com" > "$SSMTP_CONF"
+
+    unset TEST_MODE
+    run ./scripts/update_self.sh
+    [[ "$status" -ne 0 ]]
+    [[ "$output" =~ "Refusing unexpected release tag" ]]
+    [[ ! "$output" =~ "TAGGED_INSTALLER_EXECUTED" ]]
+}
